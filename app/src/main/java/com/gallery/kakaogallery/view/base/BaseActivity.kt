@@ -62,6 +62,11 @@ abstract  class BaseActivity<T : ViewDataBinding, S : BaseViewModel> : AppCompat
     }
 
     private fun setBar(){
+        headerComp = getHeader()
+        if(headerComp == null){
+//            actionBar.hide()
+            return
+        }
         val actionBar  = supportActionBar!!
 
         actionBar.setDisplayShowCustomEnabled(true)
@@ -69,13 +74,7 @@ abstract  class BaseActivity<T : ViewDataBinding, S : BaseViewModel> : AppCompat
         actionBar.setDisplayShowTitleEnabled(false)
         actionBar.elevation = 0f
 
-        headerComp = getHeader()
-        if(headerComp == null){
-            actionBar.hide()
-            return
-        }else
-            actionBar.show()
-
+        actionBar.show()
         actionBar.customView = headerComp
 
         //val tool : Toolbar = actionBarView.parent as Toolbar
