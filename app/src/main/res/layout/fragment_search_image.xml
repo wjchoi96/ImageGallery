@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout >
+
+    <data>
+        <variable
+            name="viewModel"
+            type="com.gallery.kakaogallery.view.searchimages.SearchImageViewModel" />
+    </data>
+
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/background"
+        >
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+        <ProgressBar
+            android:layout_marginBottom="10dp"
+            android:layout_centerHorizontal="true"
+            android:layout_alignBottom="@+id/recyclerView"
+            android:indeterminateTint="@color/mainColor"
+            android:visibility="gone"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:id="@+id/listProgress"
+            />
+        <TextView
+            android:layout_centerInParent="true"
+            android:visibility="gone"
+            android:id="@+id/tvNoneNotify"
+            android:textSize="17sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/mainTextColor"
+            android:text="@string/notify_none_search_image"
+            />
+        <ProgressBar
+            android:indeterminateTint="@color/mainColor"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:id="@+id/progress"
+            />
+    </RelativeLayout>
+</layout>

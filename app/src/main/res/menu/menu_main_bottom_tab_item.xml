@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/bottom_menu_search_image"
+        android:title="@string/menu_search_image"
+        android:icon="@drawable/ic_search"
+        />
+
+    <item
+        android:id="@+id/bottom_menu_save_image"
+        android:title="@string/menu_save_image"
+        android:icon="@drawable/ic_album"
+        />
+</menu>

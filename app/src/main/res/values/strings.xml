@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">KakaoGallery</string>
+    <string name="kakao_rest_api_key">3a3dd42d52886fff4f6270ba737a8708</string>
+
+    <string name="menu_search_image">이미지 검색</string>
+    <string name="menu_save_image">내 보관함</string>
+
+    <string name="notify_none_search_image">검색 결과가 없습니다</string>
+    <string name="notify_none_save_image">저장된 이미지가 없습니다</string>
+</resources>
