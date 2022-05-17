@@ -1,6 +1,7 @@
 package com.gallery.kakaogallery.view.searchimages
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Rect
 import android.util.DisplayMetrics
@@ -12,6 +13,7 @@ import android.widget.ProgressBar
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.gallery.kakaogallery.ListActivity
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.FragmentSearchImageBinding
 import com.gallery.kakaogallery.model.ImageModel
@@ -102,6 +104,9 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding, S
             removeLeftBtn()
             setRightBtnListener("선택") {
                 viewModel.setSelectMode(true)
+            }
+            setLeftBtnListener("리스트"){
+                startActivity(Intent(mContext, ListActivity::class.java))
             }
             setTitle("이미지 검색")
         }

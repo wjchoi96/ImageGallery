@@ -14,19 +14,22 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.KakaoGallery">
         <activity
+            android:theme="@style/Theme.ListActivity"
+            android:name=".ListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.SplashActivity"
             android:exported="true"
-            android:theme="@style/SplashTheme"
-            android:name=".view.SplashActivity">
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".view.MainActivity"
-            android:exported="false"/>
+            android:exported="false" />
     </application>
 
 </manifest>
