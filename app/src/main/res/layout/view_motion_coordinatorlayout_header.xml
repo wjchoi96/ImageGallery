@@ -9,7 +9,9 @@
     android:fitsSystemWindows="false"
     app:layout_scrollFlags="scroll|enterAlways|snap|exitUntilCollapsed"
     app:layoutDescription="@xml/motion_coordinatorlayout_header"
-    ><!--app:layout_behavior="@string/appbar_scrolling_view_behavior" 얘는 안해주고 scroll content 쪽에서만 해주면 된다 -->
+    >
+    <!-- pp:layout_scrollFlags=scroll|enterAlways|snap|exitUntilCollapsed -->
+    <!--app:layout_behavior="@string/appbar_scrolling_view_behavior" 얘는 안해주고 scroll content 쪽에서만 해주면 된다 -->
 
     <ImageView
         android:id="@+id/background"
