@@ -30,6 +30,6 @@
     </style>
 
 
-    <style name="Theme.ListActivity" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
+    <style name="Theme.NoActionBar" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
 
 </resources>

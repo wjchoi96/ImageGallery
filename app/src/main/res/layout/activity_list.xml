@@ -15,7 +15,7 @@
             android:layout_height="200dp"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             >
-            <include layout="@layout/motion_coordinatorlayout_header"/>
+            <include layout="@layout/view_motion_coordinatorlayout_header"/>
         </com.google.android.material.appbar.AppBarLayout>
 
         <include layout="@layout/content_scrolling"/>

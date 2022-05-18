@@ -15,11 +15,12 @@
         android:theme="@style/Theme.KakaoGallery">
         <activity
             android:name=".SampleMotionActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.NoActionBar"  />
         <activity
             android:name=".ListActivity"
             android:exported="false"
-            android:theme="@style/Theme.ListActivity" />
+            android:theme="@style/Theme.NoActionBar" />
         <activity
             android:name=".view.SplashActivity"
             android:exported="true"

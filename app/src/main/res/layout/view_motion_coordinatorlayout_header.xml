@@ -8,7 +8,7 @@
     android:minHeight="50dp"
     android:fitsSystemWindows="false"
     app:layout_scrollFlags="scroll|enterAlways|snap|exitUntilCollapsed"
-    app:layoutDescription="@xml/scene_09"
+    app:layoutDescription="@xml/motion_coordinatorlayout_header"
     ><!--app:layout_behavior="@string/appbar_scrolling_view_behavior" 얘는 안해주고 scroll content 쪽에서만 해주면 된다 -->
 
     <ImageView

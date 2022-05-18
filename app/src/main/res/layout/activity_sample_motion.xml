@@ -8,14 +8,14 @@
         android:layout_height="match_parent"
         tools:context=".ListActivity"
         android:fitsSystemWindows="false"
-        ><!-- fitsSystemWindows?? -->
+        ><!-- fitsSystemWindows: 뷰가 차지할수 있는 영역을 상태바 및 소프트키 영역을 제외한 영역까지 확장시켜준다 -->
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/appBar"
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             >
-            <include layout="@layout/motion_coordinatorlayout_header"/>
+            <include layout="@layout/view_motion_coordinatorlayout_header"/>
         </com.google.android.material.appbar.AppBarLayout>
 
         <include layout="@layout/content_scrolling"/>
