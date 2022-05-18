@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.ListActivity
 import com.gallery.kakaogallery.R
+import com.gallery.kakaogallery.SampleMotionActivity
 import com.gallery.kakaogallery.databinding.FragmentSearchImageBinding
 import com.gallery.kakaogallery.model.ImageModel
 import com.gallery.kakaogallery.util.DialogUtil
@@ -106,7 +107,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding, S
                 viewModel.setSelectMode(true)
             }
             setLeftBtnListener("리스트"){
-                startActivity(Intent(mContext, ListActivity::class.java))
+                startActivity(Intent(mContext, SampleMotionActivity::class.java))
             }
             setTitle("이미지 검색")
         }

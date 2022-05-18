@@ -14,9 +14,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.KakaoGallery">
         <activity
-            android:theme="@style/Theme.ListActivity"
-            android:name=".ListActivity"
+            android:name=".SampleMotionActivity"
             android:exported="false" />
+        <activity
+            android:name=".ListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ListActivity" />
         <activity
             android:name=".view.SplashActivity"
             android:exported="true"
