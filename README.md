@@ -6,6 +6,9 @@
 1. 검색어에 걸맞는 이미지, 비디오 검색 결과를 섬네일 이미지로 표시
 2. 저장하고 싶은 이미지는 이미지 보관함에 저장 
 
+## Docs
+ - [스케쥴 관리](https://full-growth-4d2.notion.site/KakaoGallery-e1de93d4a6cb452989253006bc06e59d)
+
 ## Development Environment
 - kotlin
 - Android Studio Bumblebee | 2021.1.1 Patch 2
