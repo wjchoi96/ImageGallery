@@ -25,7 +25,7 @@
         </activity>
 
         <activity
-            android:name=".presentation.ui.main.MainActivity"
+            android:name=".presentation.ui.root.RootActivity"
             android:exported="false"/>
     </application>
 

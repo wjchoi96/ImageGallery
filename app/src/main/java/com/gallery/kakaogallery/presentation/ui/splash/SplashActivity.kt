@@ -5,7 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import com.gallery.kakaogallery.presentation.ui.main.MainActivity
+import com.gallery.kakaogallery.presentation.ui.root.RootActivity
 
 class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -16,7 +16,7 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun goNextView(){
-        val intent = Intent(this, MainActivity::class.java).apply {
+        val intent = Intent(this, RootActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }

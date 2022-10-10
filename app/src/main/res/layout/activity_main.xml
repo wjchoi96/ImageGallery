@@ -5,7 +5,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".presentation.ui.main.MainActivity"
+        tools:context=".presentation.ui.root.RootActivity"
         android:id="@+id/background"
         >
 <!--        <androidx.fragment.app.FragmentContainerView-->

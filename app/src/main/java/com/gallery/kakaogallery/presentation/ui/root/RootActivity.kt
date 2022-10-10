@@ -1,4 +1,4 @@
-package com.gallery.kakaogallery.presentation.ui.main
+package com.gallery.kakaogallery.presentation.ui.root
 
 import android.os.Bundle
 import android.util.Log
@@ -49,10 +49,10 @@ import com.google.android.material.navigation.NavigationBarView
     11. 선택모드시 activity 의 bottom tap 을 애니메이션 효과와 함께 내리고, completion 으로 애니메이션이 끝났을때 fragment 에 image menu bottom tap 을 추가?
  */
 
-class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), FragmentHandler {
+class RootActivity : BaseActivity<ActivityMainBinding, RootViewModel>(), FragmentHandler {
     override val layoutResId: Int
         get() = R.layout.activity_main
-    override val viewModel: MainViewModel by viewModels()
+    override val viewModel: RootViewModel by viewModels()
 
     private var naviView : BottomNavigationView? = null
 
