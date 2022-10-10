@@ -1,41 +1,10 @@
-package com.gallery.kakaogallery.model
+package com.gallery.kakaogallery.data.remote.response
 
-import android.util.Log
-import com.gallery.kakaogallery.ApiAddressConstant
+import com.gallery.kakaogallery.model.QuerySearchModel
 import com.google.gson.annotations.SerializedName
-import io.reactivex.rxjava3.core.Flowable
-import retrofit2.http.GET
-import retrofit2.http.Query
-import java.lang.Exception
-import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.collections.ArrayList
 
 
-interface VideoSearchService {
-    @GET(ApiAddressConstant.Video.VideoSearch)
-    fun requestSearchVideo(
-        @Query("query") query : String,
-        @Query("sort") sort : String,
-        @Query("page") page : Int, // 결과 페이지 번호, 1~50 사이의 값, 기본 값 1
-        @Query("size") pageSize : Int // 한 페이지에 보여질 문서 수, 1~50 사이의 값, 기본 값 10
-    ) : Flowable<VideoSearchResModel>
-}
-
-//https://developers.kakao.com/docs/latest/ko/daum-search/dev-guide#search-image
-class VideoSearchReqModel internal constructor(
-    val query : String,
-    val sort : SortType,
-    val page : Int, // 결과 페이지 번호, 1~15 사이의 값
-    val pageSize : Int // 한 페이지에 보여질 문서 수, 1~30 사이의 값, 기본 값 15
-){
-    enum class SortType(val key : String) {
-        Accuracy("accuracy"), // 정확도순
-        Recency("recency") // 최신순
-    }
-}
-
-class VideoSearchResModel {
+class VideoSearchResponse {
     @SerializedName("meta")
     var videoSearchMetaData : VideoSearchMetaModel? = null
     @SerializedName("documents")

@@ -1,12 +1,17 @@
 package com.gallery.kakaogallery
 
 import android.util.Log
+import com.gallery.kakaogallery.data.remote.request.ImageSearchRequest
+import com.gallery.kakaogallery.data.remote.request.VideoSearchRequest
+import com.gallery.kakaogallery.data.remote.response.ImageSearchModel
+import com.gallery.kakaogallery.data.remote.response.VideoSearchModel
+import com.gallery.kakaogallery.data.remote.service.ImageSearchService
+import com.gallery.kakaogallery.data.remote.service.VideoSearchService
 import com.gallery.kakaogallery.model.*
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.functions.BiFunction
 import io.reactivex.rxjava3.schedulers.Schedulers
-import com.gallery.kakaogallery.model.ImageSearchModel
 
 /**
  * Repo 에 대한 글
@@ -72,7 +77,7 @@ class ImageRepository(
             searchImageApi.run {
                 this.requestSearchImage(
                     query,
-                    ImageSearchReqModel.SortType.Recency.key,
+                    ImageSearchRequest.SortType.Recency.key,
                     page, // 1~50
                     SearchConstant.ImagePageSizeMaxValue
                 ).subscribeOn(Schedulers.computation())
@@ -105,7 +110,7 @@ class ImageRepository(
             return searchVideoApi.run {
                 this.requestSearchVideo(
                     query,
-                    VideoSearchReqModel.SortType.Recency.key,
+                    VideoSearchRequest.SortType.Recency.key,
                     page, // 1~50
                     SearchConstant.VideoPageSizeMaxValue
                 ).subscribeOn(Schedulers.computation())

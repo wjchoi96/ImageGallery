@@ -10,7 +10,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.gallery.kakaogallery.ImageRepository
 import com.gallery.kakaogallery.Result
-import com.gallery.kakaogallery.model.*
+import com.gallery.kakaogallery.data.remote.service.ImageSearchService
+import com.gallery.kakaogallery.data.remote.service.VideoSearchService
+import com.gallery.kakaogallery.model.ImageModel
+import com.gallery.kakaogallery.model.SaveImageStorage
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
 import com.gallery.kakaogallery.presentation.ui.base.BaseViewModel
 import io.reactivex.rxjava3.schedulers.Schedulers
