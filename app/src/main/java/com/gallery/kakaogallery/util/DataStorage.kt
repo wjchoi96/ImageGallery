@@ -1,6 +1,6 @@
 package com.gallery.kakaogallery.util
 
-import android.content.SharedPreferences
+import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
 
 class DataStorage private constructor() {
     companion object {
@@ -25,7 +25,7 @@ class DataStorage private constructor() {
             private const val fileName = "kakaoGallery_$versionCode"
             val instance = SPUtil()
         }
-        private val pref = AppHelper.instance.getSharedPreferences(fileName, 0)
+        private val pref = KakaoGalleryApplication.instance.getSharedPreferences(fileName, 0)
 
         fun getStringValue(spKey : String) : String {
             return pref.getString(spKey,

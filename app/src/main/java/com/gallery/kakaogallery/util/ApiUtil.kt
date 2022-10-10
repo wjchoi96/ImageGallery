@@ -2,12 +2,13 @@ package com.gallery.kakaogallery.util
 
 import android.util.Log
 import com.gallery.kakaogallery.model.*
+import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.schedulers.Schedulers
 
 object ApiUtil : BaseUtil() {
-    private val mRetrofit = AppHelper.mRetrofit
+    private val mRetrofit = KakaoGalleryApplication.mRetrofit
 
     object Image {
         fun requestSearchImage(reqModel : ImageSearchReqModel) : Flowable<ImageSearchResModel>{

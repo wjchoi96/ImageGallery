@@ -1,7 +1,7 @@
 package com.gallery.kakaogallery.model
 
 import android.util.Log
-import com.gallery.kakaogallery.util.AppHelper
+import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
 import com.gallery.kakaogallery.util.DataStorage
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -9,7 +9,7 @@ import io.reactivex.rxjava3.subjects.PublishSubject
 
 class SaveImageStorage private constructor() {
     companion object {
-        private val TAG = AppHelper.getTag(this::class.java)
+        private val TAG = KakaoGalleryApplication.getTag(this::class.java)
         val instance = SaveImageStorage()
     }
 
@@ -24,7 +24,7 @@ class SaveImageStorage private constructor() {
     // data storage 에 저장된 list 를 가져온다
     private fun initSavedList() {
         imageList.clear()
-        val listJson = AppHelper.dataStorage.savedImageList
+        val listJson = KakaoGalleryApplication.dataStorage.savedImageList
         imageList.addAll(if(listJson.isBlank() || listJson == DataStorage.emptyValue){
             ArrayList()
         }else{
@@ -84,7 +84,7 @@ class SaveImageStorage private constructor() {
     private fun syncData(){
         val jsonStr = Gson().toJson(imageList)
         Log.d(TAG, "syncData save image list data(${imageList.size}) => \n$jsonStr\n")
-        AppHelper.dataStorage.savedImageList = jsonStr
-        Log.d(TAG, "syncData save finish : \n${AppHelper.dataStorage.savedImageList}")
+        KakaoGalleryApplication.dataStorage.savedImageList = jsonStr
+        Log.d(TAG, "syncData save finish : \n${KakaoGalleryApplication.dataStorage.savedImageList}")
     }
 }

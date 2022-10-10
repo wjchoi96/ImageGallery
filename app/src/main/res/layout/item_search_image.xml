@@ -5,7 +5,7 @@
 
         <variable
             name="viewModel"
-            type="com.gallery.kakaogallery.view.searchimages.SearchImageViewModel" />
+            type="com.gallery.kakaogallery.presentation.ui.searchimage.SearchImageViewModel" />
         <variable
             name="item"
             type="com.gallery.kakaogallery.model.ImageModel" />
