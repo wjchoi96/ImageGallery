@@ -8,7 +8,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.PublishSubject
 
-class SaveImageViewModel : BaseViewModel() {
+class GalleryViewModel : BaseViewModel() {
 
     private val savedImageSubject : PublishSubject<ArrayList<ImageModel>> = PublishSubject.create()
     var savedImageListObservable : Observable<ArrayList<ImageModel>> = savedImageSubject.observeOn(AndroidSchedulers.mainThread())

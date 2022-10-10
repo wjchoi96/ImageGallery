@@ -15,10 +15,10 @@ import com.gallery.kakaogallery.model.ImageModel
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
 import com.gallery.kakaogallery.presentation.ui.base.BaseViewHolder
 
-class SaveImageAdapter(
+class GalleryAdapter(
     private val context : Context,
     private val itemSelectListener : (ImageModel, Int) -> (Boolean)
-) : RecyclerView.Adapter<SaveImageAdapter.SaveImageItemViewHolder>() {
+) : RecyclerView.Adapter<GalleryAdapter.GalleryItemViewHolder>() {
     private val TAG = KakaoGalleryApplication.getTag(this::class.java)
     enum class ImagePayload(){
         Save,
@@ -31,8 +31,8 @@ class SaveImageAdapter(
         imageList.addAll(list)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SaveImageItemViewHolder {
-        return SaveImageItemViewHolder(
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GalleryItemViewHolder {
+        return GalleryItemViewHolder(
             DataBindingUtil.inflate(
                 (context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater),
                 R.layout.view_image_item,
@@ -46,12 +46,12 @@ class SaveImageAdapter(
         return imageList.size
     }
 
-    override fun onBindViewHolder(holder: SaveImageItemViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: GalleryItemViewHolder, position: Int) {
         holder.bind(imageList[position])
     }
 
     override fun onBindViewHolder(
-        holder: SaveImageItemViewHolder,
+        holder: GalleryItemViewHolder,
         position: Int,
         payloads: MutableList<Any>
     ) {
@@ -71,7 +71,7 @@ class SaveImageAdapter(
         }
     }
 
-    class SaveImageItemViewHolder(
+    class GalleryItemViewHolder(
         private val vd : ViewImageItemBinding,
         private val context : Context,
         private val itemSelectListener : (ImageModel, Int) -> (Boolean)

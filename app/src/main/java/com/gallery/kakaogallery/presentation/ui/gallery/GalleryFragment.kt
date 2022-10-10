@@ -11,16 +11,16 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.R
-import com.gallery.kakaogallery.databinding.FragmentSaveImageBinding
-import com.gallery.kakaogallery.presentation.util.DialogUtil
+import com.gallery.kakaogallery.databinding.FragmentGalleryBinding
 import com.gallery.kakaogallery.presentation.ui.base.BaseFragmentUseHandler
+import com.gallery.kakaogallery.presentation.util.DialogUtil
 
-class SaveImageFragment : BaseFragmentUseHandler<FragmentSaveImageBinding, SaveImageViewModel>() {
+class GalleryFragment : BaseFragmentUseHandler<FragmentGalleryBinding, GalleryViewModel>() {
     override val layoutResId: Int
-        get() = R.layout.fragment_save_image
-    override val viewModel: SaveImageViewModel by viewModels()
+        get() = R.layout.fragment_gallery
+    override val viewModel: GalleryViewModel by viewModels()
 
-    private var imageListAdapter : SaveImageAdapter? = null
+    private var imageListAdapter : GalleryAdapter? = null
     private var itemCount = 3
 
     /*
@@ -103,13 +103,13 @@ class SaveImageFragment : BaseFragmentUseHandler<FragmentSaveImageBinding, SaveI
     private fun releaseAllSelectImage(){
         for(idx in viewModel.selectImageIdxList){
             viewModel.imageList[idx].isSelect = false
-            imageListAdapter?.notifyItemChanged(idx, SaveImageAdapter.ImagePayload.Select)
+            imageListAdapter?.notifyItemChanged(idx, GalleryAdapter.ImagePayload.Select)
         }
         viewModel.selectImageIdxList.clear()
     }
 
     private fun setRecyclerView(){
-        imageListAdapter = SaveImageAdapter(mContext ?: return) { image, idx ->
+        imageListAdapter = GalleryAdapter(mContext ?: return) { image, idx ->
             Log.d(TAG, "select image item : $idx, ${viewModel.selectMode}")
             if(viewModel.selectMode) {
                 viewModel.imageList[idx].isSelect = !viewModel.imageList[idx].isSelect
@@ -121,9 +121,9 @@ class SaveImageFragment : BaseFragmentUseHandler<FragmentSaveImageBinding, SaveI
                     viewModel.selectImageIdxList.remove(idx)
                     fHandler?.getHeaderCompForChange()?.setTitle("${viewModel.selectImageIdxList.size}장 선택중")
                 }
-                imageListAdapter?.notifyItemChanged(idx, SaveImageAdapter.ImagePayload.Select)
+                imageListAdapter?.notifyItemChanged(idx, GalleryAdapter.ImagePayload.Select)
             }
-            return@SaveImageAdapter viewModel.selectMode
+            return@GalleryAdapter viewModel.selectMode
         }
         val viewManager = GridLayoutManager(mContext, itemCount)
         vd.recyclerView.apply {
