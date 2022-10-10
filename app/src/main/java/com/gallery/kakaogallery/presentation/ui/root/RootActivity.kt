@@ -5,10 +5,10 @@ import android.util.Log
 import android.widget.ProgressBar
 import androidx.activity.viewModels
 import com.gallery.kakaogallery.R
-import com.gallery.kakaogallery.databinding.ActivityMainBinding
-import com.gallery.kakaogallery.presentation.ui.gallery.SaveImageFragment
+import com.gallery.kakaogallery.databinding.ActivityRootBinding
 import com.gallery.kakaogallery.presentation.ui.base.BaseActivity
 import com.gallery.kakaogallery.presentation.ui.comp.HeaderComp
+import com.gallery.kakaogallery.presentation.ui.gallery.GalleryFragment
 import com.gallery.kakaogallery.presentation.ui.searchimage.SearchImageFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
@@ -49,9 +49,9 @@ import com.google.android.material.navigation.NavigationBarView
     11. 선택모드시 activity 의 bottom tap 을 애니메이션 효과와 함께 내리고, completion 으로 애니메이션이 끝났을때 fragment 에 image menu bottom tap 을 추가?
  */
 
-class RootActivity : BaseActivity<ActivityMainBinding, RootViewModel>(), FragmentHandler {
+class RootActivity : BaseActivity<ActivityRootBinding, RootViewModel>(), FragmentHandler {
     override val layoutResId: Int
-        get() = R.layout.activity_main
+        get() = R.layout.activity_root
     override val viewModel: RootViewModel by viewModels()
 
     private var naviView : BottomNavigationView? = null
@@ -114,13 +114,13 @@ class RootActivity : BaseActivity<ActivityMainBinding, RootViewModel>(), Fragmen
                     SearchImageFragment()
                 }
                 menuResIdList[1] -> {
-                    SaveImageFragment()
+                    GalleryFragment()
                 }
                 else -> return
             }
             transaction.add(R.id.container, fragment, "$fragmentResId")
         }
-        Log.d(TAG, "search : ${fragment is SearchImageFragment}, save : ${fragment is SaveImageFragment}")
+        Log.d(TAG, "search : ${fragment is SearchImageFragment}, save : ${fragment is GalleryFragment}")
         transaction.show(fragment)
         for(res in menuResIdList){
             if(res == fragmentResId)
