@@ -46,3 +46,25 @@
 - Glide <br />
   https://github.com/bumptech/glide 
   
+## Package
+``` 
+📂app
+ ┣ 📂data
+ ┃ ┣ 📂datasource
+ ┃ ┣ 📂entity
+ ┃ ┣ 📂local 
+ ┃ ┣ 📂remote 
+ ┃ ┣ 📂repository
+ ┃ ┗ 📂util
+ ┣ 📂domain
+ ┃ ┣ 📂enitity
+ ┃ ┣ 📂repository
+ ┃ ┗ 📂util
+ ┗ 📂presentaion
+   ┣ 📂application
+   ┣ 📂di
+   ┣ 📂ui
+   ┣ 📂util
+   ┗ 📂viewmodel
+```
+
