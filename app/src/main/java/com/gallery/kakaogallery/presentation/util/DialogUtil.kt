@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.content.Context
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.presentation.ui.dialog.CustomBottomSheetDialog
-import com.gallery.kakaogallery.util.BaseUtil
 
 /*
     bottom sheet dialog
@@ -18,7 +17,7 @@ import com.gallery.kakaogallery.util.BaseUtil
     https://developer.android.com/reference/com/google/android/material/bottomsheet/BottomSheetDialogFragment
     https://stackoverflow.com/questions/55218663/customization-bottom-sheet-dialogs-view
  */
-object DialogUtil : BaseUtil() {
+object DialogUtil {
     fun show(context : Context, content : String, positiveBtn : String, positiveListener : () -> Unit){
         AlertDialog.Builder(context).apply {
             setCancelable(false)
