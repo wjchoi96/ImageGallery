@@ -1,4 +1,4 @@
-package com.gallery.kakaogallery.presentation.util
+package com.gallery.kakaogallery.presentation.network
 
 import android.content.Context
 import android.net.ConnectivityManager

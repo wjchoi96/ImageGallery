@@ -2,7 +2,7 @@ package com.gallery.kakaogallery.presentation.application
 
 import android.app.Application
 import com.gallery.kakaogallery.util.DataStorage
-import com.gallery.kakaogallery.presentation.util.NetworkUtil
+import com.gallery.kakaogallery.presentation.network.NetworkUtil
 import com.gallery.kakaogallery.presentation.network.RetrofitManager
 
 class KakaoGalleryApplication : Application() {
