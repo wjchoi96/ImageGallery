@@ -1,18 +1,18 @@
 package com.gallery.kakaogallery.data.repository
 
 import android.util.Log
+import com.gallery.kakaogallery.data.SaveImageStorage
+import com.gallery.kakaogallery.data.constant.SearchConstant
+import com.gallery.kakaogallery.data.entity.remote.request.ImageSearchRequest
+import com.gallery.kakaogallery.data.entity.remote.request.VideoSearchRequest
+import com.gallery.kakaogallery.data.entity.remote.response.ImageSearchResponse
+import com.gallery.kakaogallery.data.entity.remote.response.VideoSearchResponse
+import com.gallery.kakaogallery.data.service.ImageSearchService
+import com.gallery.kakaogallery.data.service.VideoSearchService
+import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.Result
 import com.gallery.kakaogallery.domain.model.ResultError
-import com.gallery.kakaogallery.data.constant.SearchConstant
-import com.gallery.kakaogallery.data.SaveImageStorage
-import com.gallery.kakaogallery.data.remote.request.ImageSearchRequest
-import com.gallery.kakaogallery.data.remote.request.VideoSearchRequest
-import com.gallery.kakaogallery.data.remote.response.ImageSearchModel
-import com.gallery.kakaogallery.data.remote.response.VideoSearchModel
-import com.gallery.kakaogallery.data.remote.service.ImageSearchService
-import com.gallery.kakaogallery.data.remote.service.VideoSearchService
-import com.gallery.kakaogallery.domain.model.ImageModel
-import com.gallery.kakaogallery.domain.model.QuerySearchModel
+import com.gallery.kakaogallery.domain.util.GalleryDateConvertUtil
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.functions.BiFunction
@@ -61,21 +61,24 @@ class ImageRepository(
                 Log.d(TAG, "fetch list merge => \nt1 : ${t1.data?.firstOrNull()}\nt2 : ${t2.data?.firstOrNull()}")
                 var searchList = (t1.data ?: ArrayList()).map{
 //                    Log.d(TAG, "map image : $it")
-                    it.toImageModel()
+                    it.toModel(
+                        dateTimeToShow = GalleryDateConvertUtil.convertToPrint(it.datetime) ?: "",
+                        dateTimeMill = GalleryDateConvertUtil.convertToMill(it.datetime) ?: 0L
+                    )
                 } + (t2.data ?: ArrayList()).map{
 //                    Log.d(TAG, "map video : $it")
-                    it.toImageModel()
+                    it.toModel(
+                        dateTimeToShow = GalleryDateConvertUtil.convertToPrint(it.datetime) ?: "",
+                        dateTimeMill = GalleryDateConvertUtil.convertToMill(it.datetime) ?: 0L
+                    )
                 }
                 searchList = searchList.sortedByDescending { it.dateTimeMill }
                 return@BiFunction Result.Success(searchList)
             }
         ).observeOn(AndroidSchedulers.mainThread())
     }
-    private fun QuerySearchModel.toImageModel() : ImageModel {
-        return ImageModel(dateTimeToShow, dateTimeMill, imageUrl, imageThumbnailUrl)
-    }
 
-    private fun fetchImageQueryRes(query : String, page : Int): Observable<Result<ArrayList<ImageSearchModel>>>{
+    private fun fetchImageQueryRes(query : String, page : Int): Observable<Result<List<ImageSearchResponse.Document>>>{
         return if(!imagePageable) {
             Observable.just(Result.Fail(ResultError.MaxPage))
         }else {
@@ -86,14 +89,11 @@ class ImageRepository(
                     page, // 1~50
                     SearchConstant.ImagePageSizeMaxValue
                 ).subscribeOn(Schedulers.computation())
-                    .doOnNext {
-                        Log.d(TAG, "doOnNext image search res : ${it.isApiResSuccess()}")
-                    }
                     .map {
                         when {
-                            it.isApiResSuccess() && it.imageSearchMetaData != null && it.imageSearchResList != null -> {
-                                imagePageable = !(it.imageSearchMetaData?.isEnd ?: true)
-                                Result.Success(it.imageSearchResList!!)
+                           it.meta != null -> {
+                                imagePageable = !it.meta.isEnd
+                                Result.Success(it.documents!!)
                             }
                             else -> Result.Fail(ResultError.Fail)
                         }
@@ -108,7 +108,7 @@ class ImageRepository(
         }
     }
 
-    private fun fetchVideoQueryRes(query : String, page : Int): Observable<Result<ArrayList<VideoSearchModel>>>{
+    private fun fetchVideoQueryRes(query : String, page : Int): Observable<Result<List<VideoSearchResponse.Document>>>{
         return if(!videoPageable) {
             Observable.just(Result.Fail(ResultError.MaxPage))
         }else {
@@ -119,14 +119,11 @@ class ImageRepository(
                     page, // 1~50
                     SearchConstant.VideoPageSizeMaxValue
                 ).subscribeOn(Schedulers.computation())
-                    .doOnNext {
-                        Log.d(TAG, "doOnNext video search res : ${it.isApiResSuccess()} - thread check[${Thread.currentThread().name}]")
-                    }
                     .map {
                         when {
-                            it.isApiResSuccess() && it.videoSearchMetaData != null && it.videoSearchResList != null -> {
-                                videoPageable = !(it.videoSearchMetaData?.isEnd ?: true)
-                                Result.Success(it.videoSearchResList!!)
+                            it.documents != null -> {
+                                videoPageable = !it.meta.isEnd
+                                Result.Success(it.documents)
                             }
                             else -> Result.Fail(ResultError.Fail)
                         }

@@ -1,7 +1,7 @@
-package com.gallery.kakaogallery.data.remote.service
+package com.gallery.kakaogallery.data.service
 
 import com.gallery.kakaogallery.data.constant.ApiAddressConstant
-import com.gallery.kakaogallery.data.remote.response.ImageSearchResponse
+import com.gallery.kakaogallery.data.entity.remote.response.ImageSearchResponse
 import io.reactivex.rxjava3.core.Flowable
 import retrofit2.http.GET
 import retrofit2.http.Query

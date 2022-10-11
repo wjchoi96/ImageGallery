@@ -1,4 +1,4 @@
-package com.gallery.kakaogallery.data.remote.request
+package com.gallery.kakaogallery.data.entity.remote.request
 
 //https://developers.kakao.com/docs/latest/ko/daum-search/dev-guide#search-image
 class ImageSearchRequest internal constructor(
