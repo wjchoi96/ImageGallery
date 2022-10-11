@@ -2,7 +2,7 @@ package com.gallery.kakaogallery.presentation.viewmodel
 
 import android.util.Log
 import com.gallery.kakaogallery.model.ImageModel
-import com.gallery.kakaogallery.model.SaveImageStorage
+import com.gallery.kakaogallery.data.SaveImageStorage
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.PublishSubject

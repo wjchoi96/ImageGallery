@@ -13,7 +13,7 @@ import com.gallery.kakaogallery.Result
 import com.gallery.kakaogallery.data.remote.service.ImageSearchService
 import com.gallery.kakaogallery.data.remote.service.VideoSearchService
 import com.gallery.kakaogallery.model.ImageModel
-import com.gallery.kakaogallery.model.SaveImageStorage
+import com.gallery.kakaogallery.data.SaveImageStorage
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
 import io.reactivex.rxjava3.schedulers.Schedulers
 
