@@ -57,7 +57,7 @@
  ┃ ┣ 📂repository
  ┃ ┗ 📂util
  ┣ 📂domain
- ┃ ┣ 📂enitity
+ ┃ ┣ 📂model
  ┃ ┣ 📂repository
  ┃ ┗ 📂util
  ┗ 📂presentaion
