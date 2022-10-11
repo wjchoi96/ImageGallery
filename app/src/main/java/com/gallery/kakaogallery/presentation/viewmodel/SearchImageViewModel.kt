@@ -9,7 +9,7 @@ import android.widget.TextView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.gallery.kakaogallery.data.repository.ImageRepository
-import com.gallery.kakaogallery.Result
+import com.gallery.kakaogallery.domain.model.Result
 import com.gallery.kakaogallery.data.remote.service.ImageSearchService
 import com.gallery.kakaogallery.data.remote.service.VideoSearchService
 import com.gallery.kakaogallery.domain.model.ImageModel

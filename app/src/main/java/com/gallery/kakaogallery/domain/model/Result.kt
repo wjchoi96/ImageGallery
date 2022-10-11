@@ -1,4 +1,4 @@
-package com.gallery.kakaogallery
+package com.gallery.kakaogallery.domain.model
 
 sealed class Result<T>(
     val data : T? = null,
