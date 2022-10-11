@@ -10,6 +10,7 @@ import com.gallery.kakaogallery.presentation.ui.base.BaseActivity
 import com.gallery.kakaogallery.presentation.ui.comp.HeaderComp
 import com.gallery.kakaogallery.presentation.ui.gallery.GalleryFragment
 import com.gallery.kakaogallery.presentation.ui.searchimage.SearchImageFragment
+import com.gallery.kakaogallery.presentation.viewmodel.RootViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
 

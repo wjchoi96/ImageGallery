@@ -3,7 +3,7 @@
     <data>
         <variable
             name="viewModel"
-            type="com.gallery.kakaogallery.presentation.ui.searchimage.SearchImageViewModel" />
+            type="com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel" />
         <variable
             name="holder"
             type="com.gallery.kakaogallery.presentation.ui.searchimage.SearchImagesAdapter.SearchQueryViewHolder"

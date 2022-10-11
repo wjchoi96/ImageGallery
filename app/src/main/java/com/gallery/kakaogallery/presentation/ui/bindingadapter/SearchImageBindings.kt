@@ -7,7 +7,7 @@ import android.widget.ImageView
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import com.gallery.kakaogallery.R
-import com.gallery.kakaogallery.presentation.ui.searchimage.SearchImageViewModel
+import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
 
 
 @BindingAdapter("app:imageTypeSrc")

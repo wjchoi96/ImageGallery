@@ -14,6 +14,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
 import com.gallery.kakaogallery.presentation.ui.comp.HeaderComp
+import com.gallery.kakaogallery.presentation.viewmodel.BaseViewModel
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 
 

@@ -1,4 +1,4 @@
-package com.gallery.kakaogallery.presentation.ui.base
+package com.gallery.kakaogallery.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication

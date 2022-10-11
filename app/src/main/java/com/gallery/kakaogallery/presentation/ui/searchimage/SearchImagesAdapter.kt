@@ -15,6 +15,7 @@ import com.gallery.kakaogallery.databinding.ItemSearchQueryBinding
 import com.gallery.kakaogallery.model.ImageModel
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
 import com.gallery.kakaogallery.presentation.ui.base.BaseViewHolder
+import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
 
 /**
  * 장기적으로 보면, search comp 를 https://deque.tistory.com/140 처럼 처리해야할것같다

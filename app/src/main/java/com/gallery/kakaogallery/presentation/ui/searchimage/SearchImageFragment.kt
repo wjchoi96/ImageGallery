@@ -17,6 +17,7 @@ import com.gallery.kakaogallery.databinding.FragmentSearchImageBinding
 import com.gallery.kakaogallery.model.ImageModel
 import com.gallery.kakaogallery.presentation.util.DialogUtil
 import com.gallery.kakaogallery.presentation.ui.base.BaseFragmentUseHandler
+import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
 
 /*
     보관된 이미지는 특별한 표시를 보여줍니다. (좋아요/별표/하트 등)

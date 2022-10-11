@@ -1,4 +1,4 @@
-package com.gallery.kakaogallery.presentation.ui.searchimage
+package com.gallery.kakaogallery.presentation.viewmodel
 
 import android.os.Handler
 import android.os.Looper
@@ -15,7 +15,6 @@ import com.gallery.kakaogallery.data.remote.service.VideoSearchService
 import com.gallery.kakaogallery.model.ImageModel
 import com.gallery.kakaogallery.model.SaveImageStorage
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
-import com.gallery.kakaogallery.presentation.ui.base.BaseViewModel
 import io.reactivex.rxjava3.schedulers.Schedulers
 
 /*

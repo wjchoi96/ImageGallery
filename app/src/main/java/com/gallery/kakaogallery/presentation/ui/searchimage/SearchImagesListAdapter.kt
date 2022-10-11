@@ -10,6 +10,7 @@ import com.gallery.kakaogallery.databinding.ItemSearchImageBinding
 import com.gallery.kakaogallery.databinding.ItemSearchQueryBinding
 import com.gallery.kakaogallery.model.ImageModel
 import com.gallery.kakaogallery.presentation.ui.base.BaseViewHolder
+import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
