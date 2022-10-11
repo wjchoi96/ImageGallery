@@ -1,4 +1,4 @@
-package com.gallery.kakaogallery
+package com.gallery.kakaogallery.data.repository
 
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
 

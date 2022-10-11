@@ -1,6 +1,10 @@
-package com.gallery.kakaogallery
+package com.gallery.kakaogallery.data.repository
 
 import android.util.Log
+import com.gallery.kakaogallery.Result
+import com.gallery.kakaogallery.ResultError
+import com.gallery.kakaogallery.SearchConstant
+import com.gallery.kakaogallery.data.SaveImageStorage
 import com.gallery.kakaogallery.data.remote.request.ImageSearchRequest
 import com.gallery.kakaogallery.data.remote.request.VideoSearchRequest
 import com.gallery.kakaogallery.data.remote.response.ImageSearchModel

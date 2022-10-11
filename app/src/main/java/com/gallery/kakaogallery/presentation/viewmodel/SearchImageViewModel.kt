@@ -8,7 +8,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.gallery.kakaogallery.ImageRepository
+import com.gallery.kakaogallery.data.repository.ImageRepository
 import com.gallery.kakaogallery.Result
 import com.gallery.kakaogallery.data.remote.service.ImageSearchService
 import com.gallery.kakaogallery.data.remote.service.VideoSearchService
