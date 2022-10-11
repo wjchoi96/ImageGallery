@@ -1,6 +1,5 @@
 package com.gallery.kakaogallery.domain.model
 
-import android.util.Log
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -43,7 +42,6 @@ data class ImageModel internal constructor(
         saveTimeMill = Date().time
         val formatter = SimpleDateFormat("yyyy.MM.dd HH:mm:ss")
         saveDateTime = formatter.format(Date(saveTimeMill!!))
-        Log.d("Test", "saveDateTime : $saveDateTime")
         return saveDateTime!!
     }
 
