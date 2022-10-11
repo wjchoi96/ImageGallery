@@ -1,6 +1,5 @@
 package com.gallery.kakaogallery.data.entity.remote.response
 
-import com.gallery.kakaogallery.domain.model.QuerySearchModel
 import com.google.gson.annotations.SerializedName
 
 
