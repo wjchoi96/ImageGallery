@@ -63,6 +63,7 @@
  ┗ 📂presentaion
    ┣ 📂application
    ┣ 📂di
+   ┣ 📂network
    ┣ 📂ui
    ┣ 📂util
    ┗ 📂viewmodel
