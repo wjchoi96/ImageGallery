@@ -56,7 +56,7 @@ class ImageRepository(
                 // 1. dateTimeMill 순으로
                 Log.d(TAG, "fetch list merge : ${t1.data?.size}, ${t2.data?.size} - thread check[${Thread.currentThread().name}]")
                 Log.d(TAG, "fetch list merge => \nt1 : ${t1.data?.firstOrNull()}\nt2 : ${t2.data?.firstOrNull()}")
-                val searchList = (t1.data ?: emptyList()).map{
+                val searchList = ((t1.data ?: emptyList()).map{
 //                    Log.d(TAG, "map image : $it")
                     it.toModel(
                         dateTimeToShow = GalleryDateConvertUtil.convertToPrint(it.datetime) ?: "",
@@ -68,7 +68,7 @@ class ImageRepository(
                         dateTimeToShow = GalleryDateConvertUtil.convertToPrint(it.datetime) ?: "",
                         dateTimeMill = GalleryDateConvertUtil.convertToMill(it.datetime) ?: 0L
                     )
-                }.run {
+                }).run {
                     sortedByDescending { it.dateTimeMill }
                 }
                 return@BiFunction Result.Success(searchList)
