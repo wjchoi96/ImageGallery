@@ -1,6 +1,6 @@
 package com.gallery.kakaogallery.data.remote.service
 
-import com.gallery.kakaogallery.ApiAddressConstant
+import com.gallery.kakaogallery.data.constant.ApiAddressConstant
 import com.gallery.kakaogallery.data.remote.response.VideoSearchResponse
 import io.reactivex.rxjava3.core.Flowable
 import retrofit2.http.GET

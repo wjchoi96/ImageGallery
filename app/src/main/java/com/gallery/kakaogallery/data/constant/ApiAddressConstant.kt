@@ -1,4 +1,4 @@
-package com.gallery.kakaogallery
+package com.gallery.kakaogallery.data.constant
 
 object ApiAddressConstant {
     const val kakaoBaseUrl = "https://dapi.kakao.com"

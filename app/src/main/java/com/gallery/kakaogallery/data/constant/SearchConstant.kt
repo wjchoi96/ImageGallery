@@ -1,4 +1,4 @@
-package com.gallery.kakaogallery
+package com.gallery.kakaogallery.data.constant
 
 object SearchConstant {
     //https://developers.kakao.com/docs/latest/ko/daum-search/dev-guide#search-image

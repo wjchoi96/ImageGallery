@@ -1,7 +1,7 @@
 package com.gallery.kakaogallery.presentation.network
 
 import android.util.Log
-import com.gallery.kakaogallery.ApiAddressConstant
+import com.gallery.kakaogallery.data.constant.ApiAddressConstant
 import com.gallery.kakaogallery.BuildConfig
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication

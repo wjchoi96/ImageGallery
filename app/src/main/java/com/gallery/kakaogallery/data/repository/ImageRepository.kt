@@ -3,7 +3,7 @@ package com.gallery.kakaogallery.data.repository
 import android.util.Log
 import com.gallery.kakaogallery.domain.model.Result
 import com.gallery.kakaogallery.domain.model.ResultError
-import com.gallery.kakaogallery.SearchConstant
+import com.gallery.kakaogallery.data.constant.SearchConstant
 import com.gallery.kakaogallery.data.SaveImageStorage
 import com.gallery.kakaogallery.data.remote.request.ImageSearchRequest
 import com.gallery.kakaogallery.data.remote.request.VideoSearchRequest
