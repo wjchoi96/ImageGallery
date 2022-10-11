@@ -5,12 +5,10 @@ import com.gallery.kakaogallery.domain.model.Result
 import com.gallery.kakaogallery.domain.model.ResultError
 import com.gallery.kakaogallery.data.constant.SearchConstant
 import com.gallery.kakaogallery.data.SaveImageStorage
-import com.gallery.kakaogallery.data.remote.request.ImageSearchRequest
-import com.gallery.kakaogallery.data.remote.request.VideoSearchRequest
-import com.gallery.kakaogallery.data.remote.response.ImageSearchModel
-import com.gallery.kakaogallery.data.remote.response.VideoSearchModel
-import com.gallery.kakaogallery.data.remote.service.ImageSearchService
-import com.gallery.kakaogallery.data.remote.service.VideoSearchService
+import com.gallery.kakaogallery.data.entity.remote.request.ImageSearchRequest
+import com.gallery.kakaogallery.data.entity.remote.request.VideoSearchRequest
+import com.gallery.kakaogallery.data.entity.remote.response.ImageSearchModel
+import com.gallery.kakaogallery.data.entity.remote.response.VideoSearchModel
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.QuerySearchModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
