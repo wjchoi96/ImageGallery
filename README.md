@@ -52,9 +52,8 @@
  ┣ 📂data
  ┃ ┣ 📂datasource
  ┃ ┣ 📂entity
- ┃ ┣ 📂local 
- ┃ ┣ 📂remote 
  ┃ ┣ 📂repository
+ ┃ ┣ 📂service 
  ┃ ┗ 📂util
  ┣ 📂domain
  ┃ ┣ 📂model
