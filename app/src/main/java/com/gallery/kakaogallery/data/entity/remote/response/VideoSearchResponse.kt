@@ -1,40 +1,46 @@
 package com.gallery.kakaogallery.data.entity.remote.response
 
+
+import com.gallery.kakaogallery.domain.model.ImageModel
 import com.google.gson.annotations.SerializedName
 
-
-class VideoSearchResponse {
-    @SerializedName("meta")
-    var videoSearchMetaData : VideoSearchMetaModel? = null
+data class VideoSearchResponse(
     @SerializedName("documents")
-    var videoSearchResList : ArrayList<VideoSearchModel>? = null
-
-    fun isApiResSuccess() : Boolean {
-        return videoSearchResList != null && videoSearchMetaData != null
+    val documents: List<Document>,
+    @SerializedName("meta")
+    val meta: Meta
+) {
+    data class Document(
+        @SerializedName("author")
+        val author: String,
+        @SerializedName("datetime")
+        val datetime: String,
+        @SerializedName("play_time")
+        val playTime: Int,
+        @SerializedName("thumbnail")
+        val thumbnail: String,
+        @SerializedName("title")
+        val title: String,
+        @SerializedName("url")
+        val url: String
+    ){
+        fun toModel(
+            dateTimeToShow: String,
+            dateTimeMill: Long
+        ): ImageModel = ImageModel(
+            dateTimeToShow = dateTimeToShow,
+            dateTimeMill = dateTimeMill,
+            imageUrl = thumbnail,
+            thumbnailUrl = null
+        )
     }
-}
 
-class VideoSearchMetaModel internal constructor(
-    @SerializedName("totle_count")val totalCount : Int, // 검색된 문서 수
-    @SerializedName("pageable_count")val pageableCount : Int, // total_count 중 노출 가능 문서 수
-    @SerializedName("is_end")val isEnd : Boolean // 현재 페이지가 마지막 페이지인지 여부, 값이 false면 page를 증가시켜 다음 페이지를 요청할 수 있음
-)
-
-data class VideoSearchModel internal constructor(
-    @SerializedName("datetime")private val dateTime : String, // [YYYY]-[MM]-[DD]T[hh]:[mm]:[ss].000+[tz]
-    @SerializedName("contents")val content : String,
-    @SerializedName("title")val title : String,
-    @SerializedName("url")val videoUrl : String,
-    @SerializedName("play_tile")val playTime : Int, // 초 단위
-    @SerializedName("thumbnail")val videoThumbnailUrl : String,
-    @SerializedName("author")val author : String // 업로더
-) : QuerySearchModel() {
-    override val dateTimeStr: String
-        get() = dateTime
-    override val imageUrl: String
-        get() = videoThumbnailUrl
-    override val imageThumbnailUrl: String? = null
-    fun toMinString() : String {
-        return "video => thumbUrl : $videoThumbnailUrl\ndate : $dateTime, mill : $dateTimeMill"
-    }
+    data class Meta(
+        @SerializedName("is_end")
+        val isEnd: Boolean,
+        @SerializedName("pageable_count")
+        val pageableCount: Int,
+        @SerializedName("total_count")
+        val totalCount: Int
+    )
 }
