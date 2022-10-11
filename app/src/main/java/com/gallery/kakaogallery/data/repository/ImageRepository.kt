@@ -3,6 +3,8 @@ package com.gallery.kakaogallery.data.repository
 import android.util.Log
 import com.gallery.kakaogallery.data.SaveImageStorage
 import com.gallery.kakaogallery.data.constant.SearchConstant
+import com.gallery.kakaogallery.data.datasource.ImageSearchDataSource
+import com.gallery.kakaogallery.data.datasource.VideoSearchDataSource
 import com.gallery.kakaogallery.data.entity.remote.request.ImageSearchRequest
 import com.gallery.kakaogallery.data.entity.remote.request.VideoSearchRequest
 import com.gallery.kakaogallery.data.entity.remote.response.ImageSearchResponse
@@ -26,31 +28,26 @@ import io.reactivex.rxjava3.schedulers.Schedulers
  * CRUD => create, read, update ,delete
  */
 class ImageRepository(
-    private val searchImageApi : ImageSearchService,
-    private val searchVideoApi : VideoSearchService,
-    private val saveImageDao : SaveImageStorage
-) : BaseRepository() {
-    private var imagePageable = true
-    private var videoPageable = true
-
+    private val imageSearchDataSource : ImageSearchDataSource,
+    private val videoSearchDataSource: VideoSearchDataSource
+) {
+    companion object {
+        private const val TAG = "ImageRepository"
+    }
     /**
      * 이미지, 비디오 둘다 다음 페이지가 없다면 false 리턴
      */
     fun hasNextPage() : Boolean {
-        return imagePageable || videoPageable
+        return imageSearchDataSource.hasNextPage() || videoSearchDataSource.hasNextPage()
     }
 
 
     // zip 은 가장 최근에 zip 되지 않은 데이터들끼리 zip 을 한다
     // 두개의 api 중 하나만 성공하고, 하나만 실패하는경우 다음 검색의 결과값에 이전 결과값의 데이터가 남아서 영향을 주게 되므로 api 에러가 뜨는 경우 빈 데이터를 넣어서 onNext 해준다
     fun fetchQueryData(query: String, page: Int): Observable<Result<List<ImageModel>>> {
-        if(page == 1) {
-            imagePageable = true
-            videoPageable = true
-        }
         return Observable.zip(
-            fetchImageQueryRes(query, page),
-            fetchVideoQueryRes(query, page),
+            imageSearchDataSource.fetchImageQueryRes(query, page),
+            videoSearchDataSource.fetchVideoQueryRes(query, page),
             BiFunction { t1, t2 ->
                 if(t1 is Result.Fail && t2 is Result.Fail){
                     return@BiFunction Result.Fail(t1.error!!)
@@ -59,84 +56,24 @@ class ImageRepository(
                 // 1. dateTimeMill 순으로
                 Log.d(TAG, "fetch list merge : ${t1.data?.size}, ${t2.data?.size} - thread check[${Thread.currentThread().name}]")
                 Log.d(TAG, "fetch list merge => \nt1 : ${t1.data?.firstOrNull()}\nt2 : ${t2.data?.firstOrNull()}")
-                var searchList = (t1.data ?: ArrayList()).map{
+                val searchList = (t1.data ?: emptyList()).map{
 //                    Log.d(TAG, "map image : $it")
                     it.toModel(
                         dateTimeToShow = GalleryDateConvertUtil.convertToPrint(it.datetime) ?: "",
                         dateTimeMill = GalleryDateConvertUtil.convertToMill(it.datetime) ?: 0L
                     )
-                } + (t2.data ?: ArrayList()).map{
+                } + (t2.data ?: emptyList()).map{
 //                    Log.d(TAG, "map video : $it")
                     it.toModel(
                         dateTimeToShow = GalleryDateConvertUtil.convertToPrint(it.datetime) ?: "",
                         dateTimeMill = GalleryDateConvertUtil.convertToMill(it.datetime) ?: 0L
                     )
+                }.run {
+                    sortedByDescending { it.dateTimeMill }
                 }
-                searchList = searchList.sortedByDescending { it.dateTimeMill }
                 return@BiFunction Result.Success(searchList)
             }
         ).observeOn(AndroidSchedulers.mainThread())
     }
-
-    private fun fetchImageQueryRes(query : String, page : Int): Observable<Result<List<ImageSearchResponse.Document>>>{
-        return if(!imagePageable) {
-            Observable.just(Result.Fail(ResultError.MaxPage))
-        }else {
-            searchImageApi.run {
-                this.requestSearchImage(
-                    query,
-                    ImageSearchRequest.SortType.Recency.key,
-                    page, // 1~50
-                    SearchConstant.ImagePageSizeMaxValue
-                ).subscribeOn(Schedulers.computation())
-                    .map {
-                        when {
-                           it.meta != null -> {
-                                imagePageable = !it.meta.isEnd
-                                Result.Success(it.documents!!)
-                            }
-                            else -> Result.Fail(ResultError.Fail)
-                        }
-                    }
-                    .onErrorReturn {
-                        it.printStackTrace()
-                        Log.e(TAG, "onErrorReturn images search res")
-                        Result.Fail(ResultError.Crash)
-                    }
-                    .toObservable()
-            }
-        }
-    }
-
-    private fun fetchVideoQueryRes(query : String, page : Int): Observable<Result<List<VideoSearchResponse.Document>>>{
-        return if(!videoPageable) {
-            Observable.just(Result.Fail(ResultError.MaxPage))
-        }else {
-            return searchVideoApi.run {
-                this.requestSearchVideo(
-                    query,
-                    VideoSearchRequest.SortType.Recency.key,
-                    page, // 1~50
-                    SearchConstant.VideoPageSizeMaxValue
-                ).subscribeOn(Schedulers.computation())
-                    .map {
-                        when {
-                            it.documents != null -> {
-                                videoPageable = !it.meta.isEnd
-                                Result.Success(it.documents)
-                            }
-                            else -> Result.Fail(ResultError.Fail)
-                        }
-                    }
-                    .onErrorReturn {
-                        it.printStackTrace()
-                        Log.e(TAG, "onErrorReturn video search res")
-                        Result.Fail(ResultError.Crash)
-                    }
-                    .toObservable()
-            }
-        }
-    }
-
 
 }

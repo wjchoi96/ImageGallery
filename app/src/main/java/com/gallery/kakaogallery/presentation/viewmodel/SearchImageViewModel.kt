@@ -14,6 +14,9 @@ import com.gallery.kakaogallery.data.service.ImageSearchService
 import com.gallery.kakaogallery.data.service.VideoSearchService
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.data.SaveImageStorage
+import com.gallery.kakaogallery.data.datasource.ImageSearchDataSourceImpl
+import com.gallery.kakaogallery.data.datasource.VideoSearchDataSourceImpl
+import com.gallery.kakaogallery.domain.model.ResultError
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
 import io.reactivex.rxjava3.schedulers.Schedulers
 
@@ -100,9 +103,8 @@ class SearchImageViewModel : BaseViewModel() {
      * 본래 생성자로 전달받아야하지만 일단 여기서 생성
      */
     private val imageRepository = ImageRepository(
-        KakaoGalleryApplication.mRetrofit.getService(ImageSearchService::class.java),
-        KakaoGalleryApplication.mRetrofit.getService(VideoSearchService::class.java),
-        SaveImageStorage.instance
+        ImageSearchDataSourceImpl(KakaoGalleryApplication.mRetrofit.getService(ImageSearchService::class.java)),
+        VideoSearchDataSourceImpl(KakaoGalleryApplication.mRetrofit.getService(VideoSearchService::class.java))
     )
 
 
@@ -174,7 +176,10 @@ class SearchImageViewModel : BaseViewModel() {
                     _searchImagesUseDiff.value = it.data!!
                 }
                 is Result.Fail -> {
-                    showToast("$searchFailMessage\n${it.error?.message}")
+                    when(it.error){
+                        ResultError.MaxPage -> showToast("마지막 페이지입니다")
+                        else -> showToast("$searchFailMessage\n${it.error?.message}")
+                    }
                 }
             }
         }.apply { addDisposable(this) }
