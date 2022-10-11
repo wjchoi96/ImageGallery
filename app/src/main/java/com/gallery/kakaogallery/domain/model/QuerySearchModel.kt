@@ -1,4 +1,4 @@
-package com.gallery.kakaogallery.model
+package com.gallery.kakaogallery.domain.model
 
 import java.text.SimpleDateFormat
 import java.util.*

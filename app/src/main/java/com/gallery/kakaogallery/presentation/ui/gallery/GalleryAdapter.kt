@@ -11,7 +11,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.ViewImageItemBinding
-import com.gallery.kakaogallery.model.ImageModel
+import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
 import com.gallery.kakaogallery.presentation.ui.base.BaseViewHolder
 

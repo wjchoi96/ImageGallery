@@ -1,8 +1,6 @@
-package com.gallery.kakaogallery.model
+package com.gallery.kakaogallery.domain.model
 
 import android.util.Log
-import com.google.gson.annotations.SerializedName
-import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
 

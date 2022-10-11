@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.databinding.ItemSearchImageBinding
 import com.gallery.kakaogallery.databinding.ItemSearchQueryBinding
-import com.gallery.kakaogallery.model.ImageModel
+import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.presentation.ui.base.BaseViewHolder
 import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
 import kotlinx.coroutines.CoroutineScope

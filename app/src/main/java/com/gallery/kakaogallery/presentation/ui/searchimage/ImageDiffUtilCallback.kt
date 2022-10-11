@@ -1,8 +1,7 @@
 package com.gallery.kakaogallery.presentation.ui.searchimage
 
 import androidx.recyclerview.widget.DiffUtil
-import com.gallery.kakaogallery.model.ImageModel
-import com.gallery.kakaogallery.presentation.ui.searchimage.SearchImagesAdapter
+import com.gallery.kakaogallery.domain.model.ImageModel
 
 /**
  * https://sohee1702.tistory.com/409

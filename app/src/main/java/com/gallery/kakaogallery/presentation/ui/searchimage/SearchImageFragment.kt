@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.FragmentSearchImageBinding
-import com.gallery.kakaogallery.model.ImageModel
+import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.presentation.util.DialogUtil
 import com.gallery.kakaogallery.presentation.ui.base.BaseFragmentUseHandler
 import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel

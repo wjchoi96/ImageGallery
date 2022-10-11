@@ -2,7 +2,7 @@ package com.gallery.kakaogallery.data
 
 import android.util.Log
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
-import com.gallery.kakaogallery.model.ImageModel
+import com.gallery.kakaogallery.domain.model.ImageModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.reactivex.rxjava3.subjects.PublishSubject

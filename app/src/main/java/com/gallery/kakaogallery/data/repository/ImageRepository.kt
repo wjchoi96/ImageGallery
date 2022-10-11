@@ -11,7 +11,8 @@ import com.gallery.kakaogallery.data.remote.response.ImageSearchModel
 import com.gallery.kakaogallery.data.remote.response.VideoSearchModel
 import com.gallery.kakaogallery.data.remote.service.ImageSearchService
 import com.gallery.kakaogallery.data.remote.service.VideoSearchService
-import com.gallery.kakaogallery.model.*
+import com.gallery.kakaogallery.domain.model.ImageModel
+import com.gallery.kakaogallery.domain.model.QuerySearchModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.functions.BiFunction
