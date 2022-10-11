@@ -5,10 +5,10 @@
 
         <variable
             name="viewModel"
-            type="com.gallery.kakaogallery.view.searchimages.SearchImageViewModel" />
+            type="com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel" />
         <variable
             name="item"
-            type="com.gallery.kakaogallery.model.ImageModel" />
+            type="com.gallery.kakaogallery.domain.model.ImageModel" />
         <variable
             name="position"
             type="Integer" />
