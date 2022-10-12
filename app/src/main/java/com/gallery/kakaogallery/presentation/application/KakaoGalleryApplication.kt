@@ -1,7 +1,6 @@
 package com.gallery.kakaogallery.presentation.application
 
 import android.app.Application
-import com.gallery.kakaogallery.data.DataStorage
 import com.gallery.kakaogallery.presentation.network.NetworkUtil
 import com.gallery.kakaogallery.presentation.network.RetrofitManager
 
@@ -16,7 +15,6 @@ class KakaoGalleryApplication : Application() {
 
         lateinit var instance : Application
         lateinit var mRetrofit : RetrofitManager
-        lateinit var dataStorage: DataStorage
     }
     private var netWorkUtil : NetworkUtil? = null
 
@@ -24,7 +22,6 @@ class KakaoGalleryApplication : Application() {
         super.onCreate()
         instance = this
         mRetrofit = RetrofitManager.instance
-        dataStorage = DataStorage.instance
 
         netWorkUtil = NetworkUtil.instance
         netWorkUtil?.register()
