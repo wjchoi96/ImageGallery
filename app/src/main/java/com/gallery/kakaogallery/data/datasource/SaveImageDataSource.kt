@@ -6,7 +6,7 @@ import io.reactivex.rxjava3.core.Observable
 interface SaveImageDataSource {
     fun fetchSaveImages(): Observable<List<ImageModel>>
 
-    fun removeImages(idxList : List<Int>): Boolean
+    fun removeImages(idxList : List<Int>): Observable<Boolean>
 
-    fun saveImage(image: ImageModel): Boolean
+    fun saveImage(image: ImageModel): Observable<Boolean>
 }
