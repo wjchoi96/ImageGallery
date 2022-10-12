@@ -37,7 +37,7 @@ class SaveImageDaoImpl(
     }
 
     override fun removeImages(idxList: List<Int>): Boolean {
-        // idx 가 큰수부터 remove를 실행해줘야 중간에 idx가 꼬이지 않는다
+        // idx 가 큰수부터 remove 를 실행해줘야 중간에 idx가 꼬이지 않는다
         val list = saveImagesSubject.value?.toMutableList() ?: mutableListOf()
         for(idx in idxList.sorted().reversed()){
             Log.d(TAG, "remove idx : $idx")
@@ -60,6 +60,7 @@ class SaveImageDaoImpl(
         Log.d(TAG, "syncData save image list data(${saveImagesSubject.value?.size}) => \n$jsonStr\n")
         sp.savedImageList = jsonStr
         Log.d(TAG, "syncData save finish : \n${sp.savedImageList}")
+        Log.d(TAG, "syncData run at \n${Thread.currentThread().name}")
         saveImagesSubject.onNext(list)
     }
 }
