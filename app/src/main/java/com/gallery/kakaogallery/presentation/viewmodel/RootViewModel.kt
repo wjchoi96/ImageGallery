@@ -1,8 +1,11 @@
 package com.gallery.kakaogallery.presentation.viewmodel
 
-import com.gallery.kakaogallery.presentation.viewmodel.BaseViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class RootViewModel : BaseViewModel() {
+
+@HiltViewModel
+class RootViewModel @Inject constructor(): BaseViewModel() {
 
     var currentPage : Int = 0
 }
