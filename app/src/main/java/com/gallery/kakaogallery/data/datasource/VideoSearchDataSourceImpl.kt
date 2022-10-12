@@ -7,6 +7,7 @@ import com.gallery.kakaogallery.data.entity.remote.response.VideoSearchResponse
 import com.gallery.kakaogallery.data.service.VideoSearchService
 import com.gallery.kakaogallery.domain.model.Result
 import com.gallery.kakaogallery.domain.model.ResultError
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
 
@@ -35,8 +36,9 @@ class VideoSearchDataSourceImpl(
                         VideoSearchRequest.SortType.Recency.key,
                         page, // 1~50
                         SearchConstant.VideoPageSizeMaxValue
-                    ).subscribeOn(Schedulers.computation())
+                    ).observeOn(AndroidSchedulers.mainThread())
                         .map {
+                            Log.d(TAG, "Video mapping run at ${Thread.currentThread().name}")
                             when {
                                 it.documents != null -> {
                                     videoPageable = !it.meta.isEnd

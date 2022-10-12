@@ -46,34 +46,30 @@ class ImageRepository(
     // 두개의 api 중 하나만 성공하고, 하나만 실패하는경우 다음 검색의 결과값에 이전 결과값의 데이터가 남아서 영향을 주게 되므로 api 에러가 뜨는 경우 빈 데이터를 넣어서 onNext 해준다
     fun fetchQueryData(query: String, page: Int): Observable<Result<List<ImageModel>>> {
         return Observable.zip(
-            imageSearchDataSource.fetchImageQueryRes(query, page),
+            imageSearchDataSource.fetchImageQueryRes(query, page)
+                .observeOn(Schedulers.computation()), // BiFunction 의 작업 환경은 첫번째 Stream 스케쥴러를 따라간다
             videoSearchDataSource.fetchVideoQueryRes(query, page),
             BiFunction { t1, t2 ->
                 if(t1 is Result.Fail && t2 is Result.Fail){
                     return@BiFunction Result.Fail(t1.error!!)
                 }
-                // 2개 리스트를 합치고, sort 한다 => comparator 을 사용해서
-                // 1. dateTimeMill 순으로
-                Log.d(TAG, "fetch list merge : ${t1.data?.size}, ${t2.data?.size} - thread check[${Thread.currentThread().name}]")
-                Log.d(TAG, "fetch list merge => \nt1 : ${t1.data?.firstOrNull()}\nt2 : ${t2.data?.firstOrNull()}")
+                Log.d(TAG, "Observable.zip run at ${Thread.currentThread().name}")
                 val searchList = ((t1.data ?: emptyList()).map{
-//                    Log.d(TAG, "map image : $it")
                     it.toModel(
                         dateTimeToShow = GalleryDateConvertUtil.convertToPrint(it.datetime) ?: "",
                         dateTimeMill = GalleryDateConvertUtil.convertToMill(it.datetime) ?: 0L
                     )
                 } + (t2.data ?: emptyList()).map{
-//                    Log.d(TAG, "map video : $it")
                     it.toModel(
                         dateTimeToShow = GalleryDateConvertUtil.convertToPrint(it.datetime) ?: "",
                         dateTimeMill = GalleryDateConvertUtil.convertToMill(it.datetime) ?: 0L
                     )
-                }).run {
-                    sortedByDescending { it.dateTimeMill }
-                }
+                }).run { sortedByDescending { it.dateTimeMill } }
                 return@BiFunction Result.Success(searchList)
             }
-        ).observeOn(AndroidSchedulers.mainThread())
+        ).subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+    }
     }
 
 }
