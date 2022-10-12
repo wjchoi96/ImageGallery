@@ -12,8 +12,9 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.functions.BiFunction
 import io.reactivex.rxjava3.schedulers.Schedulers
+import javax.inject.Inject
 
-class ImageRepositoryImpl(
+class ImageRepositoryImpl @Inject constructor(
     private val imageSearchDataSource : ImageSearchDataSource,
     private val videoSearchDataSource: VideoSearchDataSource,
     private val saveImageDataSource: SaveImageDataSource
