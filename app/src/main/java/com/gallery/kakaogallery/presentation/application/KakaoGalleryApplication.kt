@@ -3,7 +3,9 @@ package com.gallery.kakaogallery.presentation.application
 import android.app.Application
 import com.gallery.kakaogallery.presentation.network.NetworkUtil
 import com.gallery.kakaogallery.presentation.network.RetrofitManager
+import dagger.hilt.android.HiltAndroidApp
 
+@HiltAndroidApp
 class KakaoGalleryApplication : Application() {
     companion object {
         private const val TAG = "KakaoGallery"
