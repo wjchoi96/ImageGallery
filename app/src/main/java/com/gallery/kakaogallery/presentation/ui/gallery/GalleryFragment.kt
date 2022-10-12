@@ -15,7 +15,9 @@ import com.gallery.kakaogallery.databinding.FragmentGalleryBinding
 import com.gallery.kakaogallery.presentation.ui.base.BaseFragmentUseHandler
 import com.gallery.kakaogallery.presentation.util.DialogUtil
 import com.gallery.kakaogallery.presentation.viewmodel.GalleryViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class GalleryFragment : BaseFragmentUseHandler<FragmentGalleryBinding, GalleryViewModel>() {
     override val layoutResId: Int
         get() = R.layout.fragment_gallery
