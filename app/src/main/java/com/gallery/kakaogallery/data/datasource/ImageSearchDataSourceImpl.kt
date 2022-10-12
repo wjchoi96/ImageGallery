@@ -4,13 +4,11 @@ import android.util.Log
 import com.gallery.kakaogallery.data.constant.SearchConstant
 import com.gallery.kakaogallery.data.entity.remote.request.ImageSearchRequest
 import com.gallery.kakaogallery.data.entity.remote.response.ImageSearchResponse
-import com.gallery.kakaogallery.data.repository.ImageRepository
 import com.gallery.kakaogallery.data.service.ImageSearchService
 import com.gallery.kakaogallery.domain.model.Result
 import com.gallery.kakaogallery.domain.model.ResultError
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.schedulers.Schedulers
 
 class ImageSearchDataSourceImpl(
     private val searchImageApi : ImageSearchService
