@@ -8,6 +8,11 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.gallery.kakaogallery.KakaoGallerySharedPreferences
+import com.gallery.kakaogallery.data.dao.SaveImageDaoImpl
+import com.gallery.kakaogallery.data.datasource.ImageSearchDataSourceImpl
+import com.gallery.kakaogallery.data.datasource.SaveImageDataSourceImpl
+import com.gallery.kakaogallery.data.datasource.VideoSearchDataSourceImpl
 import com.gallery.kakaogallery.data.repository.ImageRepository
 import com.gallery.kakaogallery.data.service.ImageSearchService
 import com.gallery.kakaogallery.data.service.VideoSearchService
@@ -98,7 +103,8 @@ class SearchImageViewModel : BaseViewModel() {
      */
     private val imageRepository = ImageRepository(
         ImageSearchDataSourceImpl(KakaoGalleryApplication.mRetrofit.getService(ImageSearchService::class.java)),
-        VideoSearchDataSourceImpl(KakaoGalleryApplication.mRetrofit.getService(VideoSearchService::class.java))
+        VideoSearchDataSourceImpl(KakaoGalleryApplication.mRetrofit.getService(VideoSearchService::class.java)),
+        SaveImageDataSourceImpl(SaveImageDaoImpl(KakaoGallerySharedPreferences()))
     )
 
     init {

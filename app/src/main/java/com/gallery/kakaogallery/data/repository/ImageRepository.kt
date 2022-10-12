@@ -1,19 +1,11 @@
 package com.gallery.kakaogallery.data.repository
 
 import android.util.Log
-import com.gallery.kakaogallery.data.SaveImageStorage
-import com.gallery.kakaogallery.data.constant.SearchConstant
 import com.gallery.kakaogallery.data.datasource.ImageSearchDataSource
+import com.gallery.kakaogallery.data.datasource.SaveImageDataSource
 import com.gallery.kakaogallery.data.datasource.VideoSearchDataSource
-import com.gallery.kakaogallery.data.entity.remote.request.ImageSearchRequest
-import com.gallery.kakaogallery.data.entity.remote.request.VideoSearchRequest
-import com.gallery.kakaogallery.data.entity.remote.response.ImageSearchResponse
-import com.gallery.kakaogallery.data.entity.remote.response.VideoSearchResponse
-import com.gallery.kakaogallery.data.service.ImageSearchService
-import com.gallery.kakaogallery.data.service.VideoSearchService
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.Result
-import com.gallery.kakaogallery.domain.model.ResultError
 import com.gallery.kakaogallery.domain.util.GalleryDateConvertUtil
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
@@ -29,7 +21,8 @@ import io.reactivex.rxjava3.schedulers.Schedulers
  */
 class ImageRepository(
     private val imageSearchDataSource : ImageSearchDataSource,
-    private val videoSearchDataSource: VideoSearchDataSource
+    private val videoSearchDataSource: VideoSearchDataSource,
+    private val saveImageDataSource: SaveImageDataSource
 ) {
     companion object {
         private const val TAG = "ImageRepository"
@@ -70,6 +63,23 @@ class ImageRepository(
         ).subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
     }
+
+    fun fetchSaveImages(): Observable<List<ImageModel>> {
+        return saveImageDataSource.fetchSaveImages()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+    }
+
+    fun removeImages(idxList: List<Int>): Observable<Boolean> {
+        return saveImageDataSource.removeImages(idxList)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+    }
+
+    fun saveImage(image: ImageModel): Observable<Boolean> {
+        return saveImageDataSource.saveImage(image)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
     }
 
 }
