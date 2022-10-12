@@ -8,14 +8,19 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.gallery.kakaogallery.data.repository.ImageRepository
-import com.gallery.kakaogallery.domain.model.Result
+import com.gallery.kakaogallery.KakaoGallerySharedPreferences
+import com.gallery.kakaogallery.data.dao.SaveImageDaoImpl
+import com.gallery.kakaogallery.data.datasource.ImageSearchDataSourceImpl
+import com.gallery.kakaogallery.data.datasource.SaveImageDataSourceImpl
+import com.gallery.kakaogallery.data.datasource.VideoSearchDataSourceImpl
+import com.gallery.kakaogallery.data.repository.ImageRepositoryImpl
 import com.gallery.kakaogallery.data.service.ImageSearchService
 import com.gallery.kakaogallery.data.service.VideoSearchService
 import com.gallery.kakaogallery.domain.model.ImageModel
-import com.gallery.kakaogallery.data.SaveImageStorage
+import com.gallery.kakaogallery.domain.model.Result
+import com.gallery.kakaogallery.domain.model.ResultError
+import com.gallery.kakaogallery.domain.repository.ImageRepository
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
-import io.reactivex.rxjava3.schedulers.Schedulers
 
 /*
     1. image list 는 view model 에서 관리
@@ -53,8 +58,6 @@ class SearchImageViewModel : BaseViewModel() {
     private var page = 1
 
     private val searchFailMessage : String = "검색을 실패했습니다"
-
-    private val saveImageStorage = SaveImageStorage.instance
 
     private val selectImageIdxList : ArrayList<Int> = ArrayList()
     // select 해서 저장한 이미지들의 map
@@ -99,38 +102,14 @@ class SearchImageViewModel : BaseViewModel() {
      * repository
      * 본래 생성자로 전달받아야하지만 일단 여기서 생성
      */
-    private val imageRepository = ImageRepository(
-        KakaoGalleryApplication.mRetrofit.getService(ImageSearchService::class.java),
-        KakaoGalleryApplication.mRetrofit.getService(VideoSearchService::class.java),
-        SaveImageStorage.instance
+    private val imageRepository: ImageRepository = ImageRepositoryImpl(
+        ImageSearchDataSourceImpl(KakaoGalleryApplication.mRetrofit.getService(ImageSearchService::class.java)),
+        VideoSearchDataSourceImpl(KakaoGalleryApplication.mRetrofit.getService(VideoSearchService::class.java)),
+        SaveImageDataSourceImpl(SaveImageDaoImpl(KakaoGallerySharedPreferences()))
     )
 
-
     init {
-        bind()
-    }
-    private fun bind(){
-        saveImageStorage.imageRemovedSubject.observeOn(Schedulers.computation()).subscribe {
-            Log.d(TAG, "removed image process - thread : ${Thread.currentThread().name}")
-            val imageList = searchImages.value?.first ?: ArrayList()
-            if(tempSavedImageMap.isEmpty())
-                return@subscribe
-            val removeImageIdxList = ArrayList<Int>()
-            for(removeImage in it){
-                if( tempSavedImageMap.containsKey(removeImage.imageUrl)){
-                    val idx = tempSavedImageMap[removeImage.imageUrl] ?: continue
-                    imageList[idx].setRemovedImage()
-                    removeImageIdxList.add(idx)
-                    tempSavedImageMap.remove(removeImage.imageUrl)
-                }
-            }
-            Handler(Looper.getMainLooper()).post {
-                if(removeImageIdxList.isNotEmpty()) {
-                    // view model 에서 release select item 처리를 해주지않아서 다음번 select mode 에 진입해서 select item 개수가 더 많게 처리되고있다
-                    _searchImages.value = Pair(searchImages.value?.first!!, ImageModel.Payload(removeImageIdxList, ImageModel.Payload.PayloadType.Changed, ImageModel.Payload.ChangedType.Save))
-                }
-            }
-        }.apply { addDisposable(this) }
+
     }
 
     /**
@@ -151,7 +130,7 @@ class SearchImageViewModel : BaseViewModel() {
                 tempSavedImageMap[imageList[idx].imageUrl] = idx
                 saveImageList.add(imageList[idx].apply { isSelect = false })
             }
-            saveImageStorage.saveImageList(saveImageList)
+//            saveImageStorage.saveImageList(saveImageList)
 
             Handler(Looper.getMainLooper()).post {
                 _dataLoading.value = false
@@ -174,7 +153,10 @@ class SearchImageViewModel : BaseViewModel() {
                     _searchImagesUseDiff.value = it.data!!
                 }
                 is Result.Fail -> {
-                    showToast("$searchFailMessage\n${it.error?.message}")
+                    when(it.error){
+                        ResultError.MaxPage -> showToast("마지막 페이지입니다")
+                        else -> showToast("$searchFailMessage\n${it.error?.message}")
+                    }
                 }
             }
         }.apply { addDisposable(this) }
