@@ -1,8 +1,6 @@
 package com.gallery.kakaogallery.presentation.viewmodel
 
-import android.util.Log
 import com.gallery.kakaogallery.domain.model.ImageModel
-import com.gallery.kakaogallery.data.SaveImageStorage
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.PublishSubject
@@ -19,7 +17,6 @@ class GalleryViewModel : BaseViewModel() {
     var insertedImageIdxListObservable : Observable<ArrayList<Int>> = insertedImageIdxSubject.observeOn(AndroidSchedulers.mainThread())
 
 
-    private val saveImageStorage = SaveImageStorage.instance
     val imageList : ArrayList<ImageModel> = ArrayList()
     var selectMode : Boolean = false
     val selectImageIdxList : ArrayList<Int> = ArrayList()
@@ -29,20 +26,20 @@ class GalleryViewModel : BaseViewModel() {
     }
 
     private fun bind(){
-        saveImageStorage.imageInsertedSubject.subscribe {
-            getSavedImageList()
-            if(selectMode){
-                for(idx in 0 until selectImageIdxList.size){
-                    selectImageIdxList[idx] += it.size // 해당 개수만큼 item 이 앞쪽에 추가된것
-                }
-            }
-            insertedImageIdxSubject.onNext(it)
-        }.apply { addDisposable(this) }
+//        saveImageStorage.imageInsertedSubject.subscribe {
+//            getSavedImageList()
+//            if(selectMode){
+//                for(idx in 0 until selectImageIdxList.size){
+//                    selectImageIdxList[idx] += it.size // 해당 개수만큼 item 이 앞쪽에 추가된것
+//                }
+//            }
+//            insertedImageIdxSubject.onNext(it)
+//        }.apply { addDisposable(this) }
     }
 
     private fun getSavedImageList(){
-        imageList.clear()
-        imageList.addAll(saveImageStorage.imageList)
+//        imageList.clear()
+//        imageList.addAll(saveImageStorage.imageList)
     }
 
     fun requestSavedImageList() {
@@ -51,11 +48,11 @@ class GalleryViewModel : BaseViewModel() {
     }
 
     fun requestRemoveImageList(imgIdxList : ArrayList<Int>){
-        Thread{
-            Log.d(TAG, "requestRemoveImageList : ${imgIdxList.size} - thread : ${Thread.currentThread().name}")
-            val res = saveImageStorage.removeImageList(imgIdxList)
-            getSavedImageList()
-            removeImageIdxSubject.onNext(res)
-        }.start()
+//        Thread{
+//            Log.d(TAG, "requestRemoveImageList : ${imgIdxList.size} - thread : ${Thread.currentThread().name}")
+//            val res = saveImageStorage.removeImageList(imgIdxList)
+//            getSavedImageList()
+//            removeImageIdxSubject.onNext(res)
+//        }.start()
     }
 }
