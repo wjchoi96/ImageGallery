@@ -9,8 +9,9 @@ import com.gallery.kakaogallery.domain.model.Result
 import com.gallery.kakaogallery.domain.model.ResultError
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
+import javax.inject.Inject
 
-class ImageSearchDataSourceImpl(
+class ImageSearchDataSourceImpl @Inject constructor(
     private val searchImageApi : ImageSearchService
 ): ImageSearchDataSource {
     companion object {
