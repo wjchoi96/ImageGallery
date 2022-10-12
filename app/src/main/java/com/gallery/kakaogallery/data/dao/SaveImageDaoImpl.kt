@@ -7,8 +7,9 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
+import javax.inject.Inject
 
-class SaveImageDaoImpl(
+class SaveImageDaoImpl @Inject constructor(
     private val sp: KakaoGallerySharedPreferences
 ): SaveImageDao {
     companion object {

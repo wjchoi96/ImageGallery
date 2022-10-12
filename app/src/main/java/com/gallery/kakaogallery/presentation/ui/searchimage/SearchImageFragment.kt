@@ -18,6 +18,7 @@ import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.presentation.util.DialogUtil
 import com.gallery.kakaogallery.presentation.ui.base.BaseFragmentUseHandler
 import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
 /*
     보관된 이미지는 특별한 표시를 보여줍니다. (좋아요/별표/하트 등)
@@ -30,6 +31,8 @@ import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
     https://bb-library.tistory.com/257 새로운 List 가 필요한 이슈
 
  */
+
+@AndroidEntryPoint
 class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding, SearchImageViewModel>() {
     override val layoutResId: Int
         get() = R.layout.fragment_search_image

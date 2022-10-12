@@ -1,11 +1,17 @@
 package com.gallery.kakaogallery.presentation.viewmodel
 
 import com.gallery.kakaogallery.domain.model.ImageModel
+import com.gallery.kakaogallery.domain.repository.ImageRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.PublishSubject
+import javax.inject.Inject
 
-class GalleryViewModel : BaseViewModel() {
+@HiltViewModel
+class GalleryViewModel @Inject constructor(
+    private val imageRepository: ImageRepository
+): BaseViewModel() {
 
     private val savedImageSubject : PublishSubject<ArrayList<ImageModel>> = PublishSubject.create()
     var savedImageListObservable : Observable<ArrayList<ImageModel>> = savedImageSubject.observeOn(AndroidSchedulers.mainThread())

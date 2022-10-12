@@ -8,19 +8,12 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.gallery.kakaogallery.KakaoGallerySharedPreferences
-import com.gallery.kakaogallery.data.dao.SaveImageDaoImpl
-import com.gallery.kakaogallery.data.datasource.ImageSearchDataSourceImpl
-import com.gallery.kakaogallery.data.datasource.SaveImageDataSourceImpl
-import com.gallery.kakaogallery.data.datasource.VideoSearchDataSourceImpl
-import com.gallery.kakaogallery.data.repository.ImageRepositoryImpl
-import com.gallery.kakaogallery.data.service.ImageSearchService
-import com.gallery.kakaogallery.data.service.VideoSearchService
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.Result
 import com.gallery.kakaogallery.domain.model.ResultError
 import com.gallery.kakaogallery.domain.repository.ImageRepository
-import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 /*
     1. image list 는 view model 에서 관리
@@ -54,7 +47,10 @@ import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
  * => google 공식 repo 2개 소개(1개는 이미 보고있는것)
  */
 
-class SearchImageViewModel : BaseViewModel() {
+@HiltViewModel
+class SearchImageViewModel @Inject constructor(
+    private val imageRepository: ImageRepository
+): BaseViewModel() {
     private var page = 1
 
     private val searchFailMessage : String = "검색을 실패했습니다"
@@ -98,19 +94,6 @@ class SearchImageViewModel : BaseViewModel() {
     private val _selectMode = MutableLiveData<Boolean>()
     val selectMode: LiveData<Boolean> = _selectMode
 
-    /**
-     * repository
-     * 본래 생성자로 전달받아야하지만 일단 여기서 생성
-     */
-    private val imageRepository: ImageRepository = ImageRepositoryImpl(
-        ImageSearchDataSourceImpl(KakaoGalleryApplication.mRetrofit.getService(ImageSearchService::class.java)),
-        VideoSearchDataSourceImpl(KakaoGalleryApplication.mRetrofit.getService(VideoSearchService::class.java)),
-        SaveImageDataSourceImpl(SaveImageDaoImpl(KakaoGallerySharedPreferences()))
-    )
-
-    init {
-
-    }
 
     /**
      * repository code

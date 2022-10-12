@@ -3,9 +3,11 @@ package com.gallery.kakaogallery
 import android.content.Context
 import androidx.core.content.edit
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
-class KakaoGallerySharedPreferences(
-    private val context: Context = KakaoGalleryApplication.instance
+class KakaoGallerySharedPreferences @Inject constructor(
+    @ApplicationContext context: Context
 ) {
     companion object {
         private const val versionCode = "1.0.1"
