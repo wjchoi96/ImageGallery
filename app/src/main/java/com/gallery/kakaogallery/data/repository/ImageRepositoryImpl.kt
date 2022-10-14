@@ -23,8 +23,6 @@ class ImageRepositoryImpl @Inject constructor(
         private const val TAG = "ImageRepository"
     }
 
-    override fun hasNextPage(): Boolean {
-        return imageSearchDataSource.hasNextPage() || videoSearchDataSource.hasNextPage()
     }
 
     // zip 은 가장 최근에 zip 되지 않은 데이터들끼리 zip 을 한다
