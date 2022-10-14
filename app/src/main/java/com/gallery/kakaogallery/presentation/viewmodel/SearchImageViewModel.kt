@@ -11,7 +11,7 @@ import androidx.lifecycle.MutableLiveData
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.Result
 import com.gallery.kakaogallery.domain.model.ResultError
-import com.gallery.kakaogallery.domain.repository.ImageRepository
+import com.gallery.kakaogallery.domain.usecase.FetchQueryDataUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -49,7 +49,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchImageViewModel @Inject constructor(
-    private val imageRepository: ImageRepository
+    private val fetchSearchDataQueryDataUseCase: FetchQueryDataUseCase
 ): BaseViewModel() {
     private var page = 1
 
@@ -128,7 +128,7 @@ class SearchImageViewModel @Inject constructor(
         page = 1
         tempSavedImageMap.clear()
         _dataLoading.value = true
-        imageRepository.fetchQueryData(query, page).subscribe {
+        fetchSearchDataQueryDataUseCase(query, page).subscribe {
             _dataLoading.value = false
             when(it){
                 is Result.Success -> {
@@ -147,7 +147,7 @@ class SearchImageViewModel @Inject constructor(
 
     private fun fetchNextSearchQuery(query: String, searchPage : Int){
         _pagingDataLoading.value = true
-        imageRepository.fetchQueryData(query, searchPage).subscribe {
+        fetchSearchDataQueryDataUseCase(query, searchPage).subscribe {
             _pagingDataLoading.value = false
             when(it){
                 is Result.Success -> {
@@ -156,7 +156,10 @@ class SearchImageViewModel @Inject constructor(
                     _searchImagesUseDiff.value = prevList + it.data!!
                 }
                 is Result.Fail -> {
-                    showToast("$searchFailMessage\n${it.error?.message}")
+                    when(it.error){
+                        ResultError.MaxPage -> showToast("마지막 페이지입니다")
+                        else -> showToast("$searchFailMessage\n${it.error?.message}")
+                    }
                 }
             }
         }.apply { addDisposable(this) }
@@ -224,10 +227,6 @@ class SearchImageViewModel @Inject constructor(
             return
         }
         if(pagingDataLoading.value == true){
-            return
-        }
-        if(!imageRepository.hasNextPage()){
-            showToast("마지막 페이지입니다")
             return
         }
         fetchNextSearchQuery(lastQuery.value!!, page)

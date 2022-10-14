@@ -19,8 +19,6 @@ class VideoSearchDataSourceImpl @Inject constructor(
     }
     private var videoPageable = true
 
-    override fun hasNextPage(): Boolean = videoPageable
-
     override fun fetchVideoQueryRes(
         query: String,
         page: Int

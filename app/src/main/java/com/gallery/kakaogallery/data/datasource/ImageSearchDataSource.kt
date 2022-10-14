@@ -5,7 +5,5 @@ import com.gallery.kakaogallery.domain.model.Result
 import io.reactivex.rxjava3.core.Observable
 
 interface ImageSearchDataSource {
-    fun hasNextPage(): Boolean
-
     fun fetchImageQueryRes(query : String, page : Int): Observable<Result<List<ImageSearchResponse.Document>>>
 }

@@ -19,8 +19,6 @@ class ImageSearchDataSourceImpl @Inject constructor(
     }
     private var imagePageable = true
 
-    override fun hasNextPage(): Boolean = imagePageable
-
     /**
      * Retrofit 의 RxSupport 기능에서
      * subscribeOn을 통해 지정한 스케쥴러는, 네트워크 호출을 준비하기 위한 코드에만 적용이되고,

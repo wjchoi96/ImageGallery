@@ -5,8 +5,6 @@ import com.gallery.kakaogallery.domain.model.Result
 import io.reactivex.rxjava3.core.Observable
 
 interface ImageRepository {
-    fun hasNextPage(): Boolean
-
     fun fetchQueryData(query: String, page: Int): Observable<Result<List<ImageModel>>>
 
     fun fetchSaveImages(): Observable<List<ImageModel>>
