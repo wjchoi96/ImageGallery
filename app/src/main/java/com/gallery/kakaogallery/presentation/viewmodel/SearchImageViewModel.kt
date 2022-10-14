@@ -156,7 +156,10 @@ class SearchImageViewModel @Inject constructor(
                     _searchImagesUseDiff.value = prevList + it.data!!
                 }
                 is Result.Fail -> {
-                    showToast("$searchFailMessage\n${it.error?.message}")
+                    when(it.error){
+                        ResultError.MaxPage -> showToast("마지막 페이지입니다")
+                        else -> showToast("$searchFailMessage\n${it.error?.message}")
+                    }
                 }
             }
         }.apply { addDisposable(this) }
@@ -226,10 +229,6 @@ class SearchImageViewModel @Inject constructor(
         if(pagingDataLoading.value == true){
             return
         }
-//        if(!imageRepository.hasNextPage()){
-//            showToast("마지막 페이지입니다")
-//            return
-//        }
         fetchNextSearchQuery(lastQuery.value!!, page)
     }
 
