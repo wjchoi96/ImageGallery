@@ -78,6 +78,11 @@ class ImageRepositoryImpl @Inject constructor(
             }
         ).subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
+            .onErrorResumeNext {
+                it.printStackTrace()
+                Log.d(TAG, "error debug => after zip => $it")
+                Observable.error{ it }
+            }
     }
 
     override fun fetchSaveImages(): Observable<List<ImageModel>> {
