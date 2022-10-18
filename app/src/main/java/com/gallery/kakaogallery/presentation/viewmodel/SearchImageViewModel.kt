@@ -10,8 +10,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.MaxPageException
-import com.gallery.kakaogallery.domain.model.Result
-import com.gallery.kakaogallery.domain.model.ResultError
 import com.gallery.kakaogallery.domain.usecase.FetchQueryDataUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
