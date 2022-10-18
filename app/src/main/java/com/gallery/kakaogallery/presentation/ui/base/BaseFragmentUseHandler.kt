@@ -5,7 +5,7 @@ import androidx.databinding.ViewDataBinding
 import com.gallery.kakaogallery.presentation.ui.root.FragmentHandler
 import com.gallery.kakaogallery.presentation.viewmodel.BaseViewModel
 
-abstract class BaseFragmentUseHandler<T : ViewDataBinding, R : BaseViewModel> : BaseFragment<T, R>() {
+abstract class BaseFragmentUseHandler<T : ViewDataBinding> : BindingFragment<T>() {
 
     protected var fHandler : FragmentHandler? = null
 
@@ -19,13 +19,4 @@ abstract class BaseFragmentUseHandler<T : ViewDataBinding, R : BaseViewModel> : 
         if( fHandler != null )
             fHandler = null
     }
-
-    override fun startMainFunc() {
-        super.startMainFunc()
-    }
-
-    override fun bind() {
-    }
-
-
 }
