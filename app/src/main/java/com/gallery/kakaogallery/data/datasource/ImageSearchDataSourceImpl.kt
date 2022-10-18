@@ -5,10 +5,10 @@ import com.gallery.kakaogallery.data.constant.SearchConstant
 import com.gallery.kakaogallery.data.entity.remote.request.ImageSearchRequest
 import com.gallery.kakaogallery.data.entity.remote.response.ImageSearchResponse
 import com.gallery.kakaogallery.data.service.ImageSearchService
-import com.gallery.kakaogallery.domain.model.Result
-import com.gallery.kakaogallery.domain.model.ResultError
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import com.gallery.kakaogallery.domain.model.MaxPageException
+import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import javax.inject.Inject
 
 class ImageSearchDataSourceImpl @Inject constructor(
@@ -30,36 +30,31 @@ class ImageSearchDataSourceImpl @Inject constructor(
     override fun fetchImageQueryRes(
         query: String,
         page: Int
-    ): Observable<Result<List<ImageSearchResponse.Document>>> {
+    ): Observable<List<ImageSearchResponse.Document>> {
         if(page == 1)
             imagePageable = true
         return when(imagePageable){
-            false -> Observable.just(Result.Fail(ResultError.MaxPage))
+            false -> {
+                Log.d(TAG,"error debug => throw MaxPageException")
+                Observable.error { MaxPageException() }
+            }
             true -> {
-                searchImageApi.run {
-                    this.requestSearchImage(
-                        query,
-                        ImageSearchRequest.SortType.Recency.key,
-                        page, // 1~50
-                        SearchConstant.ImagePageSizeMaxValue
-                    ).observeOn(AndroidSchedulers.mainThread())
-                        .map {
-                            Log.d(TAG, "Image mapping run at ${Thread.currentThread().name}")
-                            when {
-                                it.meta != null -> {
-                                    imagePageable = !it.meta.isEnd
-                                    Result.Success(it.documents)
-                                }
-                                else -> Result.Fail(ResultError.Fail)
-                            }
-                        }
-                        .onErrorReturn {
-                            it.printStackTrace()
-                            Log.e(TAG, "onErrorReturn images search res")
-                            Result.Fail(ResultError.Crash)
-                        }
-                        .toObservable()
-                }
+                searchImageApi.requestSearchImage(
+                    query,
+                    ImageSearchRequest.SortType.Recency.key,
+                    page, // 1~50
+                    SearchConstant.ImagePageSizeMaxValue
+                ).map {
+                        Log.d(TAG, "Image mapping run at ${Thread.currentThread().name}")
+                        imagePageable = !it.meta.isEnd
+                        it.documents
+                    }
+                    .onErrorResumeNext {
+                        it.printStackTrace()
+                        Log.d(TAG,"error debug => after api response => $it")
+                        Flowable.error{ it }
+                    }
+                    .toObservable()
             }
         }
     }
