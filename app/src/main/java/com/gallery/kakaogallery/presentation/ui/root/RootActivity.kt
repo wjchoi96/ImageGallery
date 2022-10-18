@@ -2,16 +2,14 @@ package com.gallery.kakaogallery.presentation.ui.root
 
 import android.os.Bundle
 import android.util.Log
-import android.widget.ProgressBar
 import androidx.activity.viewModels
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.ActivityRootBinding
-import com.gallery.kakaogallery.presentation.ui.base.BaseActivity
+import com.gallery.kakaogallery.presentation.ui.base.HeaderCompActivity
 import com.gallery.kakaogallery.presentation.ui.comp.HeaderComp
 import com.gallery.kakaogallery.presentation.ui.gallery.GalleryFragment
 import com.gallery.kakaogallery.presentation.ui.searchimage.SearchImageFragment
 import com.gallery.kakaogallery.presentation.viewmodel.RootViewModel
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -52,46 +50,28 @@ import dagger.hilt.android.AndroidEntryPoint
  */
 
 @AndroidEntryPoint
-class RootActivity : BaseActivity<ActivityRootBinding, RootViewModel>(), FragmentHandler {
+class RootActivity : HeaderCompActivity<ActivityRootBinding>(), FragmentHandler {
     override val layoutResId: Int
         get() = R.layout.activity_root
-    override val viewModel: RootViewModel by viewModels()
-
-    private var naviView : BottomNavigationView? = null
+    private val viewModel: RootViewModel by viewModels()
 
     private val menuResIdList = ArrayList<Int>().apply {
         add(R.id.bottom_menu_search_image)
         add(R.id.bottom_menu_save_image)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-//        setContentView(R.layout.activity_main)
-//        savedInstanceState?.let {
-//            viewModel.currentPage = it.getInt("currentPage")
-//        }
-    }
-
-//    override fun onSaveInstanceState(outState: Bundle) {
-//        super.onSaveInstanceState(outState)
-//        outState.putInt("currentPage", viewModel.currentPage)
-//    }
-
-    override fun getProgress(): ProgressBar? {
-        return null
-    }
-
-    override fun initData() {
-
-    }
-
-    override fun initView() {
-        setBottomNavigationMenu()
-        changeFragment(menuResIdList[viewModel.currentPage])
-    }
-
     override fun getHeader(): HeaderComp {
         return HeaderComp(this)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        initView()
+    }
+
+    private fun initView() {
+        setBottomNavigationMenu()
+        changeFragment(menuResIdList[viewModel.currentPage])
     }
 
     private val navigationItemSelectedListener = NavigationBarView.OnItemSelectedListener {
@@ -123,7 +103,7 @@ class RootActivity : BaseActivity<ActivityRootBinding, RootViewModel>(), Fragmen
             }
             transaction.add(R.id.container, fragment, "$fragmentResId")
         }
-        Log.d(TAG, "search : ${fragment is SearchImageFragment}, save : ${fragment is GalleryFragment}")
+        Log.d("TAG", "search : ${fragment is SearchImageFragment}, save : ${fragment is GalleryFragment}")
         transaction.show(fragment)
         for(res in menuResIdList){
             if(res == fragmentResId)
@@ -133,41 +113,6 @@ class RootActivity : BaseActivity<ActivityRootBinding, RootViewModel>(), Fragmen
             }
         }
         transaction.commitAllowingStateLoss()
-    }
-
-
-    // 탭 변경시 replace 되는 문제를 해결하기 위해서는 navigation 사용방식이 아닌 직접 fragment 를 컨트롤 해줘야할듯한데
-//    private fun setBottomNavigationMenu(){
-//        naviView = vd.bottomNavigationBar
-////        val naviController = findNavController(R.id.fragmentNaviHost)
-//        val naviController = (supportFragmentManager.findFragmentById(R.id.fragmentNaviHost) as NavHostFragment).navController
-//        val appBarConfiguration = AppBarConfiguration(
-//            setOf(
-//                menuResIdList[0],
-//                menuResIdList[1]
-//            )
-//        )
-//        setupActionBarWithNavController(naviController, appBarConfiguration)
-//        naviView?.setupWithNavController(naviController)
-//        naviView?.setOnItemSelectedListener(navigationItemSelectedListener)
-//    }
-//    private val navigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener {
-//        val naviController = findNavController(R.id.fragmentNaviHost)
-//        val fragmentId = it.itemId
-//        naviController.navigate(fragmentId)
-//        return@OnNavigationItemSelectedListener true
-//    }
-
-    override fun startMainFunc() {
-        super.startMainFunc()
-    }
-
-    override fun bind() {
-        viewModel.errorMessageObservable.subscribe {
-            Log.d(TAG, "error message observable subscribe thread - ${Thread.currentThread().name}")
-            setProgress(false)
-            showToast(it)
-        }.apply { compositeDisposable.add(this) }
     }
 
     override fun getHeaderCompForChange(): HeaderComp? {
