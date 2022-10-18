@@ -6,7 +6,6 @@ import com.gallery.kakaogallery.domain.model.MaxPageException
 import com.gallery.kakaogallery.domain.model.Result
 import com.gallery.kakaogallery.domain.model.ResultError
 import com.gallery.kakaogallery.domain.repository.ImageRepository
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
 
@@ -18,6 +17,12 @@ class FetchQueryDataUseCase(
         return imageRepository
             .fetchQueryData(query, page)
             .observeOn(Schedulers.computation())
+            .map {
+                if(it != null)
+                    Result.Success(it)
+                else
+                    Result.Fail(ResultError.Fail)
+            }
             .onErrorReturn {
                 it.printStackTrace()
                 Log.d("TAG", "error debug at useCase => $it")
