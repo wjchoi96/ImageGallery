@@ -13,6 +13,7 @@ import com.gallery.kakaogallery.domain.model.Result
 import com.gallery.kakaogallery.domain.model.ResultError
 import com.gallery.kakaogallery.domain.usecase.FetchQueryDataUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import javax.inject.Inject
 
 /*
@@ -128,7 +129,9 @@ class SearchImageViewModel @Inject constructor(
         page = 1
         tempSavedImageMap.clear()
         _dataLoading.value = true
-        fetchSearchDataQueryDataUseCase(query, page).subscribe {
+        fetchSearchDataQueryDataUseCase(query, page)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
             _dataLoading.value = false
             when(it){
                 is Result.Success -> {
@@ -147,7 +150,9 @@ class SearchImageViewModel @Inject constructor(
 
     private fun fetchNextSearchQuery(query: String, searchPage : Int){
         _pagingDataLoading.value = true
-        fetchSearchDataQueryDataUseCase(query, searchPage).subscribe {
+        fetchSearchDataQueryDataUseCase(query, searchPage)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
             _pagingDataLoading.value = false
             when(it){
                 is Result.Success -> {
