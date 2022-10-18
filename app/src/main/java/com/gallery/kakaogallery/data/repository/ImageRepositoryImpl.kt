@@ -63,7 +63,6 @@ class ImageRepositoryImpl @Inject constructor(
             fetchVideoQuery(query, page)
                 .wrapResult()
         ) { t1, t2 ->
-            t1.isFailure
             when {
                 t1.isFailure && t2.isFailure -> throw t1.exceptionOrNull() ?: t2.exceptionOrNull() ?: UnKnownException()
                 else -> {
