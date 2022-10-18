@@ -8,6 +8,7 @@ import com.gallery.kakaogallery.domain.model.ResultError
 import com.gallery.kakaogallery.domain.repository.ImageRepository
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.schedulers.Schedulers
 
 class FetchQueryDataUseCase(
     private val imageRepository: ImageRepository
@@ -16,6 +17,7 @@ class FetchQueryDataUseCase(
     operator fun invoke(query: String, page: Int): Observable<Result<List<ImageModel>>>{
         return imageRepository
             .fetchQueryData(query, page)
+            .observeOn(Schedulers.computation())
             .onErrorReturn {
                 it.printStackTrace()
                 Log.d("TAG", "error debug at useCase => $it")
@@ -24,6 +26,5 @@ class FetchQueryDataUseCase(
                     else -> Result.Fail(ResultError.Crash)
                 }
             }
-            .observeOn(AndroidSchedulers.mainThread())
     }
 }
