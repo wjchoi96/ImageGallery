@@ -36,8 +36,7 @@ class VideoSearchDataSourceImpl @Inject constructor(
                     VideoSearchRequest.SortType.Recency.key,
                     page, // 1~50
                     SearchConstant.VideoPageSizeMaxValue
-                ).observeOn(AndroidSchedulers.mainThread())
-                    .map {
+                ).map {
                         Log.d(TAG, "Video mapping run at ${Thread.currentThread().name}")
                         videoPageable = !it.meta.isEnd
                         it.documents

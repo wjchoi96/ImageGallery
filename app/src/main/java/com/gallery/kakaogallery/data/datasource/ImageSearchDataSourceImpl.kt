@@ -44,8 +44,7 @@ class ImageSearchDataSourceImpl @Inject constructor(
                     ImageSearchRequest.SortType.Recency.key,
                     page, // 1~50
                     SearchConstant.ImagePageSizeMaxValue
-                ).observeOn(Schedulers.computation())
-                    .map {
+                ).map {
                         Log.d(TAG, "Image mapping run at ${Thread.currentThread().name}")
                         imagePageable = !it.meta.isEnd
                         it.documents
