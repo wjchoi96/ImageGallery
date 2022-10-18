@@ -4,7 +4,7 @@
     <data>
         <variable
             name="viewModel"
-            type="com.gallery.kakaogallery.view.searchimages.SearchImageViewModel" />
+            type="com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel" />
     </data>
 
     <RelativeLayout

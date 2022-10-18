@@ -3,10 +3,10 @@
     <data>
         <variable
             name="viewModel"
-            type="com.gallery.kakaogallery.view.searchimages.SearchImageViewModel" />
+            type="com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel" />
         <variable
             name="holder"
-            type="com.gallery.kakaogallery.view.searchimages.SearchImagesAdapter.SearchQueryViewHolder"
+            type="com.gallery.kakaogallery.presentation.ui.searchimage.SearchImagesAdapter.SearchQueryViewHolder"
             />
     </data>
     <RelativeLayout
