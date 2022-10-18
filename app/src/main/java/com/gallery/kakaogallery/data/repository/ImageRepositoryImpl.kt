@@ -31,18 +31,14 @@ class ImageRepositoryImpl @Inject constructor(
         return imageSearchDataSource.fetchImageQueryRes(query, page)
             .observeOn(Schedulers.computation())
             .map {
-                return@map if(it is Result.Fail){
-                    Result.Fail(it.error!!)
-                }else{
-                    Result.Success(
-                        (it.data ?: emptyList()).map { data ->
-                            data.toModel(
-                                dateTimeToShow = GalleryDateConvertUtil.convertToPrint(data.datetime) ?: "",
-                                dateTimeMill = GalleryDateConvertUtil.convertToMill(data.datetime) ?: 0L
-                            )
-                        }
-                    )
-                }
+                Result.Success(
+                    it.map { data ->
+                        data.toModel(
+                            dateTimeToShow = GalleryDateConvertUtil.convertToPrint(data.datetime) ?: "",
+                            dateTimeMill = GalleryDateConvertUtil.convertToMill(data.datetime) ?: 0L
+                        )
+                    }
+                )
             }
     }
 
@@ -50,18 +46,14 @@ class ImageRepositoryImpl @Inject constructor(
         return videoSearchDataSource.fetchVideoQueryRes(query, page)
             .observeOn(Schedulers.computation())
             .map {
-                return@map if(it is Result.Fail){
-                    Result.Fail(it.error!!)
-                }else{
-                    Result.Success(
-                        (it.data ?: emptyList()).map { data ->
-                            data.toModel(
-                                dateTimeToShow = GalleryDateConvertUtil.convertToPrint(data.datetime) ?: "",
-                                dateTimeMill = GalleryDateConvertUtil.convertToMill(data.datetime) ?: 0L
-                            )
-                        }
-                    )
-                }
+                Result.Success(
+                    it.map { data ->
+                        data.toModel(
+                            dateTimeToShow = GalleryDateConvertUtil.convertToPrint(data.datetime) ?: "",
+                            dateTimeMill = GalleryDateConvertUtil.convertToMill(data.datetime) ?: 0L
+                        )
+                    }
+                )
             }
     }
 
