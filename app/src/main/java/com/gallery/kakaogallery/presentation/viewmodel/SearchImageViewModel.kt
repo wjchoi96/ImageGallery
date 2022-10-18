@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.gallery.kakaogallery.domain.model.ImageModel
+import com.gallery.kakaogallery.domain.model.MaxPageException
 import com.gallery.kakaogallery.domain.model.Result
 import com.gallery.kakaogallery.domain.model.ResultError
 import com.gallery.kakaogallery.domain.usecase.FetchQueryDataUseCase
@@ -131,20 +132,17 @@ class SearchImageViewModel @Inject constructor(
         _dataLoading.value = true
         fetchSearchDataQueryDataUseCase(query, page)
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-            _dataLoading.value = false
-            when(it){
-                is Result.Success -> {
+            .subscribe { res ->
+                _dataLoading.value = false
+                res.onSuccess {
                     page++
-                    _searchImagesUseDiff.value = it.data!!
-                }
-                is Result.Fail -> {
-                    when(it.error){
-                        ResultError.MaxPage -> showToast("마지막 페이지입니다")
-                        else -> showToast("$searchFailMessage\n${it.error?.message}")
+                    _searchImagesUseDiff.value = it
+                }.onFailure {
+                    when(it){
+                        is MaxPageException -> showToast("마지막 페이지입니다")
+                        else -> showToast("$searchFailMessage\n${it.message}")
                     }
                 }
-            }
         }.apply { addDisposable(this) }
     }
 
@@ -152,21 +150,18 @@ class SearchImageViewModel @Inject constructor(
         _pagingDataLoading.value = true
         fetchSearchDataQueryDataUseCase(query, searchPage)
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-            _pagingDataLoading.value = false
-            when(it){
-                is Result.Success -> {
+            .subscribe { res ->
+                _pagingDataLoading.value = false
+                res.onSuccess {
                     page = searchPage+1
-                    val prevList = searchImagesUseDiff.value ?: ArrayList()
-                    _searchImagesUseDiff.value = prevList + it.data!!
-                }
-                is Result.Fail -> {
-                    when(it.error){
-                        ResultError.MaxPage -> showToast("마지막 페이지입니다")
-                        else -> showToast("$searchFailMessage\n${it.error?.message}")
+                    val prevList = searchImagesUseDiff.value ?: emptyList()
+                    _searchImagesUseDiff.value = prevList + it
+                }.onFailure {
+                    when(it){
+                        is MaxPageException -> showToast("마지막 페이지입니다")
+                        else -> showToast("$searchFailMessage\n${it.message}")
                     }
                 }
-            }
         }.apply { addDisposable(this) }
     }
 
