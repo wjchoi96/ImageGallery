@@ -3,7 +3,7 @@
         <shape>
             <solid android:color="#AAA8A8" />
             <stroke android:width="2dp"
-                android:color="@color/mainClickColor"
+                android:color="@color/brown_4e452c"
                 />
             <padding android:bottom="10dp"
                 android:left="14dp"
@@ -18,7 +18,7 @@
         <shape>
             <solid android:color="#FFFFFF" />
             <stroke android:width="2dp"
-                android:color="@color/mainColor"
+                android:color="@color/gold_aa9763"
                 />
             <padding android:bottom="10dp"
                 android:left="14dp"

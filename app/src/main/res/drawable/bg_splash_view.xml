@@ -3,7 +3,7 @@
     <item>
         <shape>
             <solid
-                android:color="@color/splash_background"/>
+                android:color="@color/yellow_f1eb52"/>
             <corners
                 android:radius="0dp"
                 />
