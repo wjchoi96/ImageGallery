@@ -26,7 +26,7 @@
             android:layout_centerVertical="true"
             android:paddingVertical="10dp"
             android:background="@drawable/bg_search_query"
-            android:id="@+id/etQuery"
+            android:id="@+id/et_query"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingEnd="45dp"
@@ -36,7 +36,7 @@
 
         <ImageView
             android:padding="5dp"
-            android:id="@+id/btnIvSearch"
+            android:id="@+id/iv_btn_search"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_alignParentEnd="true"
