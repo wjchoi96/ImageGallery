@@ -3,7 +3,6 @@ package com.gallery.kakaogallery.presentation.ui.base
 import android.content.Context
 import androidx.databinding.ViewDataBinding
 import com.gallery.kakaogallery.presentation.ui.root.FragmentHandler
-import com.gallery.kakaogallery.presentation.viewmodel.BaseViewModel
 
 abstract class BaseFragmentUseHandler<T : ViewDataBinding> : BindingFragment<T>() {
 
