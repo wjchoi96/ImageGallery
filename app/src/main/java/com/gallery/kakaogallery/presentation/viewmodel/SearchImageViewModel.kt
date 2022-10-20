@@ -13,6 +13,8 @@ import com.gallery.kakaogallery.domain.model.MaxPageException
 import com.gallery.kakaogallery.domain.usecase.FetchQueryDataUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.subjects.PublishSubject
 import javax.inject.Inject
 
 /*
@@ -50,7 +52,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchImageViewModel @Inject constructor(
     private val fetchSearchDataQueryDataUseCase: FetchQueryDataUseCase
-): BaseViewModel() {
+): DisposableManageViewModel() {
     private var page = 1
 
     private val searchFailMessage : String = "검색을 실패했습니다"
@@ -79,6 +81,9 @@ class SearchImageViewModel @Inject constructor(
     /**
      * live data for event
      */
+    private val errorMessageSubject : PublishSubject<String> = PublishSubject.create()
+    var errorMessageObservable : Observable<String> = errorMessageSubject.observeOn(AndroidSchedulers.mainThread())
+
     private val _toastText = MutableLiveData<String>()
     val toastText : LiveData<String> = _toastText
 
@@ -106,7 +111,7 @@ class SearchImageViewModel @Inject constructor(
         _dataLoading.value = true
         val imageList = searchImages.value?.first ?: return
         Thread {
-            Log.d(TAG, "requestSaveImage : ${selectImageIdxList.size} - thread : ${Thread.currentThread().name}")
+            Log.d("TAG", "requestSaveImage : ${selectImageIdxList.size} - thread : ${Thread.currentThread().name}")
             val saveImageList = ArrayList<ImageModel>()
             selectImageIdxList.sort() // idx 순으로 정렬
             for(idx in selectImageIdxList){
@@ -141,7 +146,7 @@ class SearchImageViewModel @Inject constructor(
                         else -> showToast("$searchFailMessage\n${it.message}")
                     }
                 }
-        }.apply { addDisposable(this) }
+        }.let { compositeDisposable.add(it) }
     }
 
     private fun fetchNextSearchQuery(query: String, searchPage : Int){
@@ -160,7 +165,7 @@ class SearchImageViewModel @Inject constructor(
                         else -> showToast("$searchFailMessage\n${it.message}")
                     }
                 }
-        }.apply { addDisposable(this) }
+        }.let { compositeDisposable.add(it) }
     }
 
     /**
@@ -185,29 +190,29 @@ class SearchImageViewModel @Inject constructor(
      * Called by Data Binding
      */
     fun selectImage(image : ImageModel, idx : Int){
-        Log.d(TAG, "select image item : $idx, selectMode : ${selectMode.value}")
+        Log.d("TAG", "select image item : $idx, selectMode : ${selectMode.value}")
         val imageList = searchImages.value?.first?.let { ArrayList(it) } ?: return
-        Log.d(TAG, "select image item : $idx, selectMode : ${selectMode.value}, imageList : ${imageList.size}")
+        Log.d("TAG", "select image item : $idx, selectMode : ${selectMode.value}, imageList : ${imageList.size}")
         if(selectMode.value == true) {
-            Log.d(TAG, "before imageList[$idx].isSelect = ${imageList[idx].isSelect}")
+            Log.d("TAG", "before imageList[$idx].isSelect = ${imageList[idx].isSelect}")
             imageList[idx] = imageList[idx].copy().apply {
                 isSelect = !isSelect
             }
-            Log.d(TAG, "after imageList[$idx].isSelect = ${imageList[idx].isSelect}")
+            Log.d("TAG", "after imageList[$idx].isSelect = ${imageList[idx].isSelect}")
             if(imageList[idx].isSelect){
                 selectImageIdxList.add(idx)
             }else{
                 selectImageIdxList.remove(idx) // 여기서 remove 를 해버리니까 select 해제 시 해당 idx 전달이 안되네
             }
             _headerTitle.value = "${selectImageIdxList.size}장 선택중"
-            Log.d(TAG, "imageList address : $imageList")
+            Log.d("TAG", "imageList address : $imageList")
             _searchImages.value = Pair(imageList, ImageModel.Payload(List(1){idx}, ImageModel.Payload.PayloadType.Changed, ImageModel.Payload.ChangedType.Select))
         }
         _keyboardShownEvent.value = false
     }
 
     fun searchQuery(query: String){
-        Log.d(TAG, "search query : $query")
+        Log.d("TAG", "search query : $query")
         _keyboardShownEvent.value = false
         if(query.isBlank()){
             showToast("검색어를 입력해주세요")
