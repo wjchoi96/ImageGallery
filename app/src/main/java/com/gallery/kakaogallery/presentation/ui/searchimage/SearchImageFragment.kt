@@ -16,7 +16,7 @@ import com.gallery.kakaogallery.databinding.FragmentSearchImageBinding
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.presentation.extension.hideKeyboard
 import com.gallery.kakaogallery.presentation.extension.showToast
-import com.gallery.kakaogallery.presentation.ui.base.BaseFragmentUseHandler
+import com.gallery.kakaogallery.presentation.ui.base.BindingFragment
 import com.gallery.kakaogallery.presentation.util.DialogUtil
 import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -35,7 +35,7 @@ import timber.log.Timber
  */
 
 @AndroidEntryPoint
-class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>() {
+class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
     override val layoutResId: Int
         get() = R.layout.fragment_search_image
 
@@ -51,7 +51,9 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
         super.onHiddenChanged(hidden)
         Timber.d("search onHiddenChanged => $hidden")
         if (!hidden) {
-            fHandler?.getHeaderCompFromRoot()?.setBackgroundClickListener { scrollToTop() }
+            binding.layoutToolbar.layoutAppBar.setOnClickListener {
+                scrollToTop()
+            }
             setSelectMode(viewModel.selectMode.value == true)
         }
     }
@@ -78,16 +80,13 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
         setListener()
     }
 
-    // replace 를 안해주니까 header comp 도 날아가는구나
-    // resume 에서 처리해줘야하나?
     private fun initHeader() {
         if (isHidden) //  현재 보이는 fragment 가 header setting 에 우선권을 가지도록 설정
             return
-        // 상대 fragment 탭의 onStop 이후로 여기보다 먼저 호출되는 파괴 관련 생명주기 콜백이 없다
-        // onStop 에서 header button 을 제거할 수는 없으니, init code 에서 처리하자
-        fHandler?.getHeaderCompFromRoot()?.apply {
-            clearView()
-            setBackgroundClickListener {
+        binding.layoutToolbar.let {
+            it.tvBtnLeft.isVisible = false
+            it.tvBtnRight.isVisible = false
+            it.layoutAppBar.setOnClickListener {
                 scrollToTop()
             }
         }
@@ -103,24 +102,38 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
     }
 
     private fun startSelectMode() {
-        fHandler?.getHeaderCompFromRoot()?.apply {
-            setLeftBtnListener("취소") {
-                viewModel.setSelectMode(false)
+        binding.layoutToolbar.let {
+            it.tvBtnLeft.apply {
+                isVisible = true
+                text = "저장"
+                setOnClickListener {
+                    showSaveDialog()
+                }
             }
-            setRightBtnListener("저장") {
-                showSaveDialog()
+            it.tvBtnRight.apply {
+                isVisible = true
+                text = "취소"
+                setOnClickListener {
+                    viewModel.setSelectMode(false)
+                }
             }
-            setTitle("0장 선택중")
+            it.toolBar.title = "0장 선택중"
         }
     }
 
     private fun finishSelectMode() {
-        fHandler?.getHeaderCompFromRoot()?.apply {
-            removeLeftBtn()
-            setRightBtnListener("선택") {
-                viewModel.setSelectMode(true)
+        binding.layoutToolbar.let {
+            it.tvBtnLeft.apply {
+                isVisible = false
             }
-            setTitle("이미지 검색")
+            it.tvBtnRight.apply {
+                isVisible = true
+                text = "선택"
+                setOnClickListener {
+                    viewModel.setSelectMode(true)
+                }
+            }
+            it.toolBar.title = "이미지 검색"
         }
     }
 
@@ -241,7 +254,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
         }
 
         viewModel.headerTitle.observe(this) {
-            fHandler?.getHeaderCompFromRoot()?.apply { setTitle(it) }
+            binding.layoutToolbar.toolBar.title = it
         }
 
         viewModel.keyboardShownEvent.observe(this) {
@@ -251,6 +264,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
         }
 
         viewModel.selectMode.observe(this) {
+            Timber.d("select mode debug at observe -> $it")
             setSelectMode(it)
         }
     }
