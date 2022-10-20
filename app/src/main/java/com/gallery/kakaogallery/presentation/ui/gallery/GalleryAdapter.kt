@@ -25,10 +25,9 @@ class GalleryAdapter(
         Select
     }
 
-    private var imageList: ArrayList<ImageModel> = ArrayList()
-    fun setList(list: ArrayList<ImageModel>) {
-        imageList.clear()
-        imageList.addAll(list)
+    private var imageList: List<ImageModel> = emptyList()
+    fun setList(list: List<ImageModel>) {
+        imageList = list
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GalleryItemViewHolder {
