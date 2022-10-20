@@ -55,10 +55,10 @@ class RootActivity : HeaderCompActivity<ActivityRootBinding>(), FragmentRootHand
         get() = R.layout.activity_root
     private val viewModel: RootViewModel by viewModels()
 
-    private val menuResIdList = ArrayList<Int>().apply {
-        add(R.id.bottom_menu_search_image)
-        add(R.id.bottom_menu_save_image)
-    }
+    private val menuResIdList = listOf(
+        R.id.bottom_menu_search_image,
+        R.id.bottom_menu_save_image
+    )
 
     override fun getHeader(): HeaderComp {
         return HeaderComp(this)
