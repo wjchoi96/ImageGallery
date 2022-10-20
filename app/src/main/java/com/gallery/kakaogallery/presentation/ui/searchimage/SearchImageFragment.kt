@@ -152,7 +152,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
             addItemDecoration(itemDecoration)
             addOnScrollListener(pagingListener)
         }
-        imageSearchAdapter.setList(ArrayList())
+        imageSearchAdapter.setList(emptyList())
         imageSearchAdapter.notifyDataSetChanged()
     }
 
