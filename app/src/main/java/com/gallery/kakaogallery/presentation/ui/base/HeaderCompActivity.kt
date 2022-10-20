@@ -7,17 +7,17 @@ import androidx.appcompat.widget.Toolbar
 import androidx.databinding.ViewDataBinding
 import com.gallery.kakaogallery.presentation.ui.comp.HeaderComp
 
-abstract class HeaderCompActivity<T : ViewDataBinding>: BindingActivity<T>() {
-    protected var headerComp : HeaderComp? = null
-    abstract fun getHeader() : HeaderComp?
+abstract class HeaderCompActivity<T : ViewDataBinding> : BindingActivity<T>() {
+    protected var headerComp: HeaderComp? = null
+    abstract fun getHeader(): HeaderComp?
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setBar()
     }
 
-    private fun setBar(){
-        val actionBar  = supportActionBar!!
+    private fun setBar() {
+        val actionBar = supportActionBar!!
 
         actionBar.setDisplayShowCustomEnabled(true)
         actionBar.setDisplayHomeAsUpEnabled(false)
@@ -25,24 +25,25 @@ abstract class HeaderCompActivity<T : ViewDataBinding>: BindingActivity<T>() {
         actionBar.elevation = 0f
 
         headerComp = getHeader()
-        if(headerComp == null){
+        if (headerComp == null) {
             actionBar.hide()
             return
-        }else
+        } else
             actionBar.show()
 
         actionBar.customView = headerComp
 
         //val tool : Toolbar = actionBarView.parent as Toolbar
-        val tool : Toolbar = headerComp?.parent as Toolbar
-        tool.setContentInsetsAbsolute(0,0)
+        val tool: Toolbar = headerComp?.parent as Toolbar
+        tool.setContentInsetsAbsolute(0, 0)
 
-        val params : ActionBar.LayoutParams = ActionBar.LayoutParams(
+        val params: ActionBar.LayoutParams = ActionBar.LayoutParams(
             ActionBar.LayoutParams.MATCH_PARENT,
             ActionBar.LayoutParams.MATCH_PARENT,
-            Gravity.CENTER)
+            Gravity.CENTER
+        )
 
         //actionBar.setCustomView(actionBarView,params)
-        actionBar.setCustomView(headerComp ,params)
+        actionBar.setCustomView(headerComp, params)
     }
 }
