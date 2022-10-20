@@ -19,32 +19,26 @@
 
 ## APIs
 ### Rx
-- RxKotlin <br /> 
-  https://github.com/ReactiveX/RxKotlin 
-- RxAndroid <br />
-  https://github.com/Reactivex/Rxandroid/wiki 
+- [RxKotlin](https://github.com/ReactiveX/RxKotlin)
+- [RxAndroid](https://github.com/Reactivex/Rxandroid/wiki)
 
 ### 네트워크 통신
-- Retrofit2 <br />
-  https://github.com/square/retrofit
-- Retrofit2 RxJava adapter <br />
-  https://github.com/square/retrofit/tree/master/retrofit-adapters/rxjava3 
-- Retrofit2 Gson Converter <br />
-  https://github.com/square/retrofit/tree/master/retrofit-converters/gson
+- [Retrofit2](https://github.com/square/retrofit)
+- [Retrofit2 RxJava adapter](https://github.com/square/retrofit/tree/master/retrofit-adapters/rxjava3)
+- [Retrofit2 Gson Converter](https://github.com/square/retrofit/tree/master/retrofit-converters/gson)
 
 #### HTTP 요청 및 응답 데이터 로그
-- OkHttp Logging Interceptor <br />
-  https://github.com/square/okhttp/tree/master/okhttp-logging-interceptor 
+- [OkHttp Logging Interceptor](https://github.com/square/okhttp/tree/master/okhttp-logging-interceptor )
   
 ### 이미지 검색
-- 카카오 이미지 검색 api : Kakao Image Search Api <br />
-  https://developers.kakao.com/docs/latest/ko/daum-search/dev-guide#search-image 
-- 카카오 비디오 검색 api : Kakao Video Search Api <br />
-  https://developers.kakao.com/docs/latest/ko/daum-search/dev-guide#search-video
+- [카카오 이미지 검색 api : Kakao Image Search Api](https://developers.kakao.com/docs/latest/ko/daum-search/dev-guide#search-image )
+- [카카오 비디오 검색 api : Kakao Video Search Api](https://developers.kakao.com/docs/latest/ko/daum-search/dev-guide#search-video)
 
 ### 이미지 불러오기
-- Glide <br />
-  https://github.com/bumptech/glide 
+- [Glide](https://github.com/bumptech/glide )
+  
+### Debug Log
+- [Timber](https://github.com/JakeWharton/timber)
   
 ## Package
 ``` 
