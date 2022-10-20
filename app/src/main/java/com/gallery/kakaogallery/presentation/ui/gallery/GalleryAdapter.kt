@@ -15,17 +15,18 @@ import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
 
 class GalleryAdapter(
-    private val context : Context,
-    private val itemSelectListener : (ImageModel, Int) -> (Boolean)
+    private val context: Context,
+    private val itemSelectListener: (ImageModel, Int) -> (Boolean)
 ) : RecyclerView.Adapter<GalleryAdapter.GalleryItemViewHolder>() {
     private val TAG = KakaoGalleryApplication.getTag(this::class.java)
-    enum class ImagePayload(){
+
+    enum class ImagePayload() {
         Save,
         Select
     }
 
-    private var imageList : ArrayList<ImageModel> = ArrayList()
-    fun setList(list : ArrayList<ImageModel>){
+    private var imageList: ArrayList<ImageModel> = ArrayList()
+    fun setList(list: ArrayList<ImageModel>) {
         imageList.clear()
         imageList.addAll(list)
     }
@@ -55,8 +56,8 @@ class GalleryAdapter(
         payloads: MutableList<Any>
     ) {
         super.onBindViewHolder(holder, position, payloads)
-        for(payload in payloads){
-            when(payload){
+        for (payload in payloads) {
+            when (payload) {
                 ImagePayload.Save -> {
                     Log.d(TAG, "paload Save : $position => $position")
                     holder.setSaveIcon(imageList[position].isSaveImage)
@@ -71,12 +72,12 @@ class GalleryAdapter(
     }
 
     class GalleryItemViewHolder(
-        private val vd : ViewImageItemBinding,
-        private val context : Context,
-        private val itemSelectListener : (ImageModel, Int) -> (Boolean)
-    ): RecyclerView.ViewHolder(vd.root){
+        private val vd: ViewImageItemBinding,
+        private val context: Context,
+        private val itemSelectListener: (ImageModel, Int) -> (Boolean)
+    ) : RecyclerView.ViewHolder(vd.root) {
 
-        fun bind(item : ImageModel){
+        fun bind(item: ImageModel) {
             loadImage(item.imageThumbUrl)
             vd.tvDateTime.text = item.saveDateTime
             setSaveIcon(item.isSaveImage)
@@ -85,29 +86,29 @@ class GalleryAdapter(
                 itemSelectListener.invoke(item, adapterPosition)
             }
 
-            if(item.isImageType){
+            if (item.isImageType) {
                 vd.ivTag.setImageResource(R.drawable.ic_video)
-            }else{
+            } else {
                 vd.ivTag.setImageResource(R.drawable.ic_image)
             }
         }
 
-        fun setSelectEffect(show : Boolean){
-            if(show){
+        fun setSelectEffect(show: Boolean) {
+            if (show) {
                 vd.background.setBackgroundResource(R.drawable.background_select_image)
-            }else{
+            } else {
                 vd.background.setBackgroundColor(Color.parseColor("#FFFFFF"))
             }
         }
 
-        fun setSaveIcon(isSave : Boolean){
-            if(isSave)
+        fun setSaveIcon(isSave: Boolean) {
+            if (isSave)
                 vd.ivStar.visibility = View.VISIBLE
             else
                 vd.ivStar.visibility = View.GONE
         }
 
-        private fun loadImage(url : String){
+        private fun loadImage(url: String) {
             Glide.with(context)
                 .load(url)
                 .error(R.drawable.background_image_error)
