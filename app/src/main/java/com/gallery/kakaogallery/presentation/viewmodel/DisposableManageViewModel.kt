@@ -43,27 +43,12 @@ import io.reactivex.rxjava3.subjects.PublishSubject
  * 해당 유형의 live data 들은 live data 의 중복실행 issue 발생에 치명적이다
  * => single live data 사용 방식 고려
  */
-open class BaseViewModel : ViewModel() {
-    protected val TAG = KakaoGalleryApplication.getTag(this::class.java)
-    private val compositeDisposable : CompositeDisposable = CompositeDisposable()
-    protected val networkErrorMessage = "현재 인터넷 연결이 정상적이지 않습니다다.\n인터넷 연결상태를 확인 부탁드립니다."
-
-    protected val errorMessageSubject : PublishSubject<String> = PublishSubject.create()
-    // view model 에서의 flow 는 대부분 기본적으로 worker thread 에서 작업하게 되어있으므로, ui 에 직접적으로 연결되는 부분은 main thread 로 변경해준다
-    var errorMessageObservable : Observable<String> = errorMessageSubject.observeOn(AndroidSchedulers.mainThread())
+abstract class DisposableManageViewModel : ViewModel() {
+    protected val compositeDisposable : CompositeDisposable = CompositeDisposable()
 
     // activity onDestroy 뒤에 호출
     override fun onCleared() {
         compositeDisposable.dispose()
         super.onCleared()
     }
-
-    protected fun isNetworkOn() : Boolean {
-        return KakaoGalleryApplication.isOnline
-    }
-
-    protected fun addDisposable(disposable: Disposable){
-        compositeDisposable.add(disposable)
-    }
-
 }
