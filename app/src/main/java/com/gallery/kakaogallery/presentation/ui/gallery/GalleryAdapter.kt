@@ -72,40 +72,40 @@ class GalleryAdapter(
     }
 
     class GalleryItemViewHolder(
-        private val vd: ViewImageItemBinding,
+        private val binding: ViewImageItemBinding,
         private val context: Context,
         private val itemSelectListener: (ImageModel, Int) -> (Boolean)
-    ) : RecyclerView.ViewHolder(vd.root) {
+    ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: ImageModel) {
             loadImage(item.imageThumbUrl)
-            vd.tvDateTime.text = item.saveDateTime
+            binding.tvDateTime.text = item.saveDateTime
             setSaveIcon(item.isSaveImage)
             setSelectEffect(item.isSelect)
-            vd.background.setOnClickListener {
+            binding.background.setOnClickListener {
                 itemSelectListener.invoke(item, adapterPosition)
             }
 
             if (item.isImageType) {
-                vd.ivTag.setImageResource(R.drawable.ic_video)
+                binding.ivTag.setImageResource(R.drawable.ic_video)
             } else {
-                vd.ivTag.setImageResource(R.drawable.ic_image)
+                binding.ivTag.setImageResource(R.drawable.ic_image)
             }
         }
 
         fun setSelectEffect(show: Boolean) {
             if (show) {
-                vd.background.setBackgroundResource(R.drawable.bg_select_image)
+                binding.background.setBackgroundResource(R.drawable.bg_select_image)
             } else {
-                vd.background.setBackgroundColor(Color.parseColor("#FFFFFF"))
+                binding.background.setBackgroundColor(Color.parseColor("#FFFFFF"))
             }
         }
 
         fun setSaveIcon(isSave: Boolean) {
             if (isSave)
-                vd.ivStar.visibility = View.VISIBLE
+                binding.ivStar.visibility = View.VISIBLE
             else
-                vd.ivStar.visibility = View.GONE
+                binding.ivStar.visibility = View.GONE
         }
 
         private fun loadImage(url: String) {
@@ -113,8 +113,8 @@ class GalleryAdapter(
                 .load(url)
                 .error(R.drawable.bg_image_error)
                 .placeholder(R.drawable.bg_image_placeholder)
-                .override(vd.ivImage.layoutParams.width, vd.ivImage.layoutParams.height)
-                .into(vd.ivImage)
+                .override(binding.ivImage.layoutParams.width, binding.ivImage.layoutParams.height)
+                .into(binding.ivImage)
         }
     }
 }
