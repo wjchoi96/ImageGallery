@@ -18,7 +18,7 @@ import com.gallery.kakaogallery.presentation.ui.dialog.CustomBottomSheetDialog
     https://stackoverflow.com/questions/55218663/customization-bottom-sheet-dialogs-view
  */
 object DialogUtil {
-    fun show(context : Context, content : String, positiveBtn : String, positiveListener : () -> Unit){
+    fun show(context: Context, content: String, positiveBtn: String, positiveListener: () -> Unit) {
         AlertDialog.Builder(context).apply {
             setCancelable(false)
             setMessage(content)
@@ -30,14 +30,21 @@ object DialogUtil {
         }
     }
 
-    fun show(context : Context, content : String, positiveBtn : String, negativeBtn : String, positiveListener : () -> Unit, negativeListener : () -> Unit){
+    fun show(
+        context: Context,
+        content: String,
+        positiveBtn: String,
+        negativeBtn: String,
+        positiveListener: () -> Unit,
+        negativeListener: () -> Unit
+    ) {
         AlertDialog.Builder(context).apply {
             setCancelable(false)
             setMessage(content)
             setPositiveButton(positiveBtn) { _, _ ->
                 positiveListener.invoke()
             }
-            setNegativeButton(negativeBtn) {_, _ ->
+            setNegativeButton(negativeBtn) { _, _ ->
                 negativeListener.invoke()
             }
         }.create().apply {
@@ -45,13 +52,20 @@ object DialogUtil {
         }
     }
 
-    fun showBottom(context : Context, content : String, positiveBtn : String, negativeBtn : String, positiveListener : () -> Unit, negativeListener : () -> Unit){
+    fun showBottom(
+        context: Context,
+        content: String,
+        positiveBtn: String,
+        negativeBtn: String,
+        positiveListener: () -> Unit,
+        negativeListener: () -> Unit
+    ) {
         CustomBottomSheetDialog(context ?: return, R.style.BottomSheetDialog).apply {
             setContent(content)
-            setPositiveBtn(positiveBtn){
+            setPositiveBtn(positiveBtn) {
                 positiveListener.invoke()
             }
-            setNegativeBtn(negativeBtn){
+            setNegativeBtn(negativeBtn) {
                 negativeListener.invoke()
             }
         }.show()

@@ -44,7 +44,7 @@ import io.reactivex.rxjava3.subjects.PublishSubject
  * => single live data 사용 방식 고려
  */
 abstract class DisposableManageViewModel : ViewModel() {
-    protected val compositeDisposable : CompositeDisposable = CompositeDisposable()
+    protected val compositeDisposable: CompositeDisposable = CompositeDisposable()
 
     // activity onDestroy 뒤에 호출
     override fun onCleared() {

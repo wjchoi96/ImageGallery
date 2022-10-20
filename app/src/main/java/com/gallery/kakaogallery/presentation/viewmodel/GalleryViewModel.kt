@@ -11,29 +11,33 @@ import javax.inject.Inject
 @HiltViewModel
 class GalleryViewModel @Inject constructor(
     private val imageRepository: ImageRepository
-): DisposableManageViewModel() {
-    private val errorMessageSubject : PublishSubject<String> = PublishSubject.create()
-    var errorMessageObservable : Observable<String> = errorMessageSubject.observeOn(AndroidSchedulers.mainThread())
+) : DisposableManageViewModel() {
+    private val errorMessageSubject: PublishSubject<String> = PublishSubject.create()
+    var errorMessageObservable: Observable<String> =
+        errorMessageSubject.observeOn(AndroidSchedulers.mainThread())
 
-    private val savedImageSubject : PublishSubject<ArrayList<ImageModel>> = PublishSubject.create()
-    var savedImageListObservable : Observable<ArrayList<ImageModel>> = savedImageSubject.observeOn(AndroidSchedulers.mainThread())
+    private val savedImageSubject: PublishSubject<ArrayList<ImageModel>> = PublishSubject.create()
+    var savedImageListObservable: Observable<ArrayList<ImageModel>> =
+        savedImageSubject.observeOn(AndroidSchedulers.mainThread())
 
-    private val removeImageIdxSubject : PublishSubject<ArrayList<Int>> = PublishSubject.create()
-    var removeImageIdxListObservable : Observable<ArrayList<Int>> = removeImageIdxSubject.observeOn(AndroidSchedulers.mainThread())
+    private val removeImageIdxSubject: PublishSubject<ArrayList<Int>> = PublishSubject.create()
+    var removeImageIdxListObservable: Observable<ArrayList<Int>> =
+        removeImageIdxSubject.observeOn(AndroidSchedulers.mainThread())
 
-    private val insertedImageIdxSubject : PublishSubject<ArrayList<Int>> = PublishSubject.create()
-    var insertedImageIdxListObservable : Observable<ArrayList<Int>> = insertedImageIdxSubject.observeOn(AndroidSchedulers.mainThread())
+    private val insertedImageIdxSubject: PublishSubject<ArrayList<Int>> = PublishSubject.create()
+    var insertedImageIdxListObservable: Observable<ArrayList<Int>> =
+        insertedImageIdxSubject.observeOn(AndroidSchedulers.mainThread())
 
 
-    val imageList : ArrayList<ImageModel> = ArrayList()
-    var selectMode : Boolean = false
-    val selectImageIdxList : ArrayList<Int> = ArrayList()
+    val imageList: ArrayList<ImageModel> = ArrayList()
+    var selectMode: Boolean = false
+    val selectImageIdxList: ArrayList<Int> = ArrayList()
 
     init {
         bind()
     }
 
-    private fun bind(){
+    private fun bind() {
 //        saveImageStorage.imageInsertedSubject.subscribe {
 //            getSavedImageList()
 //            if(selectMode){
@@ -45,7 +49,7 @@ class GalleryViewModel @Inject constructor(
 //        }.apply { addDisposable(this) }
     }
 
-    private fun getSavedImageList(){
+    private fun getSavedImageList() {
 //        imageList.clear()
 //        imageList.addAll(saveImageStorage.imageList)
     }
@@ -55,7 +59,7 @@ class GalleryViewModel @Inject constructor(
         savedImageSubject.onNext(imageList)
     }
 
-    fun requestRemoveImageList(imgIdxList : ArrayList<Int>){
+    fun requestRemoveImageList(imgIdxList: ArrayList<Int>) {
 //        Thread{
 //            Log.d(TAG, "requestRemoveImageList : ${imgIdxList.size} - thread : ${Thread.currentThread().name}")
 //            val res = saveImageStorage.removeImageList(imgIdxList)

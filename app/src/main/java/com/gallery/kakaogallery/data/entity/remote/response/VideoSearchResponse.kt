@@ -23,7 +23,7 @@ data class VideoSearchResponse(
         val title: String,
         @SerializedName("url")
         val url: String
-    ){
+    ) {
         fun toModel(
             dateTimeToShow: String,
             dateTimeMill: Long

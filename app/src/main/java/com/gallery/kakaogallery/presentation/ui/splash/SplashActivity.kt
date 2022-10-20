@@ -15,7 +15,7 @@ class SplashActivity : AppCompatActivity() {
         }, 1000)
     }
 
-    private fun goNextView(){
+    private fun goNextView() {
         val intent = Intent(this, RootActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

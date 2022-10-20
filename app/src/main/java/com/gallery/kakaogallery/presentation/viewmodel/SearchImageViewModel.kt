@@ -52,40 +52,42 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchImageViewModel @Inject constructor(
     private val fetchSearchDataQueryDataUseCase: FetchQueryDataUseCase
-): DisposableManageViewModel() {
+) : DisposableManageViewModel() {
     private var page = 1
 
-    private val searchFailMessage : String = "검색을 실패했습니다"
+    private val searchFailMessage: String = "검색을 실패했습니다"
 
-    private val selectImageIdxList : ArrayList<Int> = ArrayList()
+    private val selectImageIdxList: ArrayList<Int> = ArrayList()
+
     // select 해서 저장한 이미지들의 map
     // 이미지보관함에서 이미지를 지울때, 대응 가능한 이미지들은 대응해주기 위함
-    private val tempSavedImageMap : HashMap<String, Int> = HashMap()
+    private val tempSavedImageMap: HashMap<String, Int> = HashMap()
 
     /**
      * live data for data
      */
     // 이거를 ImageModels 만 넘기는게 아니라 Pair 를 통해 payload 도 함께 넘길까? nullable 로 해서
     private val _searchImages = MutableLiveData<Pair<List<ImageModel>, ImageModel.Payload>>()
-    val searchImages : LiveData<Pair<List<ImageModel>, ImageModel.Payload>> = _searchImages
+    val searchImages: LiveData<Pair<List<ImageModel>, ImageModel.Payload>> = _searchImages
 
     private val _searchImagesUseDiff = MutableLiveData<List<ImageModel>>()
-    val searchImagesUseDiff : LiveData<List<ImageModel>> = _searchImagesUseDiff
+    val searchImagesUseDiff: LiveData<List<ImageModel>> = _searchImagesUseDiff
 
     private val _lastQuery = MutableLiveData<String>()
-    val lastQuery : LiveData<String> = _lastQuery
+    val lastQuery: LiveData<String> = _lastQuery
 
     private val _headerTitle = MutableLiveData<String>()
-    var headerTitle : LiveData<String> = _headerTitle
+    var headerTitle: LiveData<String> = _headerTitle
 
     /**
      * live data for event
      */
-    private val errorMessageSubject : PublishSubject<String> = PublishSubject.create()
-    var errorMessageObservable : Observable<String> = errorMessageSubject.observeOn(AndroidSchedulers.mainThread())
+    private val errorMessageSubject: PublishSubject<String> = PublishSubject.create()
+    var errorMessageObservable: Observable<String> =
+        errorMessageSubject.observeOn(AndroidSchedulers.mainThread())
 
     private val _toastText = MutableLiveData<String>()
-    val toastText : LiveData<String> = _toastText
+    val toastText: LiveData<String> = _toastText
 
     private val _dataLoading = MutableLiveData<Boolean>()
     val dataLoading: LiveData<Boolean> = _dataLoading
@@ -103,18 +105,21 @@ class SearchImageViewModel @Inject constructor(
     /**
      * repository code
      */
-    fun saveSelectImage(){
-        if(selectImageIdxList.isEmpty()){
+    fun saveSelectImage() {
+        if (selectImageIdxList.isEmpty()) {
             showToast("이미지를 선택해주세요")
             return
         }
         _dataLoading.value = true
         val imageList = searchImages.value?.first ?: return
         Thread {
-            Log.d("TAG", "requestSaveImage : ${selectImageIdxList.size} - thread : ${Thread.currentThread().name}")
+            Log.d(
+                "TAG",
+                "requestSaveImage : ${selectImageIdxList.size} - thread : ${Thread.currentThread().name}"
+            )
             val saveImageList = ArrayList<ImageModel>()
             selectImageIdxList.sort() // idx 순으로 정렬
-            for(idx in selectImageIdxList){
+            for (idx in selectImageIdxList) {
                 tempSavedImageMap[imageList[idx].imageUrl] = idx
                 saveImageList.add(imageList[idx].apply { isSelect = false })
             }
@@ -122,13 +127,20 @@ class SearchImageViewModel @Inject constructor(
 
             Handler(Looper.getMainLooper()).post {
                 _dataLoading.value = false
-                _searchImages.value = Pair(imageList, ImageModel.Payload(selectImageIdxList, ImageModel.Payload.PayloadType.Changed, ImageModel.Payload.ChangedType.Save))
+                _searchImages.value = Pair(
+                    imageList,
+                    ImageModel.Payload(
+                        selectImageIdxList,
+                        ImageModel.Payload.PayloadType.Changed,
+                        ImageModel.Payload.ChangedType.Save
+                    )
+                )
             }
         }.start()
     }
 
     // query 를 비워서 보내면 에러뜬다
-    private fun fetchSearchQuery(query: String){
+    private fun fetchSearchQuery(query: String) {
         _lastQuery.value = query
         page = 1
         tempSavedImageMap.clear()
@@ -141,95 +153,113 @@ class SearchImageViewModel @Inject constructor(
                     page++
                     _searchImagesUseDiff.value = it
                 }.onFailure {
-                    when(it){
+                    when (it) {
                         is MaxPageException -> showToast("마지막 페이지입니다")
                         else -> showToast("$searchFailMessage\n${it.message}")
                     }
                 }
-        }.let { compositeDisposable.add(it) }
+            }.let { compositeDisposable.add(it) }
     }
 
-    private fun fetchNextSearchQuery(query: String, searchPage : Int){
+    private fun fetchNextSearchQuery(query: String, searchPage: Int) {
         _pagingDataLoading.value = true
         fetchSearchDataQueryDataUseCase(query, searchPage)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { res ->
                 _pagingDataLoading.value = false
                 res.onSuccess {
-                    page = searchPage+1
+                    page = searchPage + 1
                     val prevList = searchImagesUseDiff.value ?: emptyList()
                     _searchImagesUseDiff.value = prevList + it
                 }.onFailure {
-                    when(it){
+                    when (it) {
                         is MaxPageException -> showToast("마지막 페이지입니다")
                         else -> showToast("$searchFailMessage\n${it.message}")
                     }
                 }
-        }.let { compositeDisposable.add(it) }
+            }.let { compositeDisposable.add(it) }
     }
 
     /**
      * Called by View
      */
-    fun setSelectMode(selectMode : Boolean){
-        if(!selectMode){
+    fun setSelectMode(selectMode: Boolean) {
+        if (!selectMode) {
             releaseAllSelectImage()
         }
         _selectMode.value = selectMode
     }
-    private fun releaseAllSelectImage(){
+
+    private fun releaseAllSelectImage() {
         val imageList = searchImages.value?.first?.let { ArrayList(it) } ?: return
-        for(idx in selectImageIdxList){
+        for (idx in selectImageIdxList) {
             imageList[idx].isSelect = false
         }
-        _searchImages.value = Pair(imageList, ImageModel.Payload(selectImageIdxList, ImageModel.Payload.PayloadType.Changed, ImageModel.Payload.ChangedType.Select))
+        _searchImages.value = Pair(
+            imageList,
+            ImageModel.Payload(
+                selectImageIdxList,
+                ImageModel.Payload.PayloadType.Changed,
+                ImageModel.Payload.ChangedType.Select
+            )
+        )
         selectImageIdxList.clear()
     }
 
     /**
      * Called by Data Binding
      */
-    fun selectImage(image : ImageModel, idx : Int){
+    fun selectImage(image: ImageModel, idx: Int) {
         Log.d("TAG", "select image item : $idx, selectMode : ${selectMode.value}")
         val imageList = searchImages.value?.first?.let { ArrayList(it) } ?: return
-        Log.d("TAG", "select image item : $idx, selectMode : ${selectMode.value}, imageList : ${imageList.size}")
-        if(selectMode.value == true) {
+        Log.d(
+            "TAG",
+            "select image item : $idx, selectMode : ${selectMode.value}, imageList : ${imageList.size}"
+        )
+        if (selectMode.value == true) {
             Log.d("TAG", "before imageList[$idx].isSelect = ${imageList[idx].isSelect}")
             imageList[idx] = imageList[idx].copy().apply {
                 isSelect = !isSelect
             }
             Log.d("TAG", "after imageList[$idx].isSelect = ${imageList[idx].isSelect}")
-            if(imageList[idx].isSelect){
+            if (imageList[idx].isSelect) {
                 selectImageIdxList.add(idx)
-            }else{
+            } else {
                 selectImageIdxList.remove(idx) // 여기서 remove 를 해버리니까 select 해제 시 해당 idx 전달이 안되네
             }
             _headerTitle.value = "${selectImageIdxList.size}장 선택중"
             Log.d("TAG", "imageList address : $imageList")
-            _searchImages.value = Pair(imageList, ImageModel.Payload(List(1){idx}, ImageModel.Payload.PayloadType.Changed, ImageModel.Payload.ChangedType.Select))
+            _searchImages.value = Pair(
+                imageList,
+                ImageModel.Payload(
+                    List(1) { idx },
+                    ImageModel.Payload.PayloadType.Changed,
+                    ImageModel.Payload.ChangedType.Select
+                )
+            )
         }
         _keyboardShownEvent.value = false
     }
 
-    fun searchQuery(query: String){
+    fun searchQuery(query: String) {
         Log.d("TAG", "search query : $query")
         _keyboardShownEvent.value = false
-        if(query.isBlank()){
+        if (query.isBlank()) {
             showToast("검색어를 입력해주세요")
             return
         }
-        if(dataLoading.value == true){
+        if (dataLoading.value == true) {
             showToast("로딩중")
             return
         }
         fetchSearchQuery(query)
     }
 
-    fun fetchNextPage(){
-        if(lastQuery.value == null){
+    fun fetchNextPage() {
+        if (lastQuery.value == null) {
             return
         }
-        if(pagingDataLoading.value == true){
+        if (pagingDataLoading.value == true) {
             return
         }
         fetchNextSearchQuery(lastQuery.value!!, page)
@@ -238,7 +268,7 @@ class SearchImageViewModel @Inject constructor(
     val searchEditorActionListener = object : TextView.OnEditorActionListener {
         //android:imeOptions="actionSearch" 설정해놔야지 search action 이 enter key 에 들어온다
         override fun onEditorAction(v: TextView?, actionId: Int, event: KeyEvent?): Boolean {
-            when(actionId){
+            when (actionId) {
                 EditorInfo.IME_ACTION_SEARCH -> {
                     searchQuery(v?.text.toString())
                     return true

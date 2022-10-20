@@ -9,7 +9,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 class FetchQueryDataUseCase(
     private val imageRepository: ImageRepository
 ) {
-    operator fun invoke(query: String, page: Int): Observable<Result<List<ImageModel>>>{
+    operator fun invoke(query: String, page: Int): Observable<Result<List<ImageModel>>> {
         return imageRepository
             .fetchQueryData(query, page)
             .observeOn(Schedulers.computation())

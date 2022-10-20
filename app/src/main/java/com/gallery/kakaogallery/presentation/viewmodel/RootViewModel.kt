@@ -6,6 +6,6 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class RootViewModel @Inject constructor(): ViewModel() {
-    var currentPage : Int = 0
+class RootViewModel @Inject constructor() : ViewModel() {
+    var currentPage: Int = 0
 }

@@ -11,7 +11,7 @@ import javax.inject.Inject
 
 class SaveImageDaoImpl @Inject constructor(
     private val sp: KakaoGallerySharedPreferences
-): SaveImageDao {
+) : SaveImageDao {
     companion object {
         private const val TAG = "SaveImageDao"
     }
@@ -22,11 +22,11 @@ class SaveImageDaoImpl @Inject constructor(
         initImageStream()
     }
 
-    private fun initImageStream(){
+    private fun initImageStream() {
         val listJson = sp.savedImageList
-        val list = if(listJson.isBlank())
+        val list = if (listJson.isBlank())
             emptyList<ImageModel>()
-        else{
+        else {
             val typeToken = object : TypeToken<ArrayList<ImageModel>>() {}.type
             Gson().fromJson(listJson, typeToken)
         }
@@ -40,7 +40,7 @@ class SaveImageDaoImpl @Inject constructor(
     override fun removeImages(idxList: List<Int>): Boolean {
         // idx 가 큰수부터 remove 를 실행해줘야 중간에 idx가 꼬이지 않는다
         val list = saveImagesSubject.value?.toMutableList() ?: mutableListOf()
-        for(idx in idxList.sorted().reversed()){
+        for (idx in idxList.sorted().reversed()) {
             Log.d(TAG, "remove idx : $idx")
             list.removeAt(idx)
         }
@@ -56,9 +56,12 @@ class SaveImageDaoImpl @Inject constructor(
         return true
     }
 
-    private fun syncData(list: List<ImageModel>){
+    private fun syncData(list: List<ImageModel>) {
         val jsonStr = Gson().toJson(saveImagesSubject.value ?: emptyList<ImageModel>())
-        Log.d(TAG, "syncData save image list data(${saveImagesSubject.value?.size}) => \n$jsonStr\n")
+        Log.d(
+            TAG,
+            "syncData save image list data(${saveImagesSubject.value?.size}) => \n$jsonStr\n"
+        )
         sp.savedImageList = jsonStr
         Log.d(TAG, "syncData save finish : \n${sp.savedImageList}")
         Log.d(TAG, "syncData run at \n${Thread.currentThread().name}")

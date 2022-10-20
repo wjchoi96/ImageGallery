@@ -22,19 +22,20 @@ import kotlinx.coroutines.withContext
  */
 
 class SearchImagesListAdapter(
-    private val viewModel : SearchImageViewModel
-): ListAdapter<SearchImageAdapterData, RecyclerView.ViewHolder>(ImageDiffCallback()) {
+    private val viewModel: SearchImageViewModel
+) : ListAdapter<SearchImageAdapterData, RecyclerView.ViewHolder>(ImageDiffCallback()) {
     companion object {
         const val SearchQueryType = 0
         const val ImageType = 1
     }
+
     private val adapterScope = CoroutineScope(Dispatchers.Default)
 
     //https://chachas.tistory.com/46
-    fun addHeaderAndSubmit(list : List<ImageModel>?, completion : (()->(Unit))? = null){
+    fun addHeaderAndSubmit(list: List<ImageModel>?, completion: (() -> (Unit))? = null) {
         Log.d("test", "addHeaderAndSubmit : ${list?.size}")
         adapterScope.launch {
-            val items = when(list){
+            val items = when (list) {
                 null -> listOf(SearchImageAdapterData.Header)
                 else -> listOf(SearchImageAdapterData.Header) + list.map {
                     SearchImageAdapterData.SearchImageData(
@@ -42,7 +43,7 @@ class SearchImagesListAdapter(
                     )
                 }
             }
-            withContext(Dispatchers.Main){
+            withContext(Dispatchers.Main) {
                 submitList(items) {
                     completion?.invoke()
                 }
@@ -67,27 +68,30 @@ class SearchImagesListAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         Log.d("test", "onBindViewHolder[$position] run on thread : ${Thread.currentThread().name}")
-        if(holder is ImageViewHolder) {
-            holder.bind(viewModel, (getItem(position) as SearchImageAdapterData.SearchImageData).imageModel)
-        }else if(holder is QueryViewHolder)
+        if (holder is ImageViewHolder) {
+            holder.bind(
+                viewModel,
+                (getItem(position) as SearchImageAdapterData.SearchImageData).imageModel
+            )
+        } else if (holder is QueryViewHolder)
             holder.bind(viewModel)
     }
 
     class ImageViewHolder private constructor(
-        private val vd : ItemSearchImageBinding
-    ): RecyclerView.ViewHolder(vd.root) {
+        private val vd: ItemSearchImageBinding
+    ) : RecyclerView.ViewHolder(vd.root) {
         companion object {
-            fun from(parent : ViewGroup) : ImageViewHolder {
+            fun from(parent: ViewGroup): ImageViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
                 val binding = ItemSearchImageBinding.inflate(layoutInflater, parent, false)
                 return ImageViewHolder(binding)
             }
         }
 
-        private val itemPosition : Int
+        private val itemPosition: Int
             get() = adapterPosition
 
-        fun bind(viewModel: SearchImageViewModel, item : ImageModel){
+        fun bind(viewModel: SearchImageViewModel, item: ImageModel) {
             vd.viewModel = viewModel
             vd.item = item
             vd.position = itemPosition
@@ -97,19 +101,20 @@ class SearchImagesListAdapter(
     }
 
     class QueryViewHolder private constructor(
-        private val vd : ItemSearchQueryBinding
-    ): RecyclerView.ViewHolder(vd.root){
+        private val vd: ItemSearchQueryBinding
+    ) : RecyclerView.ViewHolder(vd.root) {
         companion object {
-            fun from(parent : ViewGroup) : QueryViewHolder {
+            fun from(parent: ViewGroup): QueryViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
                 val binding = ItemSearchQueryBinding.inflate(layoutInflater, parent, false)
                 return QueryViewHolder(binding)
             }
         }
-        val query : String
+
+        val query: String
             get() = vd.etQuery.text.toString()
 
-        fun bind(viewModel: SearchImageViewModel){
+        fun bind(viewModel: SearchImageViewModel) {
             vd.viewModel = viewModel
 //            vd.query = query
             vd.executePendingBindings()
@@ -123,27 +128,35 @@ class SearchImagesListAdapter(
     마치 enum 의 특성과 비슷하다
  */
 sealed class SearchImageAdapterData {
-    data class SearchImageData(val imageModel : ImageModel) : SearchImageAdapterData(){
+    data class SearchImageData(val imageModel: ImageModel) : SearchImageAdapterData() {
         override val id: Int = SearchImagesListAdapter.ImageType
     }
-    object Header: SearchImageAdapterData() {
+
+    object Header : SearchImageAdapterData() {
         override val id: Int = SearchImagesListAdapter.SearchQueryType
     }
+
     abstract val id: Int
 }
 
 class ImageDiffCallback : DiffUtil.ItemCallback<SearchImageAdapterData>() {
-    override fun areItemsTheSame(oldItem: SearchImageAdapterData, newItem: SearchImageAdapterData): Boolean {
+    override fun areItemsTheSame(
+        oldItem: SearchImageAdapterData,
+        newItem: SearchImageAdapterData
+    ): Boolean {
         Log.d("test", "areItemsTheSame run on thread : ${Thread.currentThread().name}\n")
-        return if(oldItem is SearchImageAdapterData.SearchImageData && newItem is SearchImageAdapterData.SearchImageData)
+        return if (oldItem is SearchImageAdapterData.SearchImageData && newItem is SearchImageAdapterData.SearchImageData)
             oldItem.imageModel.imageThumbUrl == newItem.imageModel.imageThumbUrl
         else
             true
     }
 
-    override fun areContentsTheSame(oldItem: SearchImageAdapterData, newItem: SearchImageAdapterData): Boolean {
+    override fun areContentsTheSame(
+        oldItem: SearchImageAdapterData,
+        newItem: SearchImageAdapterData
+    ): Boolean {
         Log.d("test", "areContentsTheSame run on thread : ${Thread.currentThread().name}")
-        return if(oldItem is SearchImageAdapterData.SearchImageData && newItem is SearchImageAdapterData.SearchImageData)
+        return if (oldItem is SearchImageAdapterData.SearchImageData && newItem is SearchImageAdapterData.SearchImageData)
             oldItem == newItem
         else true
     }

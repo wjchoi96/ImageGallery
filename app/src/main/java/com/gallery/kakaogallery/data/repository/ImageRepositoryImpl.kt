@@ -18,10 +18,10 @@ import javax.inject.Inject
  * useCase 에서 merge?
  */
 class ImageRepositoryImpl @Inject constructor(
-    private val imageSearchDataSource : ImageSearchDataSource,
+    private val imageSearchDataSource: ImageSearchDataSource,
     private val videoSearchDataSource: VideoSearchDataSource,
     private val saveImageDataSource: SaveImageDataSource
-): ImageRepository {
+) : ImageRepository {
     companion object {
         private const val TAG = "ImageRepository"
     }
@@ -64,7 +64,8 @@ class ImageRepositoryImpl @Inject constructor(
                 .wrapResult()
         ) { t1, t2 ->
             when {
-                t1.isFailure && t2.isFailure -> throw t1.exceptionOrNull() ?: t2.exceptionOrNull() ?: UnKnownException()
+                t1.isFailure && t2.isFailure -> throw t1.exceptionOrNull() ?: t2.exceptionOrNull()
+                ?: UnKnownException()
                 else -> {
                     Log.d(TAG, "Observable.zip run at ${Thread.currentThread().name}")
                     (t1.getOrNull() ?: emptyList()) + (t2.getOrNull() ?: emptyList()).run {
@@ -76,7 +77,7 @@ class ImageRepositoryImpl @Inject constructor(
             .onErrorResumeNext {
                 it.printStackTrace()
                 Log.d(TAG, "error debug => after zip => $it")
-                Observable.error{ it }
+                Observable.error { it }
             }
     }
 

@@ -104,10 +104,7 @@ class RootActivity : HeaderCompActivity<ActivityRootBinding>(), FragmentRootHand
             }
             transaction.add(R.id.container, fragment, "$fragmentResId")
         }
-        Log.d(
-            "TAG",
-            "search : ${fragment is SearchImageFragment}, save : ${fragment is GalleryFragment}"
-        )
+        Log.d("TAG", "search : ${fragment is SearchImageFragment}, save : ${fragment is GalleryFragment}")
         transaction.show(fragment)
         for (res in menuResIdList) {
             if (res == fragmentResId)

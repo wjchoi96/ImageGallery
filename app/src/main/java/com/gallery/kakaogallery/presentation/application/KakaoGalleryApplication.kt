@@ -8,15 +8,16 @@ import dagger.hilt.android.HiltAndroidApp
 class KakaoGalleryApplication : Application() {
     companion object {
         private const val TAG = "KakaoGallery"
-        fun <T> getTag(cls : Class<T>) : String {
+        fun <T> getTag(cls: Class<T>): String {
             return "$TAG :: ${cls.name}" // name => package 포함 / simple name => package 미포함
         }
 
-        var isOnline : Boolean = true
+        var isOnline: Boolean = true
 
-        lateinit var instance : Application
+        lateinit var instance: Application
     }
-    private var netWorkUtil : NetworkUtil? = null
+
+    private var netWorkUtil: NetworkUtil? = null
 
     override fun onCreate() {
         super.onCreate()

@@ -9,10 +9,10 @@ import java.io.IOException
 
 class NetworkConnectionInterceptor(
     private val context: Context
-): Interceptor {
+) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        return when(isNetworkAvailable(context)){
+        return when (isNetworkAvailable(context)) {
             true -> {
                 chain.request().newBuilder().run {
                     chain.proceed(build())

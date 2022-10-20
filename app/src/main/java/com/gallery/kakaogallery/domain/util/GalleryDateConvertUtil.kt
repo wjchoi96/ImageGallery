@@ -17,18 +17,18 @@ object GalleryDateConvertUtil {
     }
 
     fun convertToMill(dateStr: String): Long? {
-        return try{
+        return try {
             rawFormatter.parse(dateStr)?.time
-        }catch (e: Exception) {
+        } catch (e: Exception) {
             e.printStackTrace()
             null
         }
     }
 
     fun convertToPrint(dateStr: String): String? {
-        return try{
+        return try {
             viewFormatter.format(rawFormatter.parse(dateStr)!!)
-        }catch (e: Exception) {
+        } catch (e: Exception) {
             e.printStackTrace()
             null
         }

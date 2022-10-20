@@ -43,34 +43,37 @@ class SearchImagesAdapter(
     private val viewModel: SearchImageViewModel
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val TAG = KakaoGalleryApplication.getTag(this::class.java)
+
     companion object {
         const val SearchQueryType = 0
         const val ImageType = 1
     }
-    enum class ImagePayload{
+
+    enum class ImagePayload {
         Save,
         Select
     }
-    enum class SearchPayload{
+
+    enum class SearchPayload {
         Query
     }
 
-    val currentItemSize : Int
+    val currentItemSize: Int
         get() = imageList.size
 
-    private var lastQuery : String? = null
-    private var imageList : ArrayList<ImageModel> = ArrayList()
-    fun setList(list : List<ImageModel>){
+    private var lastQuery: String? = null
+    private var imageList: ArrayList<ImageModel> = ArrayList()
+    fun setList(list: List<ImageModel>) {
         val newList = ArrayList<ImageModel>()
         newList.addAll(list)
-        if(newList.firstOrNull() != ImageModel.Empty) {
+        if (newList.firstOrNull() != ImageModel.Empty) {
             Log.d(TAG, "diff debug set list add empty")
             newList.add(0, ImageModel.Empty)
         }
         imageList = newList
     }
 
-    fun setLastQuery(lastQuery: String?){
+    fun setLastQuery(lastQuery: String?) {
         this.lastQuery = lastQuery
         notifyItemChanged(0, SearchPayload.Query)// payload 를 통해 검색어만 바꾸자
     }
@@ -111,8 +114,8 @@ class SearchImagesAdapter(
      *
      * 중요한점은 diff 를 계산하는것이 순차적이여야한다는것?
      */
-    fun updateList(list: List<ImageModel>){
-        if(imageList.isEmpty()){
+    fun updateList(list: List<ImageModel>) {
+        if (imageList.isEmpty()) {
             Log.d(TAG, "diff debug old list is empty")
             this.setList(list)
             notifyDataSetChanged()
@@ -128,14 +131,17 @@ class SearchImagesAdapter(
             val diffRes = DiffUtil.calculateDiff(diffCallback)
             handler.post {
                 this.setList(newList) // must call main thread
-                Log.d(TAG, "diff debug updateList post : setList[${this.currentItemSize}], newList[${newList.size}]")
+                Log.d(
+                    TAG,
+                    "diff debug updateList post : setList[${this.currentItemSize}], newList[${newList.size}]"
+                )
                 diffRes.dispatchUpdatesTo(this)
             }
         }.start()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return if(viewType == ImageType)
+        return if (viewType == ImageType)
             ImageItemViewHolder.from(parent)
         else
             SearchQueryViewHolder.from(parent)
@@ -146,17 +152,17 @@ class SearchImagesAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if(position == 0)
+        return if (position == 0)
             SearchQueryType
         else
             ImageType
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if(holder is SearchQueryViewHolder) {
-            if(!lastQuery.isNullOrBlank() && holder.query == lastQuery) return // 이래도 되나?
+        if (holder is SearchQueryViewHolder) {
+            if (!lastQuery.isNullOrBlank() && holder.query == lastQuery) return // 이래도 되나?
             holder.bind(viewModel, lastQuery)
-        }else if(holder is ImageItemViewHolder){
+        } else if (holder is ImageItemViewHolder) {
             holder.bind(viewModel, imageList[position])
         }
     }
@@ -167,23 +173,23 @@ class SearchImagesAdapter(
         payloads: MutableList<Any>
     ) {
         super.onBindViewHolder(holder, position, payloads)
-        for(payload in payloads){
-            when(payload){
+        for (payload in payloads) {
+            when (payload) {
                 ImagePayload.Save -> {
-                    if(holder is ImageItemViewHolder){
+                    if (holder is ImageItemViewHolder) {
                         Log.d(TAG, "payload Save : $position => $position")
                         holder.setSaveIcon(imageList[position].isSaveImage)
                         holder.setSelectEffect(imageList[position].isSelect)
                     }
                 }
                 ImagePayload.Select -> {
-                    if(holder is ImageItemViewHolder){
+                    if (holder is ImageItemViewHolder) {
                         Log.d(TAG, "payload Select : $position => $position")
                         holder.setSelectEffect(imageList[position].isSelect)
                     }
                 }
                 SearchPayload.Query -> {
-                    if(holder is SearchQueryViewHolder){
+                    if (holder is SearchQueryViewHolder) {
                         holder.setQuery(lastQuery)
                     }
                 }
@@ -192,36 +198,36 @@ class SearchImagesAdapter(
     }
 
     class ImageItemViewHolder(
-        private val vd : ItemSearchImageBinding
-    ): RecyclerView.ViewHolder(vd.root){
+        private val vd: ItemSearchImageBinding
+    ) : RecyclerView.ViewHolder(vd.root) {
         companion object {
-            fun from(parent : ViewGroup) : ImageItemViewHolder {
+            fun from(parent: ViewGroup): ImageItemViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
                 val binding = ItemSearchImageBinding.inflate(layoutInflater, parent, false)
                 return ImageItemViewHolder(binding)
             }
         }
 
-        private val itemPosition : Int
+        private val itemPosition: Int
             get() = adapterPosition
 
-        fun bind(viewModel: SearchImageViewModel, item : ImageModel){
+        fun bind(viewModel: SearchImageViewModel, item: ImageModel) {
             vd.viewModel = viewModel
             vd.item = item
             vd.position = itemPosition
             vd.executePendingBindings()
         }
 
-        fun setSelectEffect(show : Boolean){
-            if(show){
+        fun setSelectEffect(show: Boolean) {
+            if (show) {
                 vd.background.setBackgroundResource(R.drawable.background_select_image)
-            }else{
+            } else {
                 vd.background.setBackgroundColor(Color.parseColor("#FFFFFF"))
             }
         }
 
-        fun setSaveIcon(isSave : Boolean){
-            if(isSave)
+        fun setSaveIcon(isSave: Boolean) {
+            if (isSave)
                 vd.ivStar.visibility = View.VISIBLE
             else
                 vd.ivStar.visibility = View.GONE
@@ -229,30 +235,33 @@ class SearchImagesAdapter(
 
 
     }
+
     class SearchQueryViewHolder(
-        private val vd : ItemSearchQueryBinding
-    ): RecyclerView.ViewHolder(vd.root){
+        private val vd: ItemSearchQueryBinding
+    ) : RecyclerView.ViewHolder(vd.root) {
         companion object {
-            fun from(parent : ViewGroup) : SearchQueryViewHolder {
+            fun from(parent: ViewGroup): SearchQueryViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
                 val binding = ItemSearchQueryBinding.inflate(layoutInflater, parent, false)
                 return SearchQueryViewHolder(binding)
             }
         }
-        val query : String
+
+        val query: String
             get() {
                 Log.d("test", "getQuery : ${vd.etQuery.text}")
                 return vd.etQuery.text.toString()
             }
 
-        fun bind(viewModel: SearchImageViewModel, lastQuery : String?){
+        fun bind(viewModel: SearchImageViewModel, lastQuery: String?) {
             setQuery(lastQuery)
 
             vd.viewModel = viewModel
             vd.holder = this
             vd.executePendingBindings()
         }
-        fun setQuery(query : String?) {
+
+        fun setQuery(query: String?) {
             vd.etQuery.setText(query)
         }
     }
