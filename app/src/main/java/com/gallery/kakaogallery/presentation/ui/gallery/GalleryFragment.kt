@@ -144,7 +144,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
             return@GalleryAdapter viewModel.selectMode
         }
         val viewManager = GridLayoutManager(mContext, itemCount)
-        binding.recyclerView.apply {
+        binding.rvGallery.apply {
             layoutManager = viewManager
             adapter = imageListAdapter
             addItemDecoration(itemDecoration)
@@ -186,10 +186,10 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     }
 
     private fun setSwipeRefreshListener() {
-        binding.swipeRefreshLayout.setOnRefreshListener {
+        binding.layoutSwipeRefresh.setOnRefreshListener {
             requestSavedImageList()
         }
-        binding.swipeRefreshLayout.setColorSchemeResources(
+        binding.layoutSwipeRefresh.setColorSchemeResources(
             android.R.color.holo_blue_bright,
             android.R.color.holo_green_light,
             android.R.color.holo_orange_light,
@@ -199,7 +199,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
 
     private fun scrollToTop() {
         if (viewModel.imageList.isNotEmpty()) {
-            binding.recyclerView.smoothScrollToPosition(0)
+            binding.rvGallery.smoothScrollToPosition(0)
         }
     }
 
@@ -275,8 +275,8 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     }
 
     private fun finishRefresh() {
-        if (binding.swipeRefreshLayout.isRefreshing)
-            binding.swipeRefreshLayout.isRefreshing = false
+        if (binding.layoutSwipeRefresh.isRefreshing)
+            binding.layoutSwipeRefresh.isRefreshing = false
     }
 
     private fun setProgress(visible: Boolean) {

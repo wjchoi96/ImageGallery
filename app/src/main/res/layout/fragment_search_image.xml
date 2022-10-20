@@ -14,24 +14,24 @@
         android:id="@+id/background"
         >
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
+            android:id="@+id/rv_search"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             />
         <ProgressBar
             android:layout_marginBottom="10dp"
             android:layout_centerHorizontal="true"
-            android:layout_alignBottom="@+id/recyclerView"
+            android:layout_alignBottom="@+id/rv_search"
             android:indeterminateTint="@color/gold_aa9763"
             android:visibility="gone"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:id="@+id/listProgress"
+            android:id="@+id/progress_refresh"
             />
         <TextView
             android:layout_centerInParent="true"
             android:visibility="gone"
-            android:id="@+id/tvNoneNotify"
+            android:id="@+id/tv_none_notify"
             android:textSize="17sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

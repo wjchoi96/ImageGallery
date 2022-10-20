@@ -80,7 +80,7 @@ class RootActivity : HeaderCompActivity<ActivityRootBinding>(), FragmentRootHand
     }
 
     private fun setBottomNavigationMenu() {
-        binding.bottomNavigationBar.setOnItemSelectedListener(navigationItemSelectedListener)
+        binding.bnvRoot.setOnItemSelectedListener(navigationItemSelectedListener)
     }
 
     /*
@@ -102,7 +102,7 @@ class RootActivity : HeaderCompActivity<ActivityRootBinding>(), FragmentRootHand
                 }
                 else -> return
             }
-            transaction.add(R.id.container, fragment, "$fragmentResId")
+            transaction.add(R.id.layout_container, fragment, "$fragmentResId")
         }
         Timber.d("search : ${fragment is SearchImageFragment}, save : ${fragment is GalleryFragment}")
         transaction.show(fragment)

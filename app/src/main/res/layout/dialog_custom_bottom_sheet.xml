@@ -16,7 +16,7 @@
             android:orientation="vertical"
             >
             <TextView
-                android:id="@+id/tvContent"
+                android:id="@+id/tv_content"
                 android:paddingTop="10dp"
                 android:paddingBottom="20dp"
                 android:textSize="15sp"
@@ -34,7 +34,7 @@
                     android:textSize="14sp"
                     android:layout_marginEnd="10dp"
                     android:textColor="#3d3d3d"
-                    android:id="@+id/btnNegative"
+                    android:id="@+id/btn_negative"
                     android:background="@drawable/bg_btn_dialog_negative"
                     android:layout_weight="1"
                     android:layout_width="wrap_content"
@@ -44,7 +44,7 @@
                 <androidx.appcompat.widget.AppCompatButton
                     android:textSize="14sp"
                     android:layout_marginStart="10dp"
-                    android:id="@+id/btnPositive"
+                    android:id="@+id/btn_positive"
                     android:textColor="#FFFFFF"
                     android:background="@drawable/bg_btn_dialog_positive"
                     android:layout_weight="1"

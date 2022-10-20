@@ -126,7 +126,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setListener() {
-        binding.recyclerView.setOnTouchListener { v, event ->
+        binding.rvSearch.setOnTouchListener { v, event ->
             when (event?.action) {
                 MotionEvent.ACTION_UP -> mContext?.hideKeyboard(v)
             }
@@ -146,7 +146,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
                     }
                 }
             }
-        binding.recyclerView.apply {
+        binding.rvSearch.apply {
             layoutManager = viewManager
             adapter = imageSearchAdapter
             addItemDecoration(itemDecoration)
@@ -203,7 +203,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
 
     private fun scrollToTop() {
         if (imageSearchAdapter.currentItemSize != 0) {
-            binding.recyclerView.smoothScrollToPosition(0)
+            binding.rvSearch.smoothScrollToPosition(0)
         }
     }
 
@@ -237,7 +237,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
             binding.progress.isVisible = it
         }
         viewModel.pagingDataLoading.observe(this) {
-            binding.listProgress.isVisible = it
+            binding.progressRefresh.isVisible = it
         }
 
         viewModel.headerTitle.observe(this) {
