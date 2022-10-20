@@ -16,22 +16,22 @@ class GalleryViewModel @Inject constructor(
     var errorMessageObservable: Observable<String> =
         errorMessageSubject.observeOn(AndroidSchedulers.mainThread())
 
-    private val savedImageSubject: PublishSubject<ArrayList<ImageModel>> = PublishSubject.create()
-    var savedImageListObservable: Observable<ArrayList<ImageModel>> =
+    private val savedImageSubject: PublishSubject<List<ImageModel>> = PublishSubject.create()
+    var savedImageListObservable: Observable<List<ImageModel>> =
         savedImageSubject.observeOn(AndroidSchedulers.mainThread())
 
-    private val removeImageIdxSubject: PublishSubject<ArrayList<Int>> = PublishSubject.create()
-    var removeImageIdxListObservable: Observable<ArrayList<Int>> =
+    private val removeImageIdxSubject: PublishSubject<List<Int>> = PublishSubject.create()
+    var removeImageIdxListObservable: Observable<List<Int>> =
         removeImageIdxSubject.observeOn(AndroidSchedulers.mainThread())
 
-    private val insertedImageIdxSubject: PublishSubject<ArrayList<Int>> = PublishSubject.create()
-    var insertedImageIdxListObservable: Observable<ArrayList<Int>> =
+    private val insertedImageIdxSubject: PublishSubject<List<Int>> = PublishSubject.create()
+    var insertedImageIdxListObservable: Observable<List<Int>> =
         insertedImageIdxSubject.observeOn(AndroidSchedulers.mainThread())
 
 
-    val imageList: ArrayList<ImageModel> = ArrayList()
+    val imageList = mutableListOf<ImageModel>()
     var selectMode: Boolean = false
-    val selectImageIdxList: ArrayList<Int> = ArrayList()
+    val selectImageIdxList = mutableListOf<Int>()
 
     init {
         bind()
@@ -59,7 +59,7 @@ class GalleryViewModel @Inject constructor(
         savedImageSubject.onNext(imageList)
     }
 
-    fun requestRemoveImageList(imgIdxList: ArrayList<Int>) {
+    fun requestRemoveImageList(imgIdxList: List<Int>) {
 //        Thread{
 //            Log.d(TAG, "requestRemoveImageList : ${imgIdxList.size} - thread : ${Thread.currentThread().name}")
 //            val res = saveImageStorage.removeImageList(imgIdxList)
