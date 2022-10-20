@@ -198,8 +198,8 @@ class SearchImagesAdapter(
     }
 
     class ImageItemViewHolder(
-        private val vd: ItemSearchImageBinding
-    ) : RecyclerView.ViewHolder(vd.root) {
+        private val binding: ItemSearchImageBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
         companion object {
             fun from(parent: ViewGroup): ImageItemViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
@@ -212,33 +212,33 @@ class SearchImagesAdapter(
             get() = adapterPosition
 
         fun bind(viewModel: SearchImageViewModel, item: ImageModel) {
-            vd.viewModel = viewModel
-            vd.item = item
-            vd.position = itemPosition
-            vd.executePendingBindings()
+            binding.viewModel = viewModel
+            binding.item = item
+            binding.position = itemPosition
+            binding.executePendingBindings()
         }
 
         fun setSelectEffect(show: Boolean) {
             if (show) {
-                vd.background.setBackgroundResource(R.drawable.bg_select_image)
+                binding.background.setBackgroundResource(R.drawable.bg_select_image)
             } else {
-                vd.background.setBackgroundColor(Color.parseColor("#FFFFFF"))
+                binding.background.setBackgroundColor(Color.parseColor("#FFFFFF"))
             }
         }
 
         fun setSaveIcon(isSave: Boolean) {
             if (isSave)
-                vd.ivStar.visibility = View.VISIBLE
+                binding.ivStar.visibility = View.VISIBLE
             else
-                vd.ivStar.visibility = View.GONE
+                binding.ivStar.visibility = View.GONE
         }
 
 
     }
 
     class SearchQueryViewHolder(
-        private val vd: ItemSearchQueryBinding
-    ) : RecyclerView.ViewHolder(vd.root) {
+        private val binding: ItemSearchQueryBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
         companion object {
             fun from(parent: ViewGroup): SearchQueryViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
@@ -249,20 +249,20 @@ class SearchImagesAdapter(
 
         val query: String
             get() {
-                Log.d("test", "getQuery : ${vd.etQuery.text}")
-                return vd.etQuery.text.toString()
+                Log.d("test", "getQuery : ${binding.etQuery.text}")
+                return binding.etQuery.text.toString()
             }
 
         fun bind(viewModel: SearchImageViewModel, lastQuery: String?) {
             setQuery(lastQuery)
 
-            vd.viewModel = viewModel
-            vd.holder = this
-            vd.executePendingBindings()
+            binding.viewModel = viewModel
+            binding.holder = this
+            binding.executePendingBindings()
         }
 
         fun setQuery(query: String?) {
-            vd.etQuery.setText(query)
+            binding.etQuery.setText(query)
         }
     }
 }
