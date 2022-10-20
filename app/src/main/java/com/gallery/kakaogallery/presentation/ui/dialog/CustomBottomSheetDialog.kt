@@ -23,17 +23,17 @@ class CustomBottomSheetDialog : BottomSheetDialog {
         initView()
     }
 
-    lateinit var vd: DialogCustomBottomSheetBinding
+    lateinit var binding: DialogCustomBottomSheetBinding
 
     private fun initView() {
-        vd = DataBindingUtil.inflate(
+        binding = DataBindingUtil.inflate(
             LayoutInflater.from(context),
             R.layout.dialog_custom_bottom_sheet,
             null,
             false
         )
-        setContentView(vd.root)
-        (vd.root.parent as View).setBackgroundColor(Color.parseColor("#00000000"))
+        setContentView(binding.root)
+        (binding.root.parent as View).setBackgroundColor(Color.parseColor("#00000000"))
         setDefaultListener()
 
         // 가로모드에서 접혀서 보이는 상태로 처리되는 문제 때문에 강제로 state 설정
@@ -41,14 +41,14 @@ class CustomBottomSheetDialog : BottomSheetDialog {
     }
 
     private fun setDefaultListener() {
-        vd.btnPositive.setOnClickListener { this.dismiss() }
-        vd.btnNegative.setOnClickListener { this.dismiss() }
+        binding.btnPositive.setOnClickListener { this.dismiss() }
+        binding.btnNegative.setOnClickListener { this.dismiss() }
     }
 
     fun setPositiveBtn(btnText: String? = null, positiveListener: ((View) -> (Unit))? = null) {
         if (!btnText.isNullOrBlank())
-            vd.btnPositive.text = btnText
-        vd.btnPositive.setOnClickListener {
+            binding.btnPositive.text = btnText
+        binding.btnPositive.setOnClickListener {
             positiveListener?.invoke(it)
             this.dismiss()
         }
@@ -56,14 +56,14 @@ class CustomBottomSheetDialog : BottomSheetDialog {
 
     fun setNegativeBtn(btnText: String? = null, negativeListener: ((View) -> (Unit))? = null) {
         if (!btnText.isNullOrBlank())
-            vd.btnNegative.text = btnText
-        vd.btnNegative.setOnClickListener {
+            binding.btnNegative.text = btnText
+        binding.btnNegative.setOnClickListener {
             negativeListener?.invoke(it)
             this.dismiss()
         }
     }
 
     fun setContent(content: String?) {
-        vd.tvContent.text = content
+        binding.tvContent.text = content
     }
 }
