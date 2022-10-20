@@ -11,25 +11,25 @@ import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
 
 
 @BindingAdapter("app:imageTypeSrc")
-fun setImageTypeSrc(imageView : ImageView, isImageType : Boolean){
-    if(isImageType){
+fun setImageTypeSrc(imageView: ImageView, isImageType: Boolean) {
+    if (isImageType) {
         imageView.setImageResource(R.drawable.ic_video)
-    }else{
+    } else {
         imageView.setImageResource(R.drawable.ic_image)
     }
 }
 
 @BindingAdapter("app:selectEffect")
-fun setSelectEffect(view : View, isSelect : Boolean){
-    if(isSelect){
+fun setSelectEffect(view: View, isSelect: Boolean) {
+    if (isSelect) {
         view.setBackgroundResource(R.drawable.background_select_image)
-    }else{
+    } else {
         view.setBackgroundColor(Color.parseColor("#FFFFFF"))
     }
 }
 
 @BindingAdapter("app:imageFromUrl")
-fun setImageFromUrl(imageView: ImageView, url : String){
+fun setImageFromUrl(imageView: ImageView, url: String) {
     Glide.with(imageView)
         .load(url)
         .error(R.drawable.background_image_error)
@@ -39,6 +39,6 @@ fun setImageFromUrl(imageView: ImageView, url : String){
 }
 
 @BindingAdapter("app:onEditorActionListener")
-fun setOnEditorActionListener(editText : EditText, viewModel : SearchImageViewModel){
+fun setOnEditorActionListener(editText: EditText, viewModel: SearchImageViewModel) {
     editText.setOnEditorActionListener(viewModel.searchEditorActionListener)
 }
