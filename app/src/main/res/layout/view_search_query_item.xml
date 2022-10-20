@@ -16,7 +16,7 @@
             android:maxLines="1"
             android:layout_centerVertical="true"
             android:paddingVertical="10dp"
-            android:background="@drawable/background_search_query"
+            android:background="@drawable/bg_search_query"
             android:id="@+id/etQuery"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -29,6 +29,6 @@
             android:layout_height="40dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:src="@drawable/btn_search" />
+            android:src="@drawable/bg_btn_search" />
     </RelativeLayout>
 </layout>

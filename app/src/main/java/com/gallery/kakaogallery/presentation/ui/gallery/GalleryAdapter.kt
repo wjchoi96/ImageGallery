@@ -95,7 +95,7 @@ class GalleryAdapter(
 
         fun setSelectEffect(show: Boolean) {
             if (show) {
-                vd.background.setBackgroundResource(R.drawable.background_select_image)
+                vd.background.setBackgroundResource(R.drawable.bg_select_image)
             } else {
                 vd.background.setBackgroundColor(Color.parseColor("#FFFFFF"))
             }
@@ -111,8 +111,8 @@ class GalleryAdapter(
         private fun loadImage(url: String) {
             Glide.with(context)
                 .load(url)
-                .error(R.drawable.background_image_error)
-                .placeholder(R.drawable.background_image_placeholder)
+                .error(R.drawable.bg_image_error)
+                .placeholder(R.drawable.bg_image_placeholder)
                 .override(vd.ivImage.layoutParams.width, vd.ivImage.layoutParams.height)
                 .into(vd.ivImage)
         }

@@ -220,7 +220,7 @@ class SearchImagesAdapter(
 
         fun setSelectEffect(show: Boolean) {
             if (show) {
-                vd.background.setBackgroundResource(R.drawable.background_select_image)
+                vd.background.setBackgroundResource(R.drawable.bg_select_image)
             } else {
                 vd.background.setBackgroundColor(Color.parseColor("#FFFFFF"))
             }

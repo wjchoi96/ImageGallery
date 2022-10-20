@@ -9,7 +9,7 @@
                 />
         </shape>
     </item>
-    <item android:drawable="@drawable/app_icon_foreground"
+    <item android:drawable="@drawable/ic_app_foreground"
         android:width="200dp"
         android:height="200dp"
         android:gravity="center"

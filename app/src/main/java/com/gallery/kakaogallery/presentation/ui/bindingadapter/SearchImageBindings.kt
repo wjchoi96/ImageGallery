@@ -22,7 +22,7 @@ fun setImageTypeSrc(imageView: ImageView, isImageType: Boolean) {
 @BindingAdapter("app:selectEffect")
 fun setSelectEffect(view: View, isSelect: Boolean) {
     if (isSelect) {
-        view.setBackgroundResource(R.drawable.background_select_image)
+        view.setBackgroundResource(R.drawable.bg_select_image)
     } else {
         view.setBackgroundColor(Color.parseColor("#FFFFFF"))
     }
@@ -32,8 +32,8 @@ fun setSelectEffect(view: View, isSelect: Boolean) {
 fun setImageFromUrl(imageView: ImageView, url: String) {
     Glide.with(imageView)
         .load(url)
-        .error(R.drawable.background_image_error)
-        .placeholder(R.drawable.background_image_placeholder)
+        .error(R.drawable.bg_image_error)
+        .placeholder(R.drawable.bg_image_placeholder)
         .override(imageView.layoutParams.width, imageView.layoutParams.height)
         .into(imageView)
 }
