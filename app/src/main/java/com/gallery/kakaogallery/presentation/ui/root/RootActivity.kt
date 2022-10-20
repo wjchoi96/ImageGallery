@@ -79,7 +79,7 @@ class RootActivity : HeaderCompActivity<ActivityRootBinding>(), FragmentRootHand
         return@OnItemSelectedListener true // 항목을 선택된 항목으로 표시하려면 true, 아니면 false
     }
     private fun setBottomNavigationMenu(){
-        vd.bottomNavigationBar.setOnItemSelectedListener(navigationItemSelectedListener)
+        binding.bottomNavigationBar.setOnItemSelectedListener(navigationItemSelectedListener)
     }
 
     /*
