@@ -24,7 +24,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
         get() = R.layout.fragment_gallery
     private val viewModel: GalleryViewModel by viewModels()
 
-    private var imageListAdapter : GalleryAdapter? = null
+    private var imageListAdapter: GalleryAdapter? = null
     private var itemCount = 3
 
     /*
@@ -34,9 +34,9 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
         Log.d("TAG", "save onHiddenChanged => $hidden")
-        if(!hidden){
+        if (!hidden) {
             fHandler?.getHeaderCompFromRoot()?.setBackgroundClickListener { scrollToTop() }
-            if(viewModel.selectMode)
+            if (viewModel.selectMode)
                 startSelectMode()
             else
                 finishSelectMode()
@@ -52,7 +52,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     }
 
     private fun initData() {
-        itemCount = when(resources.configuration.orientation) {
+        itemCount = when (resources.configuration.orientation) {
             Configuration.ORIENTATION_PORTRAIT -> 3
             Configuration.ORIENTATION_LANDSCAPE -> 5
             else -> 3
@@ -70,8 +70,8 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     // header 를 save, search 둘이서 같은걸 공유하다보니, 가로, 세로 전환이 되며 두 뷰가 모드 새로 reCreate 될때
     // fragment 두개가 하나의 header 를 바꿔버리면서 충돌난다
     // onHiddenChanged 와 연계해서 어떻게 가능하려나?
-    private fun initHeader(){
-        if(isHidden) //  현재 보이는 fragment 가 header setting 에 우선권을 가지도록 설정
+    private fun initHeader() {
+        if (isHidden) //  현재 보이는 fragment 가 header setting 에 우선권을 가지도록 설정
             return
         // 상대 fragment 탭의 onStop 이후로 여기보다 먼저 호출되는 파괴 관련 생명주기 콜백이 없다
         // onStop 에서 header button 을 제거할 수는 없으니, init code 에서 처리하자
@@ -83,25 +83,27 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
 //            }
         }
         Log.d("TAG", "init header ${viewModel.selectMode}")
-        if(viewModel.selectMode)
+        if (viewModel.selectMode)
             startSelectMode()
         else
             finishSelectMode()
     }
-    private fun startSelectMode(){
+
+    private fun startSelectMode() {
         viewModel.selectMode = true
         fHandler?.getHeaderCompFromRoot()?.apply {
             setLeftBtnListener("취소") {
                 releaseAllSelectImage()
                 finishSelectMode()
             }
-            setRightBtnListener("삭제"){
+            setRightBtnListener("삭제") {
                 showRemoveDialog()
             }
             setTitle("0장 선택중")
         }
     }
-    private fun finishSelectMode(){
+
+    private fun finishSelectMode() {
         viewModel.selectImageIdxList.clear()
         viewModel.selectMode = false
         fHandler?.getHeaderCompFromRoot()?.apply {
@@ -112,43 +114,50 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
             setTitle("내 보관함")
         }
     }
-    private fun releaseAllSelectImage(){
-        for(idx in viewModel.selectImageIdxList){
+
+    private fun releaseAllSelectImage() {
+        for (idx in viewModel.selectImageIdxList) {
             viewModel.imageList[idx].isSelect = false
             imageListAdapter?.notifyItemChanged(idx, GalleryAdapter.ImagePayload.Select)
         }
         viewModel.selectImageIdxList.clear()
     }
 
-    private fun setRecyclerView(){
+    private fun setRecyclerView() {
         imageListAdapter = GalleryAdapter(mContext ?: return) { image, idx ->
             Log.d("TAG", "select image item : $idx, ${viewModel.selectMode}")
-            if(viewModel.selectMode) {
+            if (viewModel.selectMode) {
                 viewModel.imageList[idx].isSelect = !viewModel.imageList[idx].isSelect
-                Log.d("TAG", "viewModel.imageList[$idx].isSelect = ${viewModel.imageList[idx].isSelect}")
-                if(viewModel.imageList[idx].isSelect){
+                Log.d(
+                    "TAG",
+                    "viewModel.imageList[$idx].isSelect = ${viewModel.imageList[idx].isSelect}"
+                )
+                if (viewModel.imageList[idx].isSelect) {
                     viewModel.selectImageIdxList.add(idx)
-                    fHandler?.getHeaderCompFromRoot()?.setTitle("${viewModel.selectImageIdxList.size}장 선택중")
-                }else{
+                    fHandler?.getHeaderCompFromRoot()
+                        ?.setTitle("${viewModel.selectImageIdxList.size}장 선택중")
+                } else {
                     viewModel.selectImageIdxList.remove(idx)
-                    fHandler?.getHeaderCompFromRoot()?.setTitle("${viewModel.selectImageIdxList.size}장 선택중")
+                    fHandler?.getHeaderCompFromRoot()
+                        ?.setTitle("${viewModel.selectImageIdxList.size}장 선택중")
                 }
                 imageListAdapter?.notifyItemChanged(idx, GalleryAdapter.ImagePayload.Select)
             }
             return@GalleryAdapter viewModel.selectMode
         }
         val viewManager = GridLayoutManager(mContext, itemCount)
-        vd.recyclerView.apply {
+        binding.recyclerView.apply {
             layoutManager = viewManager
             adapter = imageListAdapter
             addItemDecoration(itemDecoration)
         }
-        if(viewModel.imageList.isNotEmpty()){
+        if (viewModel.imageList.isNotEmpty()) {
             imageListAdapter?.setList(viewModel.imageList)
             imageListAdapter?.notifyDataSetChanged()
         }
     }
-    private val itemDecoration = object : RecyclerView.ItemDecoration(){
+
+    private val itemDecoration = object : RecyclerView.ItemDecoration() {
         override fun getItemOffsets(
             outRect: Rect,
             view: View,
@@ -161,8 +170,10 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
             val column = position % itemCount // 현재 col
 
             // 0 -> 왼오, 1 -> 오, 2 -> 오
-            outRect.left = spacing - column * spacing / itemCount // spacing - column * ((1f / spanCount) * spacing)
-            outRect.right = (column + 1) * spacing / itemCount // (column + 1) * ((1f / spanCount) * spacing)
+            outRect.left =
+                spacing - column * spacing / itemCount // spacing - column * ((1f / spanCount) * spacing)
+            outRect.right =
+                (column + 1) * spacing / itemCount // (column + 1) * ((1f / spanCount) * spacing)
 
             if (position < itemCount) { // top edge
                 outRect.top = spacing
@@ -170,16 +181,17 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
             outRect.bottom = spacing * 2 // item bottom
         }
     }
-    fun getPxFromDp(dp: Int) : Float {
-        val displayMetrics =  resources.displayMetrics
+
+    fun getPxFromDp(dp: Int): Float {
+        val displayMetrics = resources.displayMetrics
         return dp * (displayMetrics.densityDpi.toFloat() / DisplayMetrics.DENSITY_DEFAULT)
     }
 
-    private fun setSwipeRefreshListener(){
-        vd.swipeRefreshLayout.setOnRefreshListener {
+    private fun setSwipeRefreshListener() {
+        binding.swipeRefreshLayout.setOnRefreshListener {
             requestSavedImageList()
         }
-        vd.swipeRefreshLayout.setColorSchemeResources(
+        binding.swipeRefreshLayout.setColorSchemeResources(
             android.R.color.holo_blue_bright,
             android.R.color.holo_green_light,
             android.R.color.holo_orange_light,
@@ -187,23 +199,29 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
         )
     }
 
-    private fun scrollToTop(){
-        if(viewModel.imageList.isNotEmpty()){
-            vd.recyclerView.smoothScrollToPosition(0)
+    private fun scrollToTop() {
+        if (viewModel.imageList.isNotEmpty()) {
+            binding.recyclerView.smoothScrollToPosition(0)
         }
     }
 
-    private fun showRemoveDialog(){
-        if(viewModel.selectImageIdxList.isEmpty()){
+    private fun showRemoveDialog() {
+        if (viewModel.selectImageIdxList.isEmpty()) {
             mContext?.showToast("이미지를 선택해주세요")
             return
         }
-        DialogUtil.showBottom(mContext ?: return, "${viewModel.selectImageIdxList.size}개의 이미지를 삭제하시겠습니까?", "삭제", "취소", {
-            requestRemoveSelectImage()
-        }){}
+        DialogUtil.showBottom(
+            mContext ?: return,
+            "${viewModel.selectImageIdxList.size}개의 이미지를 삭제하시겠습니까?",
+            "삭제",
+            "취소",
+            {
+                requestRemoveSelectImage()
+            }) {}
     }
-    private fun requestRemoveSelectImage(){
-        if(viewModel.selectImageIdxList.isEmpty()){
+
+    private fun requestRemoveSelectImage() {
+        if (viewModel.selectImageIdxList.isEmpty()) {
             mContext?.showToast("이미지를 선택해주세요")
             return
         }
@@ -211,7 +229,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
         viewModel.requestRemoveImageList(viewModel.selectImageIdxList)
     }
 
-    private fun requestSavedImageList(){
+    private fun requestSavedImageList() {
         setProgress(true)
         viewModel.requestSavedImageList()
     }
@@ -223,8 +241,11 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
         }.apply { compositeDisposable.add(this) }
 
         viewModel.savedImageListObservable.subscribe {
-            Log.d("TAG", "savedImageListObservable subscribe thread - ${Thread.currentThread().name}")
-            for((idx,i) in it.withIndex()){
+            Log.d(
+                "TAG",
+                "savedImageListObservable subscribe thread - ${Thread.currentThread().name}"
+            )
+            for ((idx, i) in it.withIndex()) {
                 Log.d("TAG", "[$idx] : ${i.toMinString()}")
             }
             setProgress(false)
@@ -236,7 +257,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
         viewModel.removeImageIdxListObservable.subscribe {
             setProgress(false)
             imageListAdapter?.setList(viewModel.imageList)
-            if(it.size==1)
+            if (it.size == 1)
                 imageListAdapter?.notifyItemRemoved(it.first())
             else
                 imageListAdapter?.notifyDataSetChanged()
@@ -251,21 +272,21 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
         }.apply { compositeDisposable.add(this) }
     }
 
-    private fun setEmptyListView(){
-        if(viewModel.imageList.isEmpty())
-            vd.tvNoneNotify.visibility = View.VISIBLE
+    private fun setEmptyListView() {
+        if (viewModel.imageList.isEmpty())
+            binding.tvNoneNotify.visibility = View.VISIBLE
         else
-            vd.tvNoneNotify.visibility = View.GONE
+            binding.tvNoneNotify.visibility = View.GONE
     }
 
-    private fun finishRefresh(){
-        if(vd.swipeRefreshLayout.isRefreshing)
-            vd.swipeRefreshLayout.isRefreshing = false
+    private fun finishRefresh() {
+        if (binding.swipeRefreshLayout.isRefreshing)
+            binding.swipeRefreshLayout.isRefreshing = false
     }
 
     private fun setProgress(visible: Boolean) {
-        vd.progress.isVisible = visible
-        if(!visible)
+        binding.progress.isVisible = visible
+        if (!visible)
             finishRefresh()
     }
 }

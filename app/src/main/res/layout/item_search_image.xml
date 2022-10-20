@@ -47,7 +47,7 @@
                         android:layout_height="wrap_content"
                         android:adjustViewBounds="true"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/background_image_placeholder"
+                        android:src="@drawable/bg_image_placeholder"
                         app:imageFromUrl="@{item.imageThumbUrl}" />
                 </androidx.cardview.widget.CardView>
 

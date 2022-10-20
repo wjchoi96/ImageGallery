@@ -12,11 +12,12 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import javax.inject.Inject
 
 class ImageSearchDataSourceImpl @Inject constructor(
-    private val searchImageApi : ImageSearchService
-): ImageSearchDataSource {
+    private val searchImageApi: ImageSearchService
+) : ImageSearchDataSource {
     companion object {
         private const val TAG = "ImageSearchDataSourceImpl"
     }
+
     private var imagePageable = true
 
     /**
@@ -31,11 +32,11 @@ class ImageSearchDataSourceImpl @Inject constructor(
         query: String,
         page: Int
     ): Observable<List<ImageSearchResponse.Document>> {
-        if(page == 1)
+        if (page == 1)
             imagePageable = true
-        return when(imagePageable){
+        return when (imagePageable) {
             false -> {
-                Log.d(TAG,"error debug => throw MaxPageException")
+                Log.d(TAG, "error debug => throw MaxPageException")
                 Observable.error { MaxPageException() }
             }
             true -> {
@@ -45,14 +46,14 @@ class ImageSearchDataSourceImpl @Inject constructor(
                     page, // 1~50
                     SearchConstant.ImagePageSizeMaxValue
                 ).map {
-                        Log.d(TAG, "Image mapping run at ${Thread.currentThread().name}")
-                        imagePageable = !it.meta.isEnd
-                        it.documents
-                    }
+                    Log.d(TAG, "Image mapping run at ${Thread.currentThread().name}")
+                    imagePageable = !it.meta.isEnd
+                    it.documents
+                }
                     .onErrorResumeNext {
                         it.printStackTrace()
-                        Log.d(TAG,"error debug => after api response => $it")
-                        Flowable.error{ it }
+                        Log.d(TAG, "error debug => after api response => $it")
+                        Flowable.error { it }
                     }
                     .toObservable()
             }

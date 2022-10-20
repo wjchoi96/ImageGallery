@@ -17,7 +17,7 @@
             android:paddingVertical="10dp"
             android:paddingStart="20dp"
             android:paddingEnd="10dp"
-            android:textColor="@color/text_main_color_selector" />
+            android:textColor="@color/color_text_main_selector" />
 
         <TextView
             android:textSize="17sp"
@@ -38,6 +38,6 @@
             android:paddingVertical="10dp"
             android:paddingEnd="20dp"
             android:paddingStart="10dp"
-            android:textColor="@color/text_main_color_selector" />
+            android:textColor="@color/color_text_main_selector" />
     </RelativeLayout>
 </layout>

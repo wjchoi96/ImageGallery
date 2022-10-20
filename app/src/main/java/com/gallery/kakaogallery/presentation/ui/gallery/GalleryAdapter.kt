@@ -15,19 +15,19 @@ import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
 
 class GalleryAdapter(
-    private val context : Context,
-    private val itemSelectListener : (ImageModel, Int) -> (Boolean)
+    private val context: Context,
+    private val itemSelectListener: (ImageModel, Int) -> (Boolean)
 ) : RecyclerView.Adapter<GalleryAdapter.GalleryItemViewHolder>() {
     private val TAG = KakaoGalleryApplication.getTag(this::class.java)
-    enum class ImagePayload(){
+
+    enum class ImagePayload() {
         Save,
         Select
     }
 
-    private var imageList : ArrayList<ImageModel> = ArrayList()
-    fun setList(list : ArrayList<ImageModel>){
-        imageList.clear()
-        imageList.addAll(list)
+    private var imageList: List<ImageModel> = emptyList()
+    fun setList(list: List<ImageModel>) {
+        imageList = list
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GalleryItemViewHolder {
@@ -55,8 +55,8 @@ class GalleryAdapter(
         payloads: MutableList<Any>
     ) {
         super.onBindViewHolder(holder, position, payloads)
-        for(payload in payloads){
-            when(payload){
+        for (payload in payloads) {
+            when (payload) {
                 ImagePayload.Save -> {
                     Log.d(TAG, "paload Save : $position => $position")
                     holder.setSaveIcon(imageList[position].isSaveImage)
@@ -71,49 +71,49 @@ class GalleryAdapter(
     }
 
     class GalleryItemViewHolder(
-        private val vd : ViewImageItemBinding,
-        private val context : Context,
-        private val itemSelectListener : (ImageModel, Int) -> (Boolean)
-    ): RecyclerView.ViewHolder(vd.root){
+        private val binding: ViewImageItemBinding,
+        private val context: Context,
+        private val itemSelectListener: (ImageModel, Int) -> (Boolean)
+    ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item : ImageModel){
+        fun bind(item: ImageModel) {
             loadImage(item.imageThumbUrl)
-            vd.tvDateTime.text = item.saveDateTime
+            binding.tvDateTime.text = item.saveDateTime
             setSaveIcon(item.isSaveImage)
             setSelectEffect(item.isSelect)
-            vd.background.setOnClickListener {
+            binding.background.setOnClickListener {
                 itemSelectListener.invoke(item, adapterPosition)
             }
 
-            if(item.isImageType){
-                vd.ivTag.setImageResource(R.drawable.ic_video)
-            }else{
-                vd.ivTag.setImageResource(R.drawable.ic_image)
+            if (item.isImageType) {
+                binding.ivTag.setImageResource(R.drawable.ic_video)
+            } else {
+                binding.ivTag.setImageResource(R.drawable.ic_image)
             }
         }
 
-        fun setSelectEffect(show : Boolean){
-            if(show){
-                vd.background.setBackgroundResource(R.drawable.background_select_image)
-            }else{
-                vd.background.setBackgroundColor(Color.parseColor("#FFFFFF"))
+        fun setSelectEffect(show: Boolean) {
+            if (show) {
+                binding.background.setBackgroundResource(R.drawable.bg_select_image)
+            } else {
+                binding.background.setBackgroundColor(Color.parseColor("#FFFFFF"))
             }
         }
 
-        fun setSaveIcon(isSave : Boolean){
-            if(isSave)
-                vd.ivStar.visibility = View.VISIBLE
+        fun setSaveIcon(isSave: Boolean) {
+            if (isSave)
+                binding.ivStar.visibility = View.VISIBLE
             else
-                vd.ivStar.visibility = View.GONE
+                binding.ivStar.visibility = View.GONE
         }
 
-        private fun loadImage(url : String){
+        private fun loadImage(url: String) {
             Glide.with(context)
                 .load(url)
-                .error(R.drawable.background_image_error)
-                .placeholder(R.drawable.background_image_placeholder)
-                .override(vd.ivImage.layoutParams.width, vd.ivImage.layoutParams.height)
-                .into(vd.ivImage)
+                .error(R.drawable.bg_image_error)
+                .placeholder(R.drawable.bg_image_placeholder)
+                .override(binding.ivImage.layoutParams.width, binding.ivImage.layoutParams.height)
+                .into(binding.ivImage)
         }
     }
 }

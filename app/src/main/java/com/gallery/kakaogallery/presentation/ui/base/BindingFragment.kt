@@ -10,10 +10,10 @@ import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 
 abstract class BindingFragment<T : ViewDataBinding> : Fragment() {
-    lateinit var vd : T
-    abstract val layoutResId : Int
+    lateinit var binding: T
+    abstract val layoutResId: Int
 
-    protected var mContext : Context? = null
+    protected var mContext: Context? = null
 
 
     override fun onAttach(context: Context) {
@@ -26,18 +26,18 @@ abstract class BindingFragment<T : ViewDataBinding> : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        vd = DataBindingUtil.inflate(inflater, layoutResId, container, false)
-        return  vd.root as ViewGroup
+        binding = DataBindingUtil.inflate(inflater, layoutResId, container, false)
+        return binding.root as ViewGroup
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        vd.lifecycleOwner = viewLifecycleOwner
+        binding.lifecycleOwner = viewLifecycleOwner
     }
 
     override fun onDetach() {
         super.onDetach()
-        if ( mContext != null )
+        if (mContext != null)
             mContext = null
     }
 }

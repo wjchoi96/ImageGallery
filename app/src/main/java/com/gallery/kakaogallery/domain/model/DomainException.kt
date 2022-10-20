@@ -5,14 +5,14 @@ import java.lang.Exception
 
 data class NetworkConnectionException(
     override val message: String?
-): IOException()
+) : IOException()
 
 data class MaxPageException(
     override val message: String = "query is max page"
-): Exception()
+) : Exception()
 
 data class UnKnownException(
     override val message: String = "UnknownException",
     override val cause: Throwable? = null
-): Exception() {
+) : Exception() {
 }

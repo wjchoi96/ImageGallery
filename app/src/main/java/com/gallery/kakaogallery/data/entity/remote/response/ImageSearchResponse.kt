@@ -27,7 +27,7 @@ data class ImageSearchResponse(
         val thumbnailUrl: String,
         @SerializedName("width")
         val width: Int
-    ){
+    ) {
         fun toModel(
             dateTimeToShow: String,
             dateTimeMill: Long

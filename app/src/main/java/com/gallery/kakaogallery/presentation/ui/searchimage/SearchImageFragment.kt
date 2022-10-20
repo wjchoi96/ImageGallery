@@ -38,18 +38,19 @@ import dagger.hilt.android.AndroidEntryPoint
 class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>() {
     override val layoutResId: Int
         get() = R.layout.fragment_search_image
+
     //https://kotlinworld.com/87
     //같은 ViewModelStoreOwner(Acitivty, Fragment)에 대해 같은 이름의 ViewModel 클래스를 get하면 같은 인스턴스가 반환된다.
     private val viewModel: SearchImageViewModel by viewModels()
 
-    private val imageSearchAdapter : SearchImagesAdapter by lazy { SearchImagesAdapter(viewModel) }
+    private val imageSearchAdapter: SearchImagesAdapter by lazy { SearchImagesAdapter(viewModel) }
 
     private var itemCount = 3
 
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
         Log.d("TAG", "search onHiddenChanged => $hidden")
-        if(!hidden){
+        if (!hidden) {
             fHandler?.getHeaderCompFromRoot()?.setBackgroundClickListener { scrollToTop() }
             setSelectMode(viewModel.selectMode.value == true)
         }
@@ -63,7 +64,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
     }
 
     private fun initData() {
-        itemCount = when(resources.configuration.orientation) {
+        itemCount = when (resources.configuration.orientation) {
             Configuration.ORIENTATION_PORTRAIT -> 3
             Configuration.ORIENTATION_LANDSCAPE -> 5
             else -> 3
@@ -79,38 +80,41 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
 
     // replace 를 안해주니까 header comp 도 날아가는구나
     // resume 에서 처리해줘야하나?
-    private fun initHeader(){
-        if(isHidden) //  현재 보이는 fragment 가 header setting 에 우선권을 가지도록 설정
+    private fun initHeader() {
+        if (isHidden) //  현재 보이는 fragment 가 header setting 에 우선권을 가지도록 설정
             return
         // 상대 fragment 탭의 onStop 이후로 여기보다 먼저 호출되는 파괴 관련 생명주기 콜백이 없다
         // onStop 에서 header button 을 제거할 수는 없으니, init code 에서 처리하자
         fHandler?.getHeaderCompFromRoot()?.apply {
             clearView()
-            setBackgroundClickListener{
+            setBackgroundClickListener {
                 scrollToTop()
             }
         }
         Log.d("TAG", "init header ${viewModel.selectMode.value}")
         setSelectMode(viewModel.selectMode.value == true)
     }
-    private fun setSelectMode(selectMode : Boolean){
-        if(selectMode)
+
+    private fun setSelectMode(selectMode: Boolean) {
+        if (selectMode)
             startSelectMode()
         else
             finishSelectMode()
     }
-    private fun startSelectMode(){
+
+    private fun startSelectMode() {
         fHandler?.getHeaderCompFromRoot()?.apply {
             setLeftBtnListener("취소") {
                 viewModel.setSelectMode(false)
             }
-            setRightBtnListener("저장"){
+            setRightBtnListener("저장") {
                 showSaveDialog()
             }
             setTitle("0장 선택중")
         }
     }
-    private fun finishSelectMode(){
+
+    private fun finishSelectMode() {
         fHandler?.getHeaderCompFromRoot()?.apply {
             removeLeftBtn()
             setRightBtnListener("선택") {
@@ -121,38 +125,40 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun setListener(){
-        vd.recyclerView.setOnTouchListener { v, event ->
-            when(event?.action){
+    private fun setListener() {
+        binding.recyclerView.setOnTouchListener { v, event ->
+            when (event?.action) {
                 MotionEvent.ACTION_UP -> mContext?.hideKeyboard(v)
             }
             return@setOnTouchListener false
         }
     }
 
-    private fun setupRecyclerView(){
-        val viewManager = GridLayoutManager(mContext, itemCount, GridLayoutManager.VERTICAL, false).apply {
-            spanSizeLookup = object : GridLayoutManager.SpanSizeLookup(){
-                override fun getSpanSize(position: Int): Int {
-                    return if(imageSearchAdapter.getItemViewType(position) == SearchImagesAdapter.SearchQueryType)
-                        this@SearchImageFragment.itemCount
-                    else
-                        1
+    private fun setupRecyclerView() {
+        val viewManager =
+            GridLayoutManager(mContext, itemCount, GridLayoutManager.VERTICAL, false).apply {
+                spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                    override fun getSpanSize(position: Int): Int {
+                        return if (imageSearchAdapter.getItemViewType(position) == SearchImagesAdapter.SearchQueryType)
+                            this@SearchImageFragment.itemCount
+                        else
+                            1
+                    }
                 }
             }
-        }
-        vd.recyclerView.apply {
+        binding.recyclerView.apply {
             layoutManager = viewManager
             adapter = imageSearchAdapter
             addItemDecoration(itemDecoration)
             addOnScrollListener(pagingListener)
         }
-        imageSearchAdapter.setList(ArrayList())
+        imageSearchAdapter.setList(emptyList())
         imageSearchAdapter.notifyDataSetChanged()
     }
+
     // https://medium.com/@bigstark/recyclerview-grid-space-%EC%97%90-%EB%8C%80%ED%95%9C-%EA%B3%A0%EC%B0%B0-7cab7a725f98
     // https://stackoverflow.com/questions/28531996/android-recyclerview-gridlayoutmanager-column-spacing => !!
-    private val itemDecoration = object : RecyclerView.ItemDecoration(){
+    private val itemDecoration = object : RecyclerView.ItemDecoration() {
         override fun getItemOffsets(
             outRect: Rect,
             view: View,
@@ -160,7 +166,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
             state: RecyclerView.State
         ) {
             super.getItemOffsets(outRect, view, parent, state)
-            if(parent.getChildAdapterPosition(view) == 0){ // 검색 section
+            if (parent.getChildAdapterPosition(view) == 0) { // 검색 section
                 return
             }
             val position = parent.getChildAdapterPosition(view) - 1 // search query section 때문
@@ -177,30 +183,31 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
             outRect.bottom = spacing * 2 // item bottom
         }
     }
-    fun getPxFromDp(dp: Int) : Float {
-        val displayMetrics =  resources.displayMetrics
+
+    fun getPxFromDp(dp: Int): Float {
+        val displayMetrics = resources.displayMetrics
         return dp * (displayMetrics.densityDpi.toFloat() / DisplayMetrics.DENSITY_DEFAULT)
     }
 
     private val pagingListener = object : RecyclerView.OnScrollListener() {
         override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
             super.onScrollStateChanged(recyclerView, newState)
-            if(!recyclerView.canScrollVertically(1)){ // direction 은 Vertically 기준으로 -1이 위쪽, 1이 아래쪽이다
+            if (!recyclerView.canScrollVertically(1)) { // direction 은 Vertically 기준으로 -1이 위쪽, 1이 아래쪽이다
                 Log.d("TAG", "vertical end")
-                if(imageSearchAdapter.currentItemSize != 0){
+                if (imageSearchAdapter.currentItemSize != 0) {
                     viewModel.fetchNextPage()
                 }
             }
         }
     }
 
-    private fun scrollToTop(){
-        if(imageSearchAdapter.currentItemSize != 0){
-            vd.recyclerView.smoothScrollToPosition(0)
+    private fun scrollToTop() {
+        if (imageSearchAdapter.currentItemSize != 0) {
+            binding.recyclerView.smoothScrollToPosition(0)
         }
     }
 
-    private fun showSaveDialog(){
+    private fun showSaveDialog() {
 //        if(viewModel.selectImageIdxList.isEmpty()){
 //            showToast("이미지를 선택해주세요")
 //            return
@@ -208,12 +215,15 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
         //${viewModel.selectImageIdxList.size}장의 이미지를 저장하시겠습니까?
         DialogUtil.showBottom(mContext ?: return, "선택한 이미지를 저장하시겠습니까?", "저장", "취소", {
             viewModel.saveSelectImage()
-        }){}
+        }) {}
     }
 
     private fun observeData() {
         viewModel.searchImages.observe(this) {
-            Log.d("TAG", "searchResultObservable subscribe thread - ${Thread.currentThread().name}, it.address : $it")
+            Log.d(
+                "TAG",
+                "searchResultObservable subscribe thread - ${Thread.currentThread().name}, it.address : $it"
+            )
             processImages(it.first, it.second)
         }
 
@@ -227,10 +237,10 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
         }
 
         viewModel.dataLoading.observe(this) {
-            vd.progress.isVisible = it
+            binding.progress.isVisible = it
         }
-        viewModel.pagingDataLoading.observe(this){
-            vd.listProgress.isVisible = it
+        viewModel.pagingDataLoading.observe(this) {
+            binding.listProgress.isVisible = it
         }
 
         viewModel.headerTitle.observe(this) {
@@ -238,8 +248,8 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
         }
 
         viewModel.keyboardShownEvent.observe(this) {
-            if(it == false){
-                mContext?.hideKeyboard(vd.background)
+            if (it == false) {
+                mContext?.hideKeyboard(binding.background)
             }
         }
 
@@ -253,35 +263,37 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
      * idx 값에 +1 이 되어서 처리되어있을것
      * 일단 수정은 하지 않았다
      */
-    private fun processImages(images: List<ImageModel>, payload : ImageModel.Payload){
-        when(payload.payloadType){
+    private fun processImages(images: List<ImageModel>, payload: ImageModel.Payload) {
+        when (payload.payloadType) {
             ImageModel.Payload.PayloadType.NewList -> {
                 imageSearchAdapter.setList(images)
                 imageSearchAdapter.notifyDataSetChanged()
                 imageSearchAdapter.setLastQuery(viewModel.lastQuery.value) // testCode
-                if(images.isEmpty())
-                    vd.tvNoneNotify.visibility = View.VISIBLE
+                if (images.isEmpty())
+                    binding.tvNoneNotify.visibility = View.VISIBLE
                 else
-                    vd.tvNoneNotify.visibility = View.GONE
+                    binding.tvNoneNotify.visibility = View.GONE
             }
             ImageModel.Payload.PayloadType.Inserted -> {}
             ImageModel.Payload.PayloadType.InsertedRange -> {
                 // empty 의 경우는 viewmodel에서 알아서 toast, dataload 등을 통해서 처리한다
                 // 넘어오는경우는 무조건 변경이 있을때
-                val positionStart = 1 + images.size - payload.changedIdx.size // or payload.changedIdx[0]
+                val positionStart =
+                    1 + images.size - payload.changedIdx.size // or payload.changedIdx[0]
                 Log.d("TAG", "pagingListObservable : $positionStart - ${payload.changedIdx.size}")
                 imageSearchAdapter.setList(images)
                 imageSearchAdapter.notifyItemRangeInserted(positionStart, payload.changedIdx.size)
             }
             ImageModel.Payload.PayloadType.Removed -> {}
             ImageModel.Payload.PayloadType.Changed -> {
-                if(payload.changedPayload == null)
+                if (payload.changedPayload == null)
                     return
                 imageSearchAdapter.setList(images)
-                when(payload.changedPayload){
+                when (payload.changedPayload) {
                     ImageModel.Payload.ChangedType.Save -> {
-                        for(idx in payload.changedIdx){
-                            imageSearchAdapter.notifyItemChanged(idx + 1,
+                        for (idx in payload.changedIdx) {
+                            imageSearchAdapter.notifyItemChanged(
+                                idx + 1,
                                 SearchImagesAdapter.ImagePayload.Save
                             )
                         }
@@ -290,8 +302,9 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
                         // select 중인 이미지가 삭제되었을때? selectMode가 종료되는데, viewModel 에서는 종료되지않았다
                     }
                     ImageModel.Payload.ChangedType.Select -> {
-                        for(idx in payload.changedIdx){
-                            imageSearchAdapter.notifyItemChanged(idx + 1,
+                        for (idx in payload.changedIdx) {
+                            imageSearchAdapter.notifyItemChanged(
+                                idx + 1,
                                 SearchImagesAdapter.ImagePayload.Select
                             )
                         }

@@ -9,7 +9,7 @@ import javax.inject.Inject
 
 class SaveImageDataSourceImpl @Inject constructor(
     private val saveImageDao: SaveImageDao
-): SaveImageDataSource {
+) : SaveImageDataSource {
 
     override fun fetchSaveImages(): Observable<List<ImageModel>> {
         return saveImageDao.fetchSaveImages()

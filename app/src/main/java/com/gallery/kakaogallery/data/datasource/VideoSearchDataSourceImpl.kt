@@ -12,22 +12,23 @@ import io.reactivex.rxjava3.core.Observable
 import javax.inject.Inject
 
 class VideoSearchDataSourceImpl @Inject constructor(
-    private val searchVideoApi : VideoSearchService
-): VideoSearchDataSource {
+    private val searchVideoApi: VideoSearchService
+) : VideoSearchDataSource {
     companion object {
         private const val TAG = "VideoSearchDataSourceImpl"
     }
+
     private var videoPageable = true
 
     override fun fetchVideoQueryRes(
         query: String,
         page: Int
     ): Observable<List<VideoSearchResponse.Document>> {
-        if(page == 1)
+        if (page == 1)
             videoPageable = true
-        return when(videoPageable){
+        return when (videoPageable) {
             false -> {
-                Log.d(TAG,"error debug => throw MaxPageException")
+                Log.d(TAG, "error debug => throw MaxPageException")
                 Observable.error { MaxPageException() }
             }
             true -> {
@@ -37,14 +38,14 @@ class VideoSearchDataSourceImpl @Inject constructor(
                     page, // 1~50
                     SearchConstant.VideoPageSizeMaxValue
                 ).map {
-                        Log.d(TAG, "Video mapping run at ${Thread.currentThread().name}")
-                        videoPageable = !it.meta.isEnd
-                        it.documents
-                    }
+                    Log.d(TAG, "Video mapping run at ${Thread.currentThread().name}")
+                    videoPageable = !it.meta.isEnd
+                    it.documents
+                }
                     .onErrorResumeNext {
                         it.printStackTrace()
-                        Log.d(TAG,"error debug => after api response => $it")
-                        Flowable.error{ it }
+                        Log.d(TAG, "error debug => after api response => $it")
+                        Flowable.error { it }
                     }
                     .toObservable()
             }

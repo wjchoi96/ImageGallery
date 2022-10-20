@@ -16,41 +16,43 @@ import java.util.*
 
  */
 data class ImageModel internal constructor(
-    val dateTimeToShow : String,
-    val dateTimeMill : Long?,
-    val imageUrl : String,
-    private val thumbnailUrl : String?,
-    var saveDateTime : String? = null,
-    var saveTimeMill : Long? = null,
-    var isSelect : Boolean = false
-){
+    val dateTimeToShow: String,
+    val dateTimeMill: Long?,
+    val imageUrl: String,
+    private val thumbnailUrl: String?,
+    var saveDateTime: String? = null,
+    var saveTimeMill: Long? = null,
+    var isSelect: Boolean = false
+) {
     companion object {
-        val Empty : ImageModel = ImageModel("", 0, "", null)
+        val Empty: ImageModel = ImageModel("", 0, "", null)
     }
-    val isImageType : Boolean
+
+    val isImageType: Boolean
         get() = thumbnailUrl.isNullOrBlank()
-    val imageThumbUrl : String
+    val imageThumbUrl: String
         get() = thumbnailUrl ?: imageUrl
-    val isSaveImage : Boolean
+    val isSaveImage: Boolean
         get() = saveDateTime != null && saveTimeMill != null
 
     fun setRemovedImage() {
         saveDateTime = null
         saveTimeMill = null
     }
-    fun setSaveDateTime() : String {
+
+    fun setSaveDateTime(): String {
         saveTimeMill = Date().time
         val formatter = SimpleDateFormat("yyyy.MM.dd HH:mm:ss")
         saveDateTime = formatter.format(Date(saveTimeMill!!))
         return saveDateTime!!
     }
 
-    fun toMinString() : String {
+    fun toMinString(): String {
         return "dateTime : $dateTimeToShow, isSaveImage : ${isSaveImage}, imageUrl : $imageUrl\nisSelect : $isSelect, saveDateTime : $saveDateTime, saveTimeMill : $saveTimeMill"
     }
 
     override fun equals(other: Any?): Boolean {
-        if(other !is ImageModel){
+        if (other !is ImageModel) {
             return false
         }
         return other.dateTimeToShow == dateTimeToShow &&
@@ -67,9 +69,9 @@ data class ImageModel internal constructor(
     }
 
     class Payload(
-        val changedIdx : List<Int>,
-        val payloadType : PayloadType,
-        val changedPayload : ChangedType? = null
+        val changedIdx: List<Int>,
+        val payloadType: PayloadType,
+        val changedPayload: ChangedType? = null
     ) {
         enum class PayloadType {
             NewList,
@@ -78,6 +80,7 @@ data class ImageModel internal constructor(
             Removed,
             Changed
         }
+
         enum class ChangedType {
             Save, Select
         }
