@@ -3,33 +3,24 @@
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/background"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".presentation.ui.root.RootActivity"
-        android:id="@+id/background"
-        >
-<!--        <androidx.fragment.app.FragmentContainerView-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:layout_above="@+id/bottomNavigationBar"-->
-<!--            android:id="@+id/fragmentNaviHost"-->
-<!--            android:name="androidx.navigation.fragment.NavHostFragment"-->
-<!--            app:navGraph="@navigation/navigation_main_bottom_tab_item"-->
-<!--            app:defaultNavHost="false"-->
-<!--            />-->
+        tools:context=".presentation.ui.root.RootActivity">
+
         <FrameLayout
-            android:layout_above="@+id/bottomNavigationBar"
-            android:id="@+id/container"
+            android:id="@+id/fcv_root"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            />
+            android:layout_above="@+id/bnv_root" />
+
         <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottomNavigationBar"
+            android:id="@+id/bnv_root"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            app:menu="@menu/menu_main_bottom_tab_item"
             app:labelVisibilityMode="labeled"
-            />
+            app:menu="@menu/menu_main_bottom_tab_item" />
+
     </RelativeLayout>
 </layout>
