@@ -62,9 +62,9 @@ class SearchImagesAdapter(
         get() = imageList.size
 
     private var lastQuery: String? = null
-    private var imageList: ArrayList<ImageModel> = ArrayList()
+    private var imageList: List<ImageModel> = emptyList()
     fun setList(list: List<ImageModel>) {
-        val newList = ArrayList<ImageModel>()
+        val newList = mutableListOf<ImageModel>()
         newList.addAll(list)
         if (newList.firstOrNull() != ImageModel.Empty) {
             Log.d(TAG, "diff debug set list add empty")
@@ -121,7 +121,7 @@ class SearchImagesAdapter(
             notifyDataSetChanged()
             return
         }
-        val newList = ArrayList(list).apply {
+        val newList = list.toMutableList().apply {
             add(0, ImageModel.Empty)
         }
         val handler = Handler(Looper.getMainLooper())
