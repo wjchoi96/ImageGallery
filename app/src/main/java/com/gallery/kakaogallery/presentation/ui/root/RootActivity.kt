@@ -78,7 +78,8 @@ class RootActivity : HeaderCompActivity<ActivityRootBinding>(), FragmentRootHand
         changeFragment(it.itemId)
         return@OnItemSelectedListener true // 항목을 선택된 항목으로 표시하려면 true, 아니면 false
     }
-    private fun setBottomNavigationMenu(){
+
+    private fun setBottomNavigationMenu() {
         binding.bottomNavigationBar.setOnItemSelectedListener(navigationItemSelectedListener)
     }
 
@@ -87,12 +88,12 @@ class RootActivity : HeaderCompActivity<ActivityRootBinding>(), FragmentRootHand
         2. let 설명
         3. commit, commitAllowingStateLoss 차이
      */
-    private fun changeFragment(fragmentResId : Int){
+    private fun changeFragment(fragmentResId: Int) {
         val transaction = supportFragmentManager.beginTransaction()
         var fragment = supportFragmentManager.findFragmentByTag("$fragmentResId")
         viewModel.currentPage = menuResIdList.indexOf(fragmentResId)
-        if(fragment == null){ // 해당 resId fragment 가 없다면 생성해준다
-            fragment = when(fragmentResId){
+        if (fragment == null) { // 해당 resId fragment 가 없다면 생성해준다
+            fragment = when (fragmentResId) {
                 menuResIdList[0] -> {
                     SearchImageFragment()
                 }
@@ -103,10 +104,13 @@ class RootActivity : HeaderCompActivity<ActivityRootBinding>(), FragmentRootHand
             }
             transaction.add(R.id.container, fragment, "$fragmentResId")
         }
-        Log.d("TAG", "search : ${fragment is SearchImageFragment}, save : ${fragment is GalleryFragment}")
+        Log.d(
+            "TAG",
+            "search : ${fragment is SearchImageFragment}, save : ${fragment is GalleryFragment}"
+        )
         transaction.show(fragment)
-        for(res in menuResIdList){
-            if(res == fragmentResId)
+        for (res in menuResIdList) {
+            if (res == fragmentResId)
                 continue
             supportFragmentManager.findFragmentByTag("$res")?.let {
                 transaction.hide(it)
