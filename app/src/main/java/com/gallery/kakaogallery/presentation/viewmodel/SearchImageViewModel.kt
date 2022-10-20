@@ -57,11 +57,11 @@ class SearchImageViewModel @Inject constructor(
 
     private val searchFailMessage: String = "검색을 실패했습니다"
 
-    private val selectImageIdxList: ArrayList<Int> = ArrayList()
+    private val selectImageIdxList = mutableListOf<Int>()
 
     // select 해서 저장한 이미지들의 map
     // 이미지보관함에서 이미지를 지울때, 대응 가능한 이미지들은 대응해주기 위함
-    private val tempSavedImageMap: HashMap<String, Int> = HashMap()
+    private val tempSavedImageMap = mutableMapOf<String, Int>()
 
     /**
      * live data for data
@@ -117,7 +117,7 @@ class SearchImageViewModel @Inject constructor(
                 "TAG",
                 "requestSaveImage : ${selectImageIdxList.size} - thread : ${Thread.currentThread().name}"
             )
-            val saveImageList = ArrayList<ImageModel>()
+            val saveImageList = mutableListOf<ImageModel>()
             selectImageIdxList.sort() // idx 순으로 정렬
             for (idx in selectImageIdxList) {
                 tempSavedImageMap[imageList[idx].imageUrl] = idx
@@ -191,7 +191,7 @@ class SearchImageViewModel @Inject constructor(
     }
 
     private fun releaseAllSelectImage() {
-        val imageList = searchImages.value?.first?.let { ArrayList(it) } ?: return
+        val imageList = searchImages.value?.first?.toList() ?: return
         for (idx in selectImageIdxList) {
             imageList[idx].isSelect = false
         }
@@ -211,7 +211,7 @@ class SearchImageViewModel @Inject constructor(
      */
     fun selectImage(image: ImageModel, idx: Int) {
         Log.d("TAG", "select image item : $idx, selectMode : ${selectMode.value}")
-        val imageList = searchImages.value?.first?.let { ArrayList(it) } ?: return
+        val imageList = searchImages.value?.first?.toMutableList() ?: return
         Log.d(
             "TAG",
             "select image item : $idx, selectMode : ${selectMode.value}, imageList : ${imageList.size}"
