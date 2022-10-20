@@ -122,7 +122,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setListener(){
-        vd.recyclerView.setOnTouchListener { v, event ->
+        binding.recyclerView.setOnTouchListener { v, event ->
             when(event?.action){
                 MotionEvent.ACTION_UP -> mContext?.hideKeyboard(v)
             }
@@ -141,7 +141,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
                 }
             }
         }
-        vd.recyclerView.apply {
+        binding.recyclerView.apply {
             layoutManager = viewManager
             adapter = imageSearchAdapter
             addItemDecoration(itemDecoration)
@@ -196,7 +196,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
 
     private fun scrollToTop(){
         if(imageSearchAdapter.currentItemSize != 0){
-            vd.recyclerView.smoothScrollToPosition(0)
+            binding.recyclerView.smoothScrollToPosition(0)
         }
     }
 
@@ -227,10 +227,10 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
         }
 
         viewModel.dataLoading.observe(this) {
-            vd.progress.isVisible = it
+            binding.progress.isVisible = it
         }
         viewModel.pagingDataLoading.observe(this){
-            vd.listProgress.isVisible = it
+            binding.listProgress.isVisible = it
         }
 
         viewModel.headerTitle.observe(this) {
@@ -239,7 +239,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
 
         viewModel.keyboardShownEvent.observe(this) {
             if(it == false){
-                mContext?.hideKeyboard(vd.background)
+                mContext?.hideKeyboard(binding.background)
             }
         }
 
@@ -260,9 +260,9 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
                 imageSearchAdapter.notifyDataSetChanged()
                 imageSearchAdapter.setLastQuery(viewModel.lastQuery.value) // testCode
                 if(images.isEmpty())
-                    vd.tvNoneNotify.visibility = View.VISIBLE
+                    binding.tvNoneNotify.visibility = View.VISIBLE
                 else
-                    vd.tvNoneNotify.visibility = View.GONE
+                    binding.tvNoneNotify.visibility = View.GONE
             }
             ImageModel.Payload.PayloadType.Inserted -> {}
             ImageModel.Payload.PayloadType.InsertedRange -> {

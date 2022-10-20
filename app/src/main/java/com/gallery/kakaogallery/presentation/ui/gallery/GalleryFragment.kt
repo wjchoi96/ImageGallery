@@ -138,7 +138,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
             return@GalleryAdapter viewModel.selectMode
         }
         val viewManager = GridLayoutManager(mContext, itemCount)
-        vd.recyclerView.apply {
+        binding.recyclerView.apply {
             layoutManager = viewManager
             adapter = imageListAdapter
             addItemDecoration(itemDecoration)
@@ -176,10 +176,10 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     }
 
     private fun setSwipeRefreshListener(){
-        vd.swipeRefreshLayout.setOnRefreshListener {
+        binding.swipeRefreshLayout.setOnRefreshListener {
             requestSavedImageList()
         }
-        vd.swipeRefreshLayout.setColorSchemeResources(
+        binding.swipeRefreshLayout.setColorSchemeResources(
             android.R.color.holo_blue_bright,
             android.R.color.holo_green_light,
             android.R.color.holo_orange_light,
@@ -189,7 +189,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
 
     private fun scrollToTop(){
         if(viewModel.imageList.isNotEmpty()){
-            vd.recyclerView.smoothScrollToPosition(0)
+            binding.recyclerView.smoothScrollToPosition(0)
         }
     }
 
@@ -253,18 +253,18 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
 
     private fun setEmptyListView(){
         if(viewModel.imageList.isEmpty())
-            vd.tvNoneNotify.visibility = View.VISIBLE
+            binding.tvNoneNotify.visibility = View.VISIBLE
         else
-            vd.tvNoneNotify.visibility = View.GONE
+            binding.tvNoneNotify.visibility = View.GONE
     }
 
     private fun finishRefresh(){
-        if(vd.swipeRefreshLayout.isRefreshing)
-            vd.swipeRefreshLayout.isRefreshing = false
+        if(binding.swipeRefreshLayout.isRefreshing)
+            binding.swipeRefreshLayout.isRefreshing = false
     }
 
     private fun setProgress(visible: Boolean) {
-        vd.progress.isVisible = visible
+        binding.progress.isVisible = visible
         if(!visible)
             finishRefresh()
     }
