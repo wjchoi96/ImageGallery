@@ -4,7 +4,6 @@ import android.content.res.Configuration
 import android.graphics.Rect
 import android.os.Bundle
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -36,7 +35,9 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
         super.onHiddenChanged(hidden)
         Timber.d("save onHiddenChanged => $hidden")
         if (!hidden) {
-            fHandler?.getHeaderCompFromRoot()?.setBackgroundClickListener { scrollToTop() }
+            binding.layoutToolbar.layoutAppBar.setOnClickListener {
+                scrollToTop()
+            }
             if (viewModel.selectMode)
                 startSelectMode()
             else
@@ -68,20 +69,12 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     }
 
 
-    // header 를 save, search 둘이서 같은걸 공유하다보니, 가로, 세로 전환이 되며 두 뷰가 모드 새로 reCreate 될때
-    // fragment 두개가 하나의 header 를 바꿔버리면서 충돌난다
-    // onHiddenChanged 와 연계해서 어떻게 가능하려나?
     private fun initHeader() {
         if (isHidden) //  현재 보이는 fragment 가 header setting 에 우선권을 가지도록 설정
             return
-        // 상대 fragment 탭의 onStop 이후로 여기보다 먼저 호출되는 파괴 관련 생명주기 콜백이 없다
-        // onStop 에서 header button 을 제거할 수는 없으니, init code 에서 처리하자
-        fHandler?.getHeaderCompFromRoot()?.apply {
-            clearView()
-//            setTitle("내 보관함")
-//            setRightBtnListener("선택"){
-//                startSelectMode()
-//            }
+        binding.layoutToolbar.let {
+            it.tvBtnRight.isVisible = false
+            it.tvBtnLeft.isVisible = false
         }
         Timber.d("init header " + viewModel.selectMode)
         if (viewModel.selectMode)
@@ -92,27 +85,41 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
 
     private fun startSelectMode() {
         viewModel.selectMode = true
-        fHandler?.getHeaderCompFromRoot()?.apply {
-            setLeftBtnListener("취소") {
-                releaseAllSelectImage()
-                finishSelectMode()
+        binding.layoutToolbar.let {
+            it.tvBtnLeft.apply {
+                isVisible = true
+                text = "삭제"
+                setOnClickListener {
+                    showRemoveDialog()
+                }
             }
-            setRightBtnListener("삭제") {
-                showRemoveDialog()
+            it.tvBtnRight.apply {
+                isVisible = true
+                text = "취소"
+                setOnClickListener {
+                    releaseAllSelectImage()
+                    finishSelectMode()
+                }
             }
-            setTitle("0장 선택중")
+            it.toolBar.title = "0장 선택중"
         }
     }
 
     private fun finishSelectMode() {
         viewModel.selectImageIdxList.clear()
         viewModel.selectMode = false
-        fHandler?.getHeaderCompFromRoot()?.apply {
-            removeLeftBtn()
-            setRightBtnListener("선택") {
-                startSelectMode()
+        binding.layoutToolbar.let {
+            it.tvBtnLeft.apply {
+                isVisible = false
             }
-            setTitle("내 보관함")
+            it.tvBtnRight.apply {
+                isVisible = true
+                text = "선택"
+                setOnClickListener {
+                    startSelectMode()
+                }
+            }
+            it.toolBar.title = "내 보관함"
         }
     }
 
@@ -132,12 +139,14 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
                 Timber.d("viewModel.imageList[" + idx + "].isSelect = " + viewModel.imageList[idx].isSelect)
                 if (viewModel.imageList[idx].isSelect) {
                     viewModel.selectImageIdxList.add(idx)
-                    fHandler?.getHeaderCompFromRoot()
-                        ?.setTitle("${viewModel.selectImageIdxList.size}장 선택중")
+                    "${viewModel.selectImageIdxList.size}장 선택중".let {
+                        binding.layoutToolbar.toolBar.title = it
+                    }
                 } else {
                     viewModel.selectImageIdxList.remove(idx)
-                    fHandler?.getHeaderCompFromRoot()
-                        ?.setTitle("${viewModel.selectImageIdxList.size}장 선택중")
+                    "${viewModel.selectImageIdxList.size}장 선택중".let {
+                        binding.layoutToolbar.toolBar.title = it
+                    }
                 }
                 imageListAdapter?.notifyItemChanged(idx, GalleryAdapter.ImagePayload.Select)
             }
