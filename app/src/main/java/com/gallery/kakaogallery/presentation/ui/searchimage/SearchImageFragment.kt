@@ -50,7 +50,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
         super.onHiddenChanged(hidden)
         Log.d("TAG", "search onHiddenChanged => $hidden")
         if(!hidden){
-            fHandler?.getHeaderCompForChange()?.setBackgroundClickListener { scrollToTop() }
+            fHandler?.getHeaderCompFromRoot()?.setBackgroundClickListener { scrollToTop() }
             setSelectMode(viewModel.selectMode.value == true)
         }
     }
@@ -84,7 +84,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
             return
         // 상대 fragment 탭의 onStop 이후로 여기보다 먼저 호출되는 파괴 관련 생명주기 콜백이 없다
         // onStop 에서 header button 을 제거할 수는 없으니, init code 에서 처리하자
-        fHandler?.getHeaderCompForChange()?.apply {
+        fHandler?.getHeaderCompFromRoot()?.apply {
             clearView()
             setBackgroundClickListener{
                 scrollToTop()
@@ -100,7 +100,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
             finishSelectMode()
     }
     private fun startSelectMode(){
-        fHandler?.getHeaderCompForChange()?.apply {
+        fHandler?.getHeaderCompFromRoot()?.apply {
             setLeftBtnListener("취소") {
                 viewModel.setSelectMode(false)
             }
@@ -111,7 +111,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
         }
     }
     private fun finishSelectMode(){
-        fHandler?.getHeaderCompForChange()?.apply {
+        fHandler?.getHeaderCompFromRoot()?.apply {
             removeLeftBtn()
             setRightBtnListener("선택") {
                 viewModel.setSelectMode(true)
@@ -234,7 +234,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
         }
 
         viewModel.headerTitle.observe(this) {
-            fHandler?.getHeaderCompForChange()?.apply { setTitle(it) }
+            fHandler?.getHeaderCompFromRoot()?.apply { setTitle(it) }
         }
 
         viewModel.keyboardShownEvent.observe(this) {

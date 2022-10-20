@@ -50,7 +50,7 @@ import dagger.hilt.android.AndroidEntryPoint
  */
 
 @AndroidEntryPoint
-class RootActivity : HeaderCompActivity<ActivityRootBinding>(), FragmentHandler {
+class RootActivity : HeaderCompActivity<ActivityRootBinding>(), FragmentRootHandler {
     override val layoutResId: Int
         get() = R.layout.activity_root
     private val viewModel: RootViewModel by viewModels()
@@ -115,7 +115,7 @@ class RootActivity : HeaderCompActivity<ActivityRootBinding>(), FragmentHandler 
         transaction.commitAllowingStateLoss()
     }
 
-    override fun getHeaderCompForChange(): HeaderComp? {
+    override fun getHeaderCompFromRoot(): HeaderComp? {
         return headerComp
     }
 }

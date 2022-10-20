@@ -2,15 +2,15 @@ package com.gallery.kakaogallery.presentation.ui.base
 
 import android.content.Context
 import androidx.databinding.ViewDataBinding
-import com.gallery.kakaogallery.presentation.ui.root.FragmentHandler
+import com.gallery.kakaogallery.presentation.ui.root.FragmentRootHandler
 
 abstract class BaseFragmentUseHandler<T : ViewDataBinding> : BindingFragment<T>() {
 
-    protected var fHandler : FragmentHandler? = null
+    protected var fHandler : FragmentRootHandler? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if ( context is FragmentHandler)
+        if ( context is FragmentRootHandler)
             fHandler = context
     }
     override fun onDetach() {

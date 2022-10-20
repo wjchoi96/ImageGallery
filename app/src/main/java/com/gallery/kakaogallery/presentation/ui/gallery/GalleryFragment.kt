@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.View
-import android.widget.ProgressBar
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
@@ -36,7 +35,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
         super.onHiddenChanged(hidden)
         Log.d("TAG", "save onHiddenChanged => $hidden")
         if(!hidden){
-            fHandler?.getHeaderCompForChange()?.setBackgroundClickListener { scrollToTop() }
+            fHandler?.getHeaderCompFromRoot()?.setBackgroundClickListener { scrollToTop() }
             if(viewModel.selectMode)
                 startSelectMode()
             else
@@ -76,7 +75,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
             return
         // 상대 fragment 탭의 onStop 이후로 여기보다 먼저 호출되는 파괴 관련 생명주기 콜백이 없다
         // onStop 에서 header button 을 제거할 수는 없으니, init code 에서 처리하자
-        fHandler?.getHeaderCompForChange()?.apply {
+        fHandler?.getHeaderCompFromRoot()?.apply {
             clearView()
 //            setTitle("내 보관함")
 //            setRightBtnListener("선택"){
@@ -91,7 +90,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     }
     private fun startSelectMode(){
         viewModel.selectMode = true
-        fHandler?.getHeaderCompForChange()?.apply {
+        fHandler?.getHeaderCompFromRoot()?.apply {
             setLeftBtnListener("취소") {
                 releaseAllSelectImage()
                 finishSelectMode()
@@ -105,7 +104,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     private fun finishSelectMode(){
         viewModel.selectImageIdxList.clear()
         viewModel.selectMode = false
-        fHandler?.getHeaderCompForChange()?.apply {
+        fHandler?.getHeaderCompFromRoot()?.apply {
             removeLeftBtn()
             setRightBtnListener("선택") {
                 startSelectMode()
@@ -129,10 +128,10 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
                 Log.d("TAG", "viewModel.imageList[$idx].isSelect = ${viewModel.imageList[idx].isSelect}")
                 if(viewModel.imageList[idx].isSelect){
                     viewModel.selectImageIdxList.add(idx)
-                    fHandler?.getHeaderCompForChange()?.setTitle("${viewModel.selectImageIdxList.size}장 선택중")
+                    fHandler?.getHeaderCompFromRoot()?.setTitle("${viewModel.selectImageIdxList.size}장 선택중")
                 }else{
                     viewModel.selectImageIdxList.remove(idx)
-                    fHandler?.getHeaderCompForChange()?.setTitle("${viewModel.selectImageIdxList.size}장 선택중")
+                    fHandler?.getHeaderCompFromRoot()?.setTitle("${viewModel.selectImageIdxList.size}장 선택중")
                 }
                 imageListAdapter?.notifyItemChanged(idx, GalleryAdapter.ImagePayload.Select)
             }
