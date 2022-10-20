@@ -9,12 +9,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.databinding.ItemSearchImageBinding
 import com.gallery.kakaogallery.databinding.ItemSearchQueryBinding
 import com.gallery.kakaogallery.domain.model.ImageModel
-import com.gallery.kakaogallery.presentation.ui.base.BaseViewHolder
 import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
 /*
     이건 좀 당장은 아닌거같다
     기존 방식 + LiveData + view model + 코루틴 + repository 로 변경하는거로 노선 틀자
@@ -75,7 +75,7 @@ class SearchImagesListAdapter(
 
     class ImageViewHolder private constructor(
         private val vd : ItemSearchImageBinding
-    ): BaseViewHolder(vd) {
+    ): RecyclerView.ViewHolder(vd.root) {
         companion object {
             fun from(parent : ViewGroup) : ImageViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
@@ -98,7 +98,7 @@ class SearchImagesListAdapter(
 
     class QueryViewHolder private constructor(
         private val vd : ItemSearchQueryBinding
-    ) : BaseViewHolder(vd){
+    ): RecyclerView.ViewHolder(vd.root){
         companion object {
             fun from(parent : ViewGroup) : QueryViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)

@@ -2,26 +2,27 @@ package com.gallery.kakaogallery.presentation.ui.gallery
 
 import android.content.res.Configuration
 import android.graphics.Rect
+import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.View
-import android.view.ViewGroup
-import android.widget.ProgressBar
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.FragmentGalleryBinding
-import com.gallery.kakaogallery.presentation.ui.base.BaseFragmentUseHandler
+import com.gallery.kakaogallery.presentation.extension.showToast
+import com.gallery.kakaogallery.presentation.ui.base.DisposableManageFragment
 import com.gallery.kakaogallery.presentation.util.DialogUtil
 import com.gallery.kakaogallery.presentation.viewmodel.GalleryViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class GalleryFragment : BaseFragmentUseHandler<FragmentGalleryBinding, GalleryViewModel>() {
+class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     override val layoutResId: Int
         get() = R.layout.fragment_gallery
-    override val viewModel: GalleryViewModel by viewModels()
+    private val viewModel: GalleryViewModel by viewModels()
 
     private var imageListAdapter : GalleryAdapter? = null
     private var itemCount = 3
@@ -32,9 +33,9 @@ class GalleryFragment : BaseFragmentUseHandler<FragmentGalleryBinding, GalleryVi
      */
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
-        Log.d(TAG, "save onHiddenChanged => $hidden")
+        Log.d("TAG", "save onHiddenChanged => $hidden")
         if(!hidden){
-            fHandler?.getHeaderCompForChange()?.setBackgroundClickListener { scrollToTop() }
+            fHandler?.getHeaderCompFromRoot()?.setBackgroundClickListener { scrollToTop() }
             if(viewModel.selectMode)
                 startSelectMode()
             else
@@ -42,7 +43,15 @@ class GalleryFragment : BaseFragmentUseHandler<FragmentGalleryBinding, GalleryVi
         }
     }
 
-    override fun initData() {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        initData()
+        initView(view)
+        observeData()
+        requestSavedImageList()
+    }
+
+    private fun initData() {
         itemCount = when(resources.configuration.orientation) {
             Configuration.ORIENTATION_PORTRAIT -> 3
             Configuration.ORIENTATION_LANDSCAPE -> 5
@@ -50,8 +59,8 @@ class GalleryFragment : BaseFragmentUseHandler<FragmentGalleryBinding, GalleryVi
         }
     }
 
-    override fun initView(root: ViewGroup) {
-        Log.d(TAG, "initView => isHidden : $isHidden")
+    private fun initView(root: View) {
+        Log.d("TAG", "initView => isHidden : $isHidden")
         initHeader()
         setRecyclerView()
         setSwipeRefreshListener()
@@ -66,14 +75,14 @@ class GalleryFragment : BaseFragmentUseHandler<FragmentGalleryBinding, GalleryVi
             return
         // 상대 fragment 탭의 onStop 이후로 여기보다 먼저 호출되는 파괴 관련 생명주기 콜백이 없다
         // onStop 에서 header button 을 제거할 수는 없으니, init code 에서 처리하자
-        fHandler?.getHeaderCompForChange()?.apply {
+        fHandler?.getHeaderCompFromRoot()?.apply {
             clearView()
 //            setTitle("내 보관함")
 //            setRightBtnListener("선택"){
 //                startSelectMode()
 //            }
         }
-        Log.d(TAG, "init header ${viewModel.selectMode}")
+        Log.d("TAG", "init header ${viewModel.selectMode}")
         if(viewModel.selectMode)
             startSelectMode()
         else
@@ -81,7 +90,7 @@ class GalleryFragment : BaseFragmentUseHandler<FragmentGalleryBinding, GalleryVi
     }
     private fun startSelectMode(){
         viewModel.selectMode = true
-        fHandler?.getHeaderCompForChange()?.apply {
+        fHandler?.getHeaderCompFromRoot()?.apply {
             setLeftBtnListener("취소") {
                 releaseAllSelectImage()
                 finishSelectMode()
@@ -95,7 +104,7 @@ class GalleryFragment : BaseFragmentUseHandler<FragmentGalleryBinding, GalleryVi
     private fun finishSelectMode(){
         viewModel.selectImageIdxList.clear()
         viewModel.selectMode = false
-        fHandler?.getHeaderCompForChange()?.apply {
+        fHandler?.getHeaderCompFromRoot()?.apply {
             removeLeftBtn()
             setRightBtnListener("선택") {
                 startSelectMode()
@@ -113,16 +122,16 @@ class GalleryFragment : BaseFragmentUseHandler<FragmentGalleryBinding, GalleryVi
 
     private fun setRecyclerView(){
         imageListAdapter = GalleryAdapter(mContext ?: return) { image, idx ->
-            Log.d(TAG, "select image item : $idx, ${viewModel.selectMode}")
+            Log.d("TAG", "select image item : $idx, ${viewModel.selectMode}")
             if(viewModel.selectMode) {
                 viewModel.imageList[idx].isSelect = !viewModel.imageList[idx].isSelect
-                Log.d(TAG, "viewModel.imageList[$idx].isSelect = ${viewModel.imageList[idx].isSelect}")
+                Log.d("TAG", "viewModel.imageList[$idx].isSelect = ${viewModel.imageList[idx].isSelect}")
                 if(viewModel.imageList[idx].isSelect){
                     viewModel.selectImageIdxList.add(idx)
-                    fHandler?.getHeaderCompForChange()?.setTitle("${viewModel.selectImageIdxList.size}장 선택중")
+                    fHandler?.getHeaderCompFromRoot()?.setTitle("${viewModel.selectImageIdxList.size}장 선택중")
                 }else{
                     viewModel.selectImageIdxList.remove(idx)
-                    fHandler?.getHeaderCompForChange()?.setTitle("${viewModel.selectImageIdxList.size}장 선택중")
+                    fHandler?.getHeaderCompFromRoot()?.setTitle("${viewModel.selectImageIdxList.size}장 선택중")
                 }
                 imageListAdapter?.notifyItemChanged(idx, GalleryAdapter.ImagePayload.Select)
             }
@@ -184,14 +193,9 @@ class GalleryFragment : BaseFragmentUseHandler<FragmentGalleryBinding, GalleryVi
         }
     }
 
-    override fun startMainFunc() {
-        super.startMainFunc()
-        requestSavedImageList()
-    }
-
     private fun showRemoveDialog(){
         if(viewModel.selectImageIdxList.isEmpty()){
-            showToast("이미지를 선택해주세요")
+            mContext?.showToast("이미지를 선택해주세요")
             return
         }
         DialogUtil.showBottom(mContext ?: return, "${viewModel.selectImageIdxList.size}개의 이미지를 삭제하시겠습니까?", "삭제", "취소", {
@@ -200,7 +204,7 @@ class GalleryFragment : BaseFragmentUseHandler<FragmentGalleryBinding, GalleryVi
     }
     private fun requestRemoveSelectImage(){
         if(viewModel.selectImageIdxList.isEmpty()){
-            showToast("이미지를 선택해주세요")
+            mContext?.showToast("이미지를 선택해주세요")
             return
         }
         setProgress(true)
@@ -212,17 +216,16 @@ class GalleryFragment : BaseFragmentUseHandler<FragmentGalleryBinding, GalleryVi
         viewModel.requestSavedImageList()
     }
 
-    override fun bind() {
-        super.bind()
+    private fun observeData() {
         viewModel.errorMessageObservable.subscribe {
             setProgress(false)
-            showToast(it)
+            mContext?.showToast(it)
         }.apply { compositeDisposable.add(this) }
 
         viewModel.savedImageListObservable.subscribe {
-            Log.d(TAG, "savedImageListObservable subscribe thread - ${Thread.currentThread().name}")
+            Log.d("TAG", "savedImageListObservable subscribe thread - ${Thread.currentThread().name}")
             for((idx,i) in it.withIndex()){
-                Log.d(TAG, "[$idx] : ${i.toMinString()}")
+                Log.d("TAG", "[$idx] : ${i.toMinString()}")
             }
             setProgress(false)
             imageListAdapter?.setList(it)
@@ -260,12 +263,9 @@ class GalleryFragment : BaseFragmentUseHandler<FragmentGalleryBinding, GalleryVi
             vd.swipeRefreshLayout.isRefreshing = false
     }
 
-    override fun setProgress(visible: Boolean) {
-        super.setProgress(visible)
+    private fun setProgress(visible: Boolean) {
+        vd.progress.isVisible = visible
         if(!visible)
             finishRefresh()
-    }
-    override fun getProgress(): ProgressBar {
-        return vd.progress
     }
 }

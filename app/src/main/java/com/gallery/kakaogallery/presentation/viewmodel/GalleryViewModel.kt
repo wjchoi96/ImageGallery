@@ -11,7 +11,9 @@ import javax.inject.Inject
 @HiltViewModel
 class GalleryViewModel @Inject constructor(
     private val imageRepository: ImageRepository
-): BaseViewModel() {
+): DisposableManageViewModel() {
+    private val errorMessageSubject : PublishSubject<String> = PublishSubject.create()
+    var errorMessageObservable : Observable<String> = errorMessageSubject.observeOn(AndroidSchedulers.mainThread())
 
     private val savedImageSubject : PublishSubject<ArrayList<ImageModel>> = PublishSubject.create()
     var savedImageListObservable : Observable<ArrayList<ImageModel>> = savedImageSubject.observeOn(AndroidSchedulers.mainThread())
