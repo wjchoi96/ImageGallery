@@ -78,8 +78,8 @@ class SearchImagesListAdapter(
     }
 
     class ImageViewHolder private constructor(
-        private val vd: ItemSearchImageBinding
-    ) : RecyclerView.ViewHolder(vd.root) {
+        private val binding: ItemSearchImageBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
         companion object {
             fun from(parent: ViewGroup): ImageViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
@@ -92,17 +92,17 @@ class SearchImagesListAdapter(
             get() = adapterPosition
 
         fun bind(viewModel: SearchImageViewModel, item: ImageModel) {
-            vd.viewModel = viewModel
-            vd.item = item
-            vd.position = itemPosition
-            vd.executePendingBindings()
+            binding.viewModel = viewModel
+            binding.item = item
+            binding.position = itemPosition
+            binding.executePendingBindings()
         }
 
     }
 
     class QueryViewHolder private constructor(
-        private val vd: ItemSearchQueryBinding
-    ) : RecyclerView.ViewHolder(vd.root) {
+        private val binding: ItemSearchQueryBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
         companion object {
             fun from(parent: ViewGroup): QueryViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
@@ -112,12 +112,12 @@ class SearchImagesListAdapter(
         }
 
         val query: String
-            get() = vd.etQuery.text.toString()
+            get() = binding.etQuery.text.toString()
 
         fun bind(viewModel: SearchImageViewModel) {
-            vd.viewModel = viewModel
-//            vd.query = query
-            vd.executePendingBindings()
+            binding.viewModel = viewModel
+//            binding.query = query
+            binding.executePendingBindings()
         }
     }
 }
