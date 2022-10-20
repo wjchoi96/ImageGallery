@@ -3,7 +3,6 @@ package com.gallery.kakaogallery.presentation.ui.searchimage
 import android.graphics.Color
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +14,7 @@ import com.gallery.kakaogallery.databinding.ItemSearchQueryBinding
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
 import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
+import timber.log.Timber
 
 /**
  * 장기적으로 보면, search comp 를 https://deque.tistory.com/140 처럼 처리해야할것같다
@@ -42,7 +42,6 @@ import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
 class SearchImagesAdapter(
     private val viewModel: SearchImageViewModel
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    private val TAG = KakaoGalleryApplication.getTag(this::class.java)
 
     companion object {
         const val SearchQueryType = 0
@@ -67,7 +66,7 @@ class SearchImagesAdapter(
         val newList = mutableListOf<ImageModel>()
         newList.addAll(list)
         if (newList.firstOrNull() != ImageModel.Empty) {
-            Log.d(TAG, "diff debug set list add empty")
+            Timber.d("diff debug set list add empty")
             newList.add(0, ImageModel.Empty)
         }
         imageList = newList
@@ -116,7 +115,7 @@ class SearchImagesAdapter(
      */
     fun updateList(list: List<ImageModel>) {
         if (imageList.isEmpty()) {
-            Log.d(TAG, "diff debug old list is empty")
+            Timber.d("diff debug old list is empty")
             this.setList(list)
             notifyDataSetChanged()
             return
@@ -126,15 +125,12 @@ class SearchImagesAdapter(
         }
         val handler = Handler(Looper.getMainLooper())
         Thread {
-            Log.d(TAG, "diff debug updateList thread start")
+            Timber.d("diff debug updateList thread start")
             val diffCallback = ImageDiffUtilCallback(this.imageList, newList)
             val diffRes = DiffUtil.calculateDiff(diffCallback)
             handler.post {
                 this.setList(newList) // must call main thread
-                Log.d(
-                    TAG,
-                    "diff debug updateList post : setList[${this.currentItemSize}], newList[${newList.size}]"
-                )
+                Timber.d("diff debug updateList post : setList[" + this.currentItemSize + "], newList[" + newList.size + "]")
                 diffRes.dispatchUpdatesTo(this)
             }
         }.start()
@@ -177,14 +173,14 @@ class SearchImagesAdapter(
             when (payload) {
                 ImagePayload.Save -> {
                     if (holder is ImageItemViewHolder) {
-                        Log.d(TAG, "payload Save : $position => $position")
+                        Timber.d("payload Save : $position => $position")
                         holder.setSaveIcon(imageList[position].isSaveImage)
                         holder.setSelectEffect(imageList[position].isSelect)
                     }
                 }
                 ImagePayload.Select -> {
                     if (holder is ImageItemViewHolder) {
-                        Log.d(TAG, "payload Select : $position => $position")
+                        Timber.d("payload Select : $position => $position")
                         holder.setSelectEffect(imageList[position].isSelect)
                     }
                 }
@@ -249,7 +245,7 @@ class SearchImagesAdapter(
 
         val query: String
             get() {
-                Log.d("test", "getQuery : ${binding.etQuery.text}")
+                Timber.d("getQuery : " + binding.etQuery.text)
                 return binding.etQuery.text.toString()
             }
 

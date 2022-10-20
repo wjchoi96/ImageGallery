@@ -7,10 +7,9 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.util.Log
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
+import timber.log.Timber
 
 class NetworkUtil private constructor() : ConnectivityManager.NetworkCallback() {
-    private val TAG = KakaoGalleryApplication.getTag(this::class.java)
-
     companion object {
         val instance = NetworkUtil()
     }
@@ -24,23 +23,23 @@ class NetworkUtil private constructor() : ConnectivityManager.NetworkCallback() 
 
     fun register() {
         connManager.registerNetworkCallback(networkRequest, this)
-        Log.d(TAG, "register network util")
+        Timber.d("register network util")
     }
 
     fun unregister() {
         connManager.unregisterNetworkCallback(this)
-        Log.d(TAG, "unregister network util")
+        Timber.d("unregister network util")
     }
 
     override fun onAvailable(network: Network) {
         super.onAvailable(network)
-        Log.d(TAG, "############## network on ######################")
+        Timber.d("############## network on ######################")
         KakaoGalleryApplication.isOnline = true
     }
 
     override fun onLost(network: Network) {
         super.onLost(network)
-        Log.d(TAG, "############## network off ######################")
+        Timber.d("############## network off ######################")
         KakaoGalleryApplication.isOnline = false
     }
 }

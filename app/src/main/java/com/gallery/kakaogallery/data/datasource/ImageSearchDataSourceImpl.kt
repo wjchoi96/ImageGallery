@@ -1,6 +1,5 @@
 package com.gallery.kakaogallery.data.datasource
 
-import android.util.Log
 import com.gallery.kakaogallery.data.constant.SearchConstant
 import com.gallery.kakaogallery.data.entity.remote.request.ImageSearchRequest
 import com.gallery.kakaogallery.data.entity.remote.response.ImageSearchResponse
@@ -8,15 +7,12 @@ import com.gallery.kakaogallery.data.service.ImageSearchService
 import com.gallery.kakaogallery.domain.model.MaxPageException
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.schedulers.Schedulers
+import timber.log.Timber
 import javax.inject.Inject
 
 class ImageSearchDataSourceImpl @Inject constructor(
     private val searchImageApi: ImageSearchService
 ) : ImageSearchDataSource {
-    companion object {
-        private const val TAG = "ImageSearchDataSourceImpl"
-    }
 
     private var imagePageable = true
 
@@ -36,7 +32,7 @@ class ImageSearchDataSourceImpl @Inject constructor(
             imagePageable = true
         return when (imagePageable) {
             false -> {
-                Log.d(TAG, "error debug => throw MaxPageException")
+                Timber.d("error debug => throw MaxPageException")
                 Observable.error { MaxPageException() }
             }
             true -> {
@@ -46,13 +42,13 @@ class ImageSearchDataSourceImpl @Inject constructor(
                     page, // 1~50
                     SearchConstant.ImagePageSizeMaxValue
                 ).map {
-                    Log.d(TAG, "Image mapping run at ${Thread.currentThread().name}")
+                    Timber.d("Image mapping run at " + Thread.currentThread().name)
                     imagePageable = !it.meta.isEnd
                     it.documents
                 }
                     .onErrorResumeNext {
                         it.printStackTrace()
-                        Log.d(TAG, "error debug => after api response => $it")
+                        Timber.d("error debug => after api response => $it")
                         Flowable.error { it }
                     }
                     .toObservable()

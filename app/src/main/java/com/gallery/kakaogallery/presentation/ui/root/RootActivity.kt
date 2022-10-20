@@ -1,7 +1,6 @@
 package com.gallery.kakaogallery.presentation.ui.root
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.ActivityRootBinding
@@ -12,6 +11,7 @@ import com.gallery.kakaogallery.presentation.ui.searchimage.SearchImageFragment
 import com.gallery.kakaogallery.presentation.viewmodel.RootViewModel
 import com.google.android.material.navigation.NavigationBarView
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 
 /*
     bottom navigation menu
@@ -104,7 +104,7 @@ class RootActivity : HeaderCompActivity<ActivityRootBinding>(), FragmentRootHand
             }
             transaction.add(R.id.container, fragment, "$fragmentResId")
         }
-        Log.d("TAG", "search : ${fragment is SearchImageFragment}, save : ${fragment is GalleryFragment}")
+        Timber.d("search : ${fragment is SearchImageFragment}, save : ${fragment is GalleryFragment}")
         transaction.show(fragment)
         for (res in menuResIdList) {
             if (res == fragmentResId)

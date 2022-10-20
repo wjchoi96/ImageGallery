@@ -1,6 +1,5 @@
 package com.gallery.kakaogallery.data.repository
 
-import android.util.Log
 import com.gallery.kakaogallery.data.datasource.ImageSearchDataSource
 import com.gallery.kakaogallery.data.datasource.SaveImageDataSource
 import com.gallery.kakaogallery.data.datasource.VideoSearchDataSource
@@ -11,6 +10,7 @@ import com.gallery.kakaogallery.domain.util.GalleryDateConvertUtil
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
+import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -22,9 +22,6 @@ class ImageRepositoryImpl @Inject constructor(
     private val videoSearchDataSource: VideoSearchDataSource,
     private val saveImageDataSource: SaveImageDataSource
 ) : ImageRepository {
-    companion object {
-        private const val TAG = "ImageRepository"
-    }
 
     private fun fetchImageQuery(query: String, page: Int): Observable<List<ImageModel>> {
         return imageSearchDataSource.fetchImageQueryRes(query, page)
@@ -67,7 +64,7 @@ class ImageRepositoryImpl @Inject constructor(
                 t1.isFailure && t2.isFailure -> throw t1.exceptionOrNull() ?: t2.exceptionOrNull()
                 ?: UnKnownException()
                 else -> {
-                    Log.d(TAG, "Observable.zip run at ${Thread.currentThread().name}")
+                    Timber.d("Observable.zip run at " + Thread.currentThread().name)
                     (t1.getOrNull() ?: emptyList()) + (t2.getOrNull() ?: emptyList()).run {
                         sortedByDescending { it.dateTimeMill }
                     }
@@ -76,7 +73,7 @@ class ImageRepositoryImpl @Inject constructor(
         }.subscribeOn(Schedulers.io())
             .onErrorResumeNext {
                 it.printStackTrace()
-                Log.d(TAG, "error debug => after zip => $it")
+                Timber.d("error debug => after zip => $it")
                 Observable.error { it }
             }
     }

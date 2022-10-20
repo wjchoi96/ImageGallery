@@ -1,6 +1,5 @@
 package com.gallery.kakaogallery.presentation.ui.searchimage
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -14,6 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 /*
     이건 좀 당장은 아닌거같다
@@ -33,7 +33,7 @@ class SearchImagesListAdapter(
 
     //https://chachas.tistory.com/46
     fun addHeaderAndSubmit(list: List<ImageModel>?, completion: (() -> (Unit))? = null) {
-        Log.d("test", "addHeaderAndSubmit : ${list?.size}")
+        Timber.d("addHeaderAndSubmit : " + list?.size)
         adapterScope.launch {
             val items = when (list) {
                 null -> listOf(SearchImageAdapterData.Header)
@@ -67,7 +67,7 @@ class SearchImagesListAdapter(
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        Log.d("test", "onBindViewHolder[$position] run on thread : ${Thread.currentThread().name}")
+        Timber.d("onBindViewHolder[" + position + "] run on thread : " + Thread.currentThread().name)
         if (holder is ImageViewHolder) {
             holder.bind(
                 viewModel,
@@ -144,7 +144,7 @@ class ImageDiffCallback : DiffUtil.ItemCallback<SearchImageAdapterData>() {
         oldItem: SearchImageAdapterData,
         newItem: SearchImageAdapterData
     ): Boolean {
-        Log.d("test", "areItemsTheSame run on thread : ${Thread.currentThread().name}\n")
+        Timber.d("areItemsTheSame run on thread : " + Thread.currentThread().name + "\n")
         return if (oldItem is SearchImageAdapterData.SearchImageData && newItem is SearchImageAdapterData.SearchImageData)
             oldItem.imageModel.imageThumbUrl == newItem.imageModel.imageThumbUrl
         else
@@ -155,7 +155,7 @@ class ImageDiffCallback : DiffUtil.ItemCallback<SearchImageAdapterData>() {
         oldItem: SearchImageAdapterData,
         newItem: SearchImageAdapterData
     ): Boolean {
-        Log.d("test", "areContentsTheSame run on thread : ${Thread.currentThread().name}")
+        Timber.d("areContentsTheSame run on thread : " + Thread.currentThread().name)
         return if (oldItem is SearchImageAdapterData.SearchImageData && newItem is SearchImageAdapterData.SearchImageData)
             oldItem == newItem
         else true

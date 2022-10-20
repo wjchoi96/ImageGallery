@@ -61,7 +61,7 @@ class GalleryViewModel @Inject constructor(
 
     fun requestRemoveImageList(imgIdxList: List<Int>) {
 //        Thread{
-//            Log.d(TAG, "requestRemoveImageList : ${imgIdxList.size} - thread : ${Thread.currentThread().name}")
+//            Timber.d("requestRemoveImageList : ${imgIdxList.size} - thread : ${Thread.currentThread().name}")
 //            val res = saveImageStorage.removeImageList(imgIdxList)
 //            getSavedImageList()
 //            removeImageIdxSubject.onNext(res)

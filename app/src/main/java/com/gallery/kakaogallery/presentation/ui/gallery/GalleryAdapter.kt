@@ -2,7 +2,6 @@ package com.gallery.kakaogallery.presentation.ui.gallery
 
 import android.content.Context
 import android.graphics.Color
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,12 +12,12 @@ import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.ViewImageItemBinding
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
+import timber.log.Timber
 
 class GalleryAdapter(
     private val context: Context,
     private val itemSelectListener: (ImageModel, Int) -> (Boolean)
 ) : RecyclerView.Adapter<GalleryAdapter.GalleryItemViewHolder>() {
-    private val TAG = KakaoGalleryApplication.getTag(this::class.java)
 
     enum class ImagePayload() {
         Save,
@@ -58,12 +57,12 @@ class GalleryAdapter(
         for (payload in payloads) {
             when (payload) {
                 ImagePayload.Save -> {
-                    Log.d(TAG, "paload Save : $position => $position")
+                    Timber.d("paload Save : $position => $position")
                     holder.setSaveIcon(imageList[position].isSaveImage)
                     holder.setSelectEffect(imageList[position].isSelect)
                 }
                 ImagePayload.Select -> {
-                    Log.d(TAG, "paload Select : $position => $position")
+                    Timber.d("paload Select : $position => $position")
                     holder.setSelectEffect(imageList[position].isSelect)
                 }
             }

@@ -1,9 +1,9 @@
 package com.gallery.kakaogallery.presentation.network
 
-import android.util.Log
 import okhttp3.CacheControl
 import okhttp3.Interceptor
 import okhttp3.Response
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 // cache 설정
@@ -12,9 +12,6 @@ import java.util.concurrent.TimeUnit
 // https://developer.mozilla.org/ko/docs/Web/HTTP/Headers/Cache-Control
 // 검색 결과는 5분간 캐시하여, 5분 이내 동일 키워드로 검색했을 때 네트워크 통신없이 결과를 보여줍니다.
 class NetworkCacheInterceptor : Interceptor {
-    companion object {
-        private const val TAG = "NetworkCacheInterceptor"
-    }
 
     private val cacheSec = 60 * 5 // 5초정도 까여서 작동하는거같은데 왜지
 
@@ -30,9 +27,9 @@ class NetworkCacheInterceptor : Interceptor {
 
         val response = chain.proceed(request)
         if (response.networkResponse != null) {
-            Log.d(TAG, "is from network")
+            Timber.d("is from network")
         } else if (response.cacheResponse != null) {
-            Log.d(TAG, "is from cache")
+            Timber.d("is from cache")
         }
         return response
     }
