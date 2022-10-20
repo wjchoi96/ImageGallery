@@ -9,7 +9,7 @@
         tools:context=".presentation.ui.root.RootActivity">
 
         <FrameLayout
-            android:id="@+id/fcv_root"
+            android:id="@+id/layout_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@+id/bnv_root" />

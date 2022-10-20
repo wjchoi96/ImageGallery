@@ -102,7 +102,7 @@ class RootActivity : HeaderCompActivity<ActivityRootBinding>(), FragmentRootHand
                 }
                 else -> return
             }
-            transaction.add(R.id.fcv_root, fragment, "$fragmentResId")
+            transaction.add(R.id.layout_container, fragment, "$fragmentResId")
         }
         Timber.d("search : ${fragment is SearchImageFragment}, save : ${fragment is GalleryFragment}")
         transaction.show(fragment)
