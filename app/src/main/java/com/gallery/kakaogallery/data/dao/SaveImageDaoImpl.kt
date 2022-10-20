@@ -27,7 +27,7 @@ class SaveImageDaoImpl @Inject constructor(
         val list = if (listJson.isBlank())
             emptyList<ImageModel>()
         else {
-            val typeToken = object : TypeToken<ArrayList<ImageModel>>() {}.type
+            val typeToken = object : TypeToken<List<ImageModel>>() {}.type
             Gson().fromJson(listJson, typeToken)
         }
         saveImagesSubject = BehaviorSubject.createDefault(list)
