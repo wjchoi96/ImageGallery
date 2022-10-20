@@ -2,23 +2,29 @@ package com.gallery.kakaogallery.presentation.ui.comp
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.LayoutInflater
 import android.view.View
+import android.widget.RelativeLayout
+import androidx.databinding.DataBindingUtil
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.CompHeaderBinding
-import com.gallery.kakaogallery.presentation.ui.base.BaseRelativeComp
 
 class HeaderComp constructor(
     context: Context,
     attrs : AttributeSet? = null,
     defStyle : Int = 0,
     defStyleRes : Int = 0
-) : BaseRelativeComp<CompHeaderBinding>(context, attrs, defStyle, defStyleRes) {
-    override val layoutResId: Int
-        get() = R.layout.comp_header
+) : RelativeLayout(context, attrs, defStyle, defStyleRes) {
+
+    constructor(context: Context) : this(context, null, 0, 0)
+
+    private val vd : CompHeaderBinding
 
     init {
+        vd = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.comp_header, this, true)
         setDefaultVisible()
     }
+
     private fun setDefaultVisible(){
         vd.btnTvLeft.visibility = View.GONE
         vd.btnTvRight.visibility = View.GONE
