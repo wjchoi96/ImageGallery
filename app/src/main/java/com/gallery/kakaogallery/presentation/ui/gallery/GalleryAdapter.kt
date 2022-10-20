@@ -6,14 +6,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.bumptech.glide.Glide
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.ViewImageItemBinding
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
-import com.gallery.kakaogallery.presentation.ui.base.BaseViewHolder
 
 class GalleryAdapter(
     private val context : Context,
@@ -75,7 +74,7 @@ class GalleryAdapter(
         private val vd : ViewImageItemBinding,
         private val context : Context,
         private val itemSelectListener : (ImageModel, Int) -> (Boolean)
-    ) : BaseViewHolder(vd){
+    ): RecyclerView.ViewHolder(vd.root){
 
         fun bind(item : ImageModel){
             loadImage(item.imageThumbUrl)

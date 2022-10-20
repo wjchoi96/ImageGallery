@@ -14,7 +14,6 @@ import com.gallery.kakaogallery.databinding.ItemSearchImageBinding
 import com.gallery.kakaogallery.databinding.ItemSearchQueryBinding
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
-import com.gallery.kakaogallery.presentation.ui.base.BaseViewHolder
 import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
 
 /**
@@ -194,7 +193,7 @@ class SearchImagesAdapter(
 
     class ImageItemViewHolder(
         private val vd : ItemSearchImageBinding
-    ) : BaseViewHolder(vd){
+    ): RecyclerView.ViewHolder(vd.root){
         companion object {
             fun from(parent : ViewGroup) : ImageItemViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
@@ -232,7 +231,7 @@ class SearchImagesAdapter(
     }
     class SearchQueryViewHolder(
         private val vd : ItemSearchQueryBinding
-    ) : BaseViewHolder(vd){
+    ): RecyclerView.ViewHolder(vd.root){
         companion object {
             fun from(parent : ViewGroup) : SearchQueryViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
