@@ -11,61 +11,64 @@ import com.gallery.kakaogallery.databinding.CompHeaderBinding
 
 class HeaderComp constructor(
     context: Context,
-    attrs : AttributeSet? = null,
-    defStyle : Int = 0,
-    defStyleRes : Int = 0
+    attrs: AttributeSet? = null,
+    defStyle: Int = 0,
+    defStyleRes: Int = 0
 ) : RelativeLayout(context, attrs, defStyle, defStyleRes) {
 
     constructor(context: Context) : this(context, null, 0, 0)
 
-    private val vd : CompHeaderBinding
+    private val vd: CompHeaderBinding
 
     init {
         vd = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.comp_header, this, true)
         setDefaultVisible()
     }
 
-    private fun setDefaultVisible(){
-        vd.btnTvLeft.visibility = View.GONE
-        vd.btnTvRight.visibility = View.GONE
-        vd.tvTitle.visibility = View.GONE
-    }
-    fun clearView(){
+    private fun setDefaultVisible() {
         vd.btnTvLeft.visibility = View.GONE
         vd.btnTvRight.visibility = View.GONE
         vd.tvTitle.visibility = View.GONE
     }
 
-    fun setBackgroundClickListener(listener: () -> Unit){
+    fun clearView() {
+        vd.btnTvLeft.visibility = View.GONE
+        vd.btnTvRight.visibility = View.GONE
+        vd.tvTitle.visibility = View.GONE
+    }
+
+    fun setBackgroundClickListener(listener: () -> Unit) {
         vd.background.setOnClickListener {
             listener.invoke()
         }
     }
 
-    fun setTitle(title : String?){
+    fun setTitle(title: String?) {
         vd.tvTitle.visibility = View.VISIBLE
         vd.tvTitle.text = title
     }
 
-    fun setRightBtnListener(text : String, listener: () -> Unit){
+    fun setRightBtnListener(text: String, listener: () -> Unit) {
         vd.btnTvRight.visibility = View.VISIBLE
         vd.btnTvRight.text = text
         vd.btnTvRight.setOnClickListener {
             listener.invoke()
         }
     }
-    fun removeRightBtn(){
+
+    fun removeRightBtn() {
         vd.btnTvRight.visibility = View.GONE
     }
 
-    fun setLeftBtnListener(text: String, listener: () -> Unit){
+    fun setLeftBtnListener(text: String, listener: () -> Unit) {
         vd.btnTvLeft.visibility = View.VISIBLE
         vd.btnTvLeft.text = text
         vd.btnTvLeft.setOnClickListener {
             listener.invoke()
         }
     }
-    fun removeLeftBtn(){
+
+    fun removeLeftBtn() {
         vd.btnTvLeft.visibility = View.GONE
     }
 }
