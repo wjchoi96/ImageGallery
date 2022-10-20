@@ -17,6 +17,7 @@ import com.gallery.kakaogallery.presentation.ui.base.DisposableManageFragment
 import com.gallery.kakaogallery.presentation.util.DialogUtil
 import com.gallery.kakaogallery.presentation.viewmodel.GalleryViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 
 @AndroidEntryPoint
 class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
@@ -33,7 +34,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
      */
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
-        Log.d("TAG", "save onHiddenChanged => $hidden")
+        Timber.d("save onHiddenChanged => $hidden")
         if (!hidden) {
             fHandler?.getHeaderCompFromRoot()?.setBackgroundClickListener { scrollToTop() }
             if (viewModel.selectMode)
@@ -60,7 +61,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     }
 
     private fun initView(root: View) {
-        Log.d("TAG", "initView => isHidden : $isHidden")
+        Timber.d("initView => isHidden : $isHidden")
         initHeader()
         setRecyclerView()
         setSwipeRefreshListener()
@@ -82,7 +83,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
 //                startSelectMode()
 //            }
         }
-        Log.d("TAG", "init header ${viewModel.selectMode}")
+        Timber.d("init header " + viewModel.selectMode)
         if (viewModel.selectMode)
             startSelectMode()
         else
@@ -125,13 +126,10 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
 
     private fun setRecyclerView() {
         imageListAdapter = GalleryAdapter(mContext ?: return) { image, idx ->
-            Log.d("TAG", "select image item : $idx, ${viewModel.selectMode}")
+            Timber.d("select image item : " + idx + ", " + viewModel.selectMode)
             if (viewModel.selectMode) {
                 viewModel.imageList[idx].isSelect = !viewModel.imageList[idx].isSelect
-                Log.d(
-                    "TAG",
-                    "viewModel.imageList[$idx].isSelect = ${viewModel.imageList[idx].isSelect}"
-                )
+                Timber.d("viewModel.imageList[" + idx + "].isSelect = " + viewModel.imageList[idx].isSelect)
                 if (viewModel.imageList[idx].isSelect) {
                     viewModel.selectImageIdxList.add(idx)
                     fHandler?.getHeaderCompFromRoot()
@@ -241,12 +239,9 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
         }.apply { compositeDisposable.add(this) }
 
         viewModel.savedImageListObservable.subscribe {
-            Log.d(
-                "TAG",
-                "savedImageListObservable subscribe thread - ${Thread.currentThread().name}"
-            )
+            Timber.d("savedImageListObservable subscribe thread - " + Thread.currentThread().name)
             for ((idx, i) in it.withIndex()) {
-                Log.d("TAG", "[$idx] : ${i.toMinString()}")
+                Timber.d("[" + idx + "] : " + i.toMinString())
             }
             setProgress(false)
             imageListAdapter?.setList(it)

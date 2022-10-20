@@ -1,6 +1,5 @@
 package com.gallery.kakaogallery.domain.usecase
 
-import android.util.Log
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.repository.ImageRepository
 import io.reactivex.rxjava3.core.Observable
@@ -18,7 +17,7 @@ class FetchQueryDataUseCase(
             }
             .onErrorReturn {
                 it.printStackTrace()
-                Log.d("TAG", "error debug at useCase => $it")
+                println("error debug at useCase => $it")
                 Result.failure(it)
             }
     }

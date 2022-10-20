@@ -2,7 +2,6 @@ package com.gallery.kakaogallery.presentation.viewmodel
 
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
@@ -15,6 +14,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.PublishSubject
+import timber.log.Timber
 import javax.inject.Inject
 
 /*
@@ -113,10 +113,7 @@ class SearchImageViewModel @Inject constructor(
         _dataLoading.value = true
         val imageList = searchImages.value?.first ?: return
         Thread {
-            Log.d(
-                "TAG",
-                "requestSaveImage : ${selectImageIdxList.size} - thread : ${Thread.currentThread().name}"
-            )
+            Timber.d("requestSaveImage : " + selectImageIdxList.size + " - thread : " + Thread.currentThread().name)
             val saveImageList = mutableListOf<ImageModel>()
             selectImageIdxList.sort() // idx 순으로 정렬
             for (idx in selectImageIdxList) {
@@ -210,25 +207,22 @@ class SearchImageViewModel @Inject constructor(
      * Called by Data Binding
      */
     fun selectImage(image: ImageModel, idx: Int) {
-        Log.d("TAG", "select image item : $idx, selectMode : ${selectMode.value}")
+        Timber.d("select image item : " + idx + ", selectMode : " + selectMode.value)
         val imageList = searchImages.value?.first?.toMutableList() ?: return
-        Log.d(
-            "TAG",
-            "select image item : $idx, selectMode : ${selectMode.value}, imageList : ${imageList.size}"
-        )
+        Timber.d("select image item : " + idx + ", selectMode : " + selectMode.value + ", imageList : " + imageList.size)
         if (selectMode.value == true) {
-            Log.d("TAG", "before imageList[$idx].isSelect = ${imageList[idx].isSelect}")
+            Timber.d("before imageList[" + idx + "].isSelect = " + imageList[idx].isSelect)
             imageList[idx] = imageList[idx].copy().apply {
                 isSelect = !isSelect
             }
-            Log.d("TAG", "after imageList[$idx].isSelect = ${imageList[idx].isSelect}")
+            Timber.d("after imageList[" + idx + "].isSelect = " + imageList[idx].isSelect)
             if (imageList[idx].isSelect) {
                 selectImageIdxList.add(idx)
             } else {
                 selectImageIdxList.remove(idx) // 여기서 remove 를 해버리니까 select 해제 시 해당 idx 전달이 안되네
             }
             _headerTitle.value = "${selectImageIdxList.size}장 선택중"
-            Log.d("TAG", "imageList address : $imageList")
+            Timber.d("imageList address : $imageList")
             _searchImages.value = Pair(
                 imageList,
                 ImageModel.Payload(
@@ -242,7 +236,7 @@ class SearchImageViewModel @Inject constructor(
     }
 
     fun searchQuery(query: String) {
-        Log.d("TAG", "search query : $query")
+        Timber.d("search query : $query")
         _keyboardShownEvent.value = false
         if (query.isBlank()) {
             showToast("검색어를 입력해주세요")

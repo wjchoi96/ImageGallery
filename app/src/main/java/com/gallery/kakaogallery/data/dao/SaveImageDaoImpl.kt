@@ -1,21 +1,17 @@
 package com.gallery.kakaogallery.data.dao
 
-import android.util.Log
 import com.gallery.kakaogallery.KakaoGallerySharedPreferences
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
+import timber.log.Timber
 import javax.inject.Inject
 
 class SaveImageDaoImpl @Inject constructor(
     private val sp: KakaoGallerySharedPreferences
 ) : SaveImageDao {
-    companion object {
-        private const val TAG = "SaveImageDao"
-    }
-
     private lateinit var saveImagesSubject: BehaviorSubject<List<ImageModel>>
 
     init {
@@ -41,7 +37,7 @@ class SaveImageDaoImpl @Inject constructor(
         // idx 가 큰수부터 remove 를 실행해줘야 중간에 idx가 꼬이지 않는다
         val list = saveImagesSubject.value?.toMutableList() ?: mutableListOf()
         for (idx in idxList.sorted().reversed()) {
-            Log.d(TAG, "remove idx : $idx")
+            Timber.d("remove idx : $idx")
             list.removeAt(idx)
         }
         syncData(list)
@@ -58,13 +54,10 @@ class SaveImageDaoImpl @Inject constructor(
 
     private fun syncData(list: List<ImageModel>) {
         val jsonStr = Gson().toJson(saveImagesSubject.value ?: emptyList<ImageModel>())
-        Log.d(
-            TAG,
-            "syncData save image list data(${saveImagesSubject.value?.size}) => \n$jsonStr\n"
-        )
+        Timber.d("syncData save image list data(${saveImagesSubject.value?.size}) => \n$jsonStr\n")
         sp.savedImageList = jsonStr
-        Log.d(TAG, "syncData save finish : \n${sp.savedImageList}")
-        Log.d(TAG, "syncData run at \n${Thread.currentThread().name}")
+        Timber.d("syncData save finish : \n${sp.savedImageList}")
+        Timber.d("syncData run at \n${Thread.currentThread().name}")
         saveImagesSubject.onNext(list)
     }
 }

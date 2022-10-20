@@ -5,7 +5,6 @@ import android.content.res.Configuration
 import android.graphics.Rect
 import android.os.Bundle
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.core.view.isVisible
@@ -21,6 +20,7 @@ import com.gallery.kakaogallery.presentation.ui.base.BaseFragmentUseHandler
 import com.gallery.kakaogallery.presentation.util.DialogUtil
 import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 
 /*
     보관된 이미지는 특별한 표시를 보여줍니다. (좋아요/별표/하트 등)
@@ -49,7 +49,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
 
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
-        Log.d("TAG", "search onHiddenChanged => $hidden")
+        Timber.d("search onHiddenChanged => $hidden")
         if (!hidden) {
             fHandler?.getHeaderCompFromRoot()?.setBackgroundClickListener { scrollToTop() }
             setSelectMode(viewModel.selectMode.value == true)
@@ -72,7 +72,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
     }
 
     private fun initView(root: View) {
-        Log.d("TAG", "initView => isHidden : $isHidden")
+        Timber.d("initView => isHidden : $isHidden")
         initHeader()
         setupRecyclerView()
         setListener()
@@ -91,7 +91,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
                 scrollToTop()
             }
         }
-        Log.d("TAG", "init header ${viewModel.selectMode.value}")
+        Timber.d("init header " + viewModel.selectMode.value)
         setSelectMode(viewModel.selectMode.value == true)
     }
 
@@ -193,7 +193,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
         override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
             super.onScrollStateChanged(recyclerView, newState)
             if (!recyclerView.canScrollVertically(1)) { // direction 은 Vertically 기준으로 -1이 위쪽, 1이 아래쪽이다
-                Log.d("TAG", "vertical end")
+                Timber.d("vertical end")
                 if (imageSearchAdapter.currentItemSize != 0) {
                     viewModel.fetchNextPage()
                 }
@@ -220,15 +220,12 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
 
     private fun observeData() {
         viewModel.searchImages.observe(this) {
-            Log.d(
-                "TAG",
-                "searchResultObservable subscribe thread - ${Thread.currentThread().name}, it.address : $it"
-            )
+            Timber.d("searchResultObservable subscribe thread - " + Thread.currentThread().name + ", it.address : " + it)
             processImages(it.first, it.second)
         }
 
         viewModel.searchImagesUseDiff.observe(this) {
-            Log.d("TAG", "diff debug searchImagesUseDiff observe")
+            Timber.d("diff debug searchImagesUseDiff observe")
             imageSearchAdapter.updateList(it)
         }
 
@@ -280,7 +277,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
                 // 넘어오는경우는 무조건 변경이 있을때
                 val positionStart =
                     1 + images.size - payload.changedIdx.size // or payload.changedIdx[0]
-                Log.d("TAG", "pagingListObservable : $positionStart - ${payload.changedIdx.size}")
+                Timber.d("pagingListObservable : " + positionStart + " - " + payload.changedIdx.size)
                 imageSearchAdapter.setList(images)
                 imageSearchAdapter.notifyItemRangeInserted(positionStart, payload.changedIdx.size)
             }
@@ -322,7 +319,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
 //            setProgress(false)
 //            imageSearchAdapter.setList(viewModel.imageList, viewModel.lastQuery)
 //            for(idx in it){
-////                Log.d(TAG, "saved image : ${viewModel.imageList[idx].isSaveImage}, ${viewModel.imageList[idx].saveDateTime ?: viewModel.imageList[idx].dateTime}")
+////                Timber.d("saved image : ${viewModel.imageList[idx].isSaveImage}, ${viewModel.imageList[idx].saveDateTime ?: viewModel.imageList[idx].dateTime}")
 //                imageSearchAdapter.notifyItemChanged(idx + 1,
 //                    SearchImagesAdapter.ImagePayload.Save
 //                )
@@ -337,7 +334,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
 //                showToast("마지막 페이지입니다")
 //            else if(it > 0){ // search header 가 존재해서 + 1
 //                val positionStart = 1 + viewModel.imageList.size - it
-//                Log.d(TAG, "pagingListObservable : $positionStart - $it")
+//                Timber.d("pagingListObservable : $positionStart - $it")
 //                imageSearchAdapter.setList(viewModel.imageList, viewModel.lastQuery)
 //                imageSearchAdapter.notifyItemRangeInserted(positionStart, it)
 //            } // it < 0 => network error or server error
@@ -347,7 +344,7 @@ class SearchImageFragment : BaseFragmentUseHandler<FragmentSearchImageBinding>()
 //        viewModel.removedImageIdxListObservable.subscribe {
 //            imageSearchAdapter.setList(viewModel.imageList, viewModel.lastQuery)
 //            for(idx in it){
-////                Log.d(TAG, "removed image : ${viewModel.imageList[idx].isSaveImage}, ${viewModel.imageList[idx].saveDateTime ?: viewModel.imageList[idx].dateTime}")
+////                Timber.d("removed image : ${viewModel.imageList[idx].isSaveImage}, ${viewModel.imageList[idx].saveDateTime ?: viewModel.imageList[idx].dateTime}")
 //                imageSearchAdapter.notifyItemChanged(idx + 1, SearchImagesAdapter.ImagePayload.Save)
 //            }
 //        }.apply { compositeDisposable.add(this) }
