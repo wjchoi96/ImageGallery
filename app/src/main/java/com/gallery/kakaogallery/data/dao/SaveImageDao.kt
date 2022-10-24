@@ -8,5 +8,5 @@ interface SaveImageDao {
 
     fun removeImages(idxList: List<Int>): Boolean
 
-    fun saveImage(image: ImageModel): Boolean
+    fun saveImages(image: List<ImageModel>): Boolean
 }

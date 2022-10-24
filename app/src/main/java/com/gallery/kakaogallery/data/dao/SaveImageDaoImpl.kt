@@ -30,23 +30,26 @@ class SaveImageDaoImpl @Inject constructor(
     }
 
     override fun fetchSaveImages(): Observable<List<ImageModel>> {
+        Timber.d("fetchSaveImages at Dao run in ${Thread.currentThread().name}")
         return saveImagesSubject // 공유된 하나의 hot stream 에서 데이터를 전달받게끔 설정
     }
 
     override fun removeImages(idxList: List<Int>): Boolean {
+        Timber.d("removeImages at Dao run in ${Thread.currentThread().name}")
         // idx 가 큰수부터 remove 를 실행해줘야 중간에 idx가 꼬이지 않는다
         val list = saveImagesSubject.value?.toMutableList() ?: mutableListOf()
-        for (idx in idxList.sorted().reversed()) {
-            Timber.d("remove idx : $idx")
-            list.removeAt(idx)
+        for (removeIdx in idxList.sorted().reversed()) {
+            Timber.d("remove idx : $removeIdx")
+            list.removeAt(removeIdx)
         }
         syncData(list)
         return true
     }
 
-    override fun saveImage(image: ImageModel): Boolean {
+    override fun saveImages(image: List<ImageModel>): Boolean {
+        Timber.d("saveImages at Dao run in ${Thread.currentThread().name}")
         val list = (saveImagesSubject.value?.toMutableList() ?: mutableListOf()).apply {
-            add(image)
+            addAll(image.toList())
         }
         syncData(list)
         return true

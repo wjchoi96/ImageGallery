@@ -99,6 +99,8 @@ class ImageRepositoryImpl @Inject constructor(
 
     override fun saveImage(image: ImageModel): Observable<Boolean> {
         return saveImageDataSource.saveImage(image)
+    override fun saveImages(image: List<ImageModel>): Observable<Boolean> {
+        return saveImageDataSource.saveImages(image)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
     }
