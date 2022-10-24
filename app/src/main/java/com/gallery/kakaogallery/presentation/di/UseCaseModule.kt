@@ -2,6 +2,7 @@ package com.gallery.kakaogallery.presentation.di
 
 import com.gallery.kakaogallery.domain.repository.ImageRepository
 import com.gallery.kakaogallery.domain.usecase.FetchQueryDataUseCase
+import com.gallery.kakaogallery.domain.usecase.FetchSaveImageUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,5 +17,9 @@ object UseCaseModule {
         imageRepository: ImageRepository
     ) = FetchQueryDataUseCase(imageRepository)
 
+    @Provides
+    fun provideFetchSaveImageUseCase(
+        imageRepository: ImageRepository
+    ) = FetchSaveImageUseCase(imageRepository)
     
 }
