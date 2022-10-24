@@ -27,7 +27,6 @@
         android:id="@+id/background"
         android:padding="1dp"
         android:background="@{isSelectImage ? @drawable/bg_select_image : @drawable/bg_unselect_image}"
-        app:selectEffect="@{imageItem.select}"
         android:onClick="@{() -> holder.imageItemSelectListener.invoke(imageItem, position)}">
         <LinearLayout
             android:layout_width="match_parent"
@@ -52,7 +51,7 @@
                         android:adjustViewBounds="true"
                         android:scaleType="centerCrop"
                         android:src="@drawable/bg_image_placeholder"
-                        app:imageFromUrl="@{imageItem.imageThumbUrl}" />
+                        app:loadUrl="@{imageItem.imageThumbUrl}" />
                 </androidx.cardview.widget.CardView>
 
                 <ImageView
@@ -73,8 +72,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
                     android:layout_marginTop="5dp"
-                    android:src="@drawable/ic_image"
-                    app:imageTypeSrc="@{imageItem.imageType}"
+                    android:src="@{imageItem.imageType ? @drawable/ic_image : @drawable/ic_video}"
                     />
             </RelativeLayout>
 
