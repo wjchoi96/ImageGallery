@@ -45,7 +45,7 @@ class SaveImageDaoImpl @Inject constructor(
     }
 
     override fun saveImage(image: ImageModel): Boolean {
-        val list = saveImagesSubject.value?.toMutableList() ?: mutableListOf<ImageModel>().apply {
+        val list = (saveImagesSubject.value?.toMutableList() ?: mutableListOf()).apply {
             add(image)
         }
         syncData(list)
