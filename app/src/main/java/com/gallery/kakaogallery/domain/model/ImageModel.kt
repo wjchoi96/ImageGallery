@@ -50,39 +50,5 @@ data class ImageModel internal constructor(
     fun toMinString(): String {
         return "dateTime : $dateTimeToShow, isSaveImage : ${isSaveImage}, imageUrl : $imageUrl\nisSelect : $isSelect, saveDateTime : $saveDateTime, saveTimeMill : $saveTimeMill"
     }
-
-    override fun equals(other: Any?): Boolean {
-        if (other !is ImageModel) {
-            return false
-        }
-        return other.dateTimeToShow == dateTimeToShow &&
-                other.saveDateTime == saveDateTime &&
-                other.saveTimeMill == saveTimeMill &&
-                other.isSelect == isSelect &&
-                other.imageUrl == imageUrl &&
-                other.imageThumbUrl == imageThumbUrl
-
-    }
-
-    override fun hashCode(): Int {
-        return super.hashCode()
-    }
-
-    class Payload(
-        val changedIdx: List<Int>,
-        val payloadType: PayloadType,
-        val changedPayload: ChangedType? = null
-    ) {
-        enum class PayloadType {
-            NewList,
-            Inserted,
-            InsertedRange,
-            Removed,
-            Changed
-        }
-
-        enum class ChangedType {
-            Save, Select
-        }
-    }
+    
 }
