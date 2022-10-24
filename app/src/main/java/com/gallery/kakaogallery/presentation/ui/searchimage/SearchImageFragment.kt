@@ -249,8 +249,9 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
         viewModel.dataLoading.observe(this) {
             binding.progress.isVisible = it
         }
+
         viewModel.pagingDataLoading.observe(this) {
-            binding.progressRefresh.isVisible = it
+            binding.progressPaging.isVisible = it
         }
 
         viewModel.headerTitle.observe(this) {
