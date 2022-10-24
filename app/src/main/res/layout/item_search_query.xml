@@ -2,11 +2,12 @@
 <layout xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
-            name="viewModel"
-            type="com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel" />
-        <variable
             name="holder"
-            type="com.gallery.kakaogallery.presentation.ui.searchimage.SearchImagesAdapter.SearchQueryViewHolder"
+            type="com.gallery.kakaogallery.presentation.ui.searchimage.SearchQueryViewHolder"
+            />
+        <variable
+            name="lastQuery"
+            type="String"
             />
     </data>
     <RelativeLayout
@@ -31,7 +32,8 @@
             android:layout_height="wrap_content"
             android:paddingEnd="45dp"
             android:paddingStart="5dp"
-            app:onEditorActionListener="@{viewModel}"
+            android:text="@{lastQuery}"
+            app:onEditorActionListener="@{holder.queryEditorActionListener}"
             />
 
         <ImageView
@@ -42,7 +44,7 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:src="@drawable/bg_btn_search"
-            android:onClick="@{()->viewModel.searchQuery(holder.query)}"
+            android:onClick="@{()->holder.searchQueryListener.invoke(holder.recentQuery)}"
             />
     </RelativeLayout>
 </layout>
