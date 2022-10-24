@@ -22,7 +22,7 @@ class GalleryAdapter(
     }
 
     private var imageList: List<ImageModel> = emptyList()
-    private val currentItemSize: Int
+    val currentItemSize: Int
         get() = imageList.size
 
     fun setList(list: List<ImageModel>) {
