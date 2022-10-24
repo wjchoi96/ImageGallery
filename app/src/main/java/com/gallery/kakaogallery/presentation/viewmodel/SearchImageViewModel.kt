@@ -6,15 +6,17 @@ import com.gallery.kakaogallery.domain.model.ImageListTypeModel
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.MaxPageException
 import com.gallery.kakaogallery.domain.usecase.FetchQueryDataUseCase
+import com.gallery.kakaogallery.domain.usecase.SaveSelectImageUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.kotlin.addTo
 import timber.log.Timber
-import java.lang.Exception
 import javax.inject.Inject
 
 @HiltViewModel
 class SearchImageViewModel @Inject constructor(
-    private val fetchSearchDataQueryDataUseCase: FetchQueryDataUseCase
+    private val fetchSearchDataQueryDataUseCase: FetchQueryDataUseCase,
+    private val saveSelectImageUseCase: SaveSelectImageUseCase
 ) : DisposableManageViewModel() {
     private var page = 1
 
@@ -64,34 +66,32 @@ class SearchImageViewModel @Inject constructor(
      * repository code
      */
     fun saveSelectImage() {
-//        if (selectImageIdxList.isEmpty()) {
-//            showToast("이미지를 선택해주세요")
-//            return
-//        }
-//        _dataLoading.value = true
-//        val imageList = searchImages.value?.first ?: return
-//        Thread {
-//            Timber.d("requestSaveImage : " + selectImageIdxList.size + " - thread : " + Thread.currentThread().name)
-//            val saveImageList = mutableListOf<ImageModel>()
-//            selectImageIdxList.sort() // idx 순으로 정렬
-//            for (idx in selectImageIdxList) {
-//                tempSavedImageMap[imageList[idx].imageUrl] = idx
-//                saveImageList.add(imageList[idx].apply { isSelect = false })
-//            }
-////            saveImageStorage.saveImageList(saveImageList)
-//
-//            Handler(Looper.getMainLooper()).post {
-//                _dataLoading.value = false
-//                _searchImages.value = Pair(
-//                    imageList,
-//                    ImageModel.Payload(
-//                        selectImageIdxList,
-//                        ImageModel.Payload.PayloadType.Changed,
-//                        ImageModel.Payload.ChangedType.Save
-//                    )
-//                )
-//            }
-//        }.start()
+        if (selectImageUrlMap.isEmpty()) {
+            showToast("이미지를 선택해주세요")
+            return
+        }
+        _dataLoading.value = true
+        val images = searchImages.value ?: return
+        saveSelectImageUseCase(
+            selectImageUrlMap,
+            images.filterIsInstance(ImageListTypeModel.Image::class.java)
+                .map { it.image }
+        ).observeOn(AndroidSchedulers.mainThread())
+            .subscribe { res ->
+            _dataLoading.value = false
+            res.onSuccess {
+                when(it){
+                    true -> {
+                        showToast("저장 성공")
+                        setSelectMode(false)
+                    }
+                    else -> showToast("저장 실패")
+                }
+            }.onFailure {
+                it.printStackTrace()
+                showToast("저장 실패 $it")
+            }
+        }.addTo(compositeDisposable)
     }
 
     // query 를 비워서 보내면 에러뜬다
