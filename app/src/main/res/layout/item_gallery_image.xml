@@ -4,11 +4,17 @@
         <import type="android.view.View"/>
 
         <variable
-            name="viewModel"
-            type="com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel" />
+            name="holder"
+            type="com.gallery.kakaogallery.presentation.ui.searchimage.GalleryImageItemViewHolder" />
         <variable
-            name="item"
+            name="imageItem"
             type="com.gallery.kakaogallery.domain.model.ImageModel" />
+        <variable
+            name="isSelectImage"
+            type="Boolean" />
+        <variable
+            name="isSaveImage"
+            type="Boolean" />
         <variable
             name="position"
             type="Integer" />
@@ -20,11 +26,9 @@
         android:layout_height="wrap_content"
         android:id="@+id/background"
         android:padding="1dp"
-        android:background="#FFFFFF"
-        app:selectEffect="@{item.select}"
-        android:onClick="@{() -> viewModel.selectImage(item, position)}"
-        >
-
+        android:background="@{isSelectImage ? @drawable/bg_select_image : @drawable/bg_unselect_image}"
+        app:selectEffect="@{imageItem.select}"
+        android:onClick="@{() -> holder.imageItemSelectListener.invoke(imageItem, position)}">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -48,7 +52,7 @@
                         android:adjustViewBounds="true"
                         android:scaleType="centerCrop"
                         android:src="@drawable/bg_image_placeholder"
-                        app:imageFromUrl="@{item.imageThumbUrl}" />
+                        app:imageFromUrl="@{imageItem.imageThumbUrl}" />
                 </androidx.cardview.widget.CardView>
 
                 <ImageView
@@ -60,7 +64,7 @@
                     android:layout_marginEnd="5dp"
                     android:layout_marginBottom="5dp"
                     android:src="@drawable/ic_star"
-                    android:visibility="@{item.saveImage ? View.VISIBLE : View.GONE}"
+                    android:visibility="@{isSaveImage ? View.VISIBLE : View.GONE}"
                     />
 
                 <ImageView
@@ -70,7 +74,7 @@
                     android:layout_marginStart="5dp"
                     android:layout_marginTop="5dp"
                     android:src="@drawable/ic_image"
-                    app:imageTypeSrc="@{item.imageType}"
+                    app:imageTypeSrc="@{imageItem.imageType}"
                     />
             </RelativeLayout>
 
@@ -80,7 +84,7 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:text="@{item.dateTimeToShow}"
+                    android:text="@{imageItem.dateTimeToShow}"
                     android:id="@+id/tv_date_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
