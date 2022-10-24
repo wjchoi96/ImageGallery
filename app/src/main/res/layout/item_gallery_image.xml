@@ -82,7 +82,7 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:text="@{imageItem.dateTimeToShow}"
+                    android:text="@{isSaveImage ? imageItem.saveDateTimeToShow : imageItem.dateTimeToShow}"
                     android:id="@+id/tv_date_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
