@@ -67,7 +67,7 @@ class SearchImageViewModel @Inject constructor(
     private val _lastQuery = MutableLiveData<String>()
     val lastQuery: LiveData<String> = _lastQuery
 
-    private val _headerTitle = MutableLiveData<String>()
+    private val _headerTitle = MutableLiveData("이미지 검색")
     var headerTitle: LiveData<String> = _headerTitle
 
     /**
@@ -175,6 +175,7 @@ class SearchImageViewModel @Inject constructor(
             true -> _headerTitle.value = "${selectImageUrlMap.size}장 선택중"
             else -> {
                 unSelectAllImage()
+                _headerTitle.value = "이미지 검색"
             }
         }
         _selectMode.value = selectMode

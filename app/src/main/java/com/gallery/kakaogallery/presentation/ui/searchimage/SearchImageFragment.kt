@@ -139,7 +139,6 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
                     viewModel.setSelectMode(false)
                 }
             }
-            it.toolBar.title = "0장 선택중"
         }
     }
 
@@ -155,7 +154,6 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
                     viewModel.setSelectMode(true)
                 }
             }
-            it.toolBar.title = "이미지 검색"
         }
     }
 
