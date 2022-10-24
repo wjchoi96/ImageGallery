@@ -14,7 +14,10 @@ import timber.log.Timber
  */
 class ImageDiffUtilCallback(
     private val oldList: List<ImageListTypeModel>,
-    private val newList: List<ImageListTypeModel>
+    private val newList: List<ImageListTypeModel>,
+    private val queryPayload: Any?,
+    private val selectPayload: Any?,
+    private val savePayload: Any?
 ) : DiffUtil.Callback() {
     override fun getOldListSize(): Int = oldList.size
 
@@ -37,15 +40,15 @@ class ImageDiffUtilCallback(
         return when {
             old is ImageListTypeModel.Query && new is ImageListTypeModel.Query -> {
                 return if (old.query != new.query) {
-                    SearchImagesAdapter.Payload.Query
+                    queryPayload
                 } else {
                     super.getChangePayload(oldItemPosition, newItemPosition)
                 }
             }
             old is ImageListTypeModel.Image && new is ImageListTypeModel.Image -> {
                 return when {
-                    old.image.isSelect != new.image.isSelect -> SearchImagesAdapter.Payload.Select
-                    old.image.isSaveImage != new.image.isSaveImage -> SearchImagesAdapter.Payload.Select
+                    old.image.isSelect != new.image.isSelect -> selectPayload
+                    old.image.isSaveImage != new.image.isSaveImage -> selectPayload
                     else -> super.getChangePayload(oldItemPosition, newItemPosition)
                 }
             }

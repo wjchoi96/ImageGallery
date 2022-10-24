@@ -50,13 +50,19 @@ class SearchImagesAdapter(
     val currentItemSize: Int
         get() = imageList.size
 
-    fun setList(list: List<ImageListTypeModel>) {
+    private fun setList(list: List<ImageListTypeModel>) {
         imageList = list
     }
 
     private fun getDiffRes(newList: List<ImageListTypeModel>): DiffUtil.DiffResult {
         Timber.d("getDiffRes run at ${Thread.currentThread().name}")
-        val diffCallback = ImageDiffUtilCallback(this.imageList, newList)
+        val diffCallback = ImageDiffUtilCallback(
+            this.imageList,
+            newList,
+            Payload.Query,
+            Payload.Save,
+            Payload.Select
+        )
         return DiffUtil.calculateDiff(diffCallback)
     }
 
@@ -68,7 +74,7 @@ class SearchImagesAdapter(
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 Timber.d("getDiffRes subscribe run at ${Thread.currentThread().name}")
-                this.setList(newList) // must call main thread
+                setList(newList) // must call main thread
                 Timber.d("diff debug updateList post : setList[" + this.currentItemSize + "], newList[" + newList.size + "]")
                 it.dispatchUpdatesTo(this)
             }
