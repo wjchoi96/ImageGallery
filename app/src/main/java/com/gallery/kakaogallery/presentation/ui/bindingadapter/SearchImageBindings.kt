@@ -37,8 +37,3 @@ fun setImageFromUrl(imageView: ImageView, url: String) {
         .override(imageView.layoutParams.width, imageView.layoutParams.height)
         .into(imageView)
 }
-
-@BindingAdapter("app:onEditorActionListener")
-fun setOnEditorActionListener(editText: EditText, viewModel: SearchImageViewModel) {
-    editText.setOnEditorActionListener(viewModel.searchEditorActionListener)
-}
