@@ -8,7 +8,9 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class SaveImageDaoImpl @Inject constructor(
     private val sp: KakaoGallerySharedPreferences
 ) : SaveImageDao {
