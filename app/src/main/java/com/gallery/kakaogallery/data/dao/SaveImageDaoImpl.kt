@@ -53,8 +53,9 @@ class SaveImageDaoImpl @Inject constructor(
     }
 
     private fun syncData(list: List<ImageModel>) {
-        val jsonStr = Gson().toJson(saveImagesSubject.value ?: emptyList<ImageModel>())
-        Timber.d("syncData save image list data(${saveImagesSubject.value?.size}) => \n$jsonStr\n")
+        Timber.d("syncData at Dao run in ${Thread.currentThread().name}")
+        val jsonStr = Gson().toJson(list)
+        Timber.d("syncData save image list data(${list.size}) => \n$jsonStr\n")
         sp.savedImageList = jsonStr
         Timber.d("syncData save finish : \n${sp.savedImageList}")
         Timber.d("syncData run at \n${Thread.currentThread().name}")
