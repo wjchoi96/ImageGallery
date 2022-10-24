@@ -12,38 +12,6 @@ import timber.log.Timber
 import java.lang.Exception
 import javax.inject.Inject
 
-/*
-    1. image list 는 view model 에서 관리
-     - 필요시 가져가서 사용할 수는 있다
-    2. observable 리턴 결과들
-     - list?
-     - idx 정보?
-
-    1. save 하는 이미지 리스트를 저장해서 가지고 있는다 ( idx + url )
-    2. 새로 search 하면 해당 리스트 비운다
-    3. 이미지 보관함에서 지워진 이미지들을 observe 하다가, tempSavedList 가 존재한다면 비교해서 지워진 이미지 탐색
-    4. tempSavedList 에서 지워진 이미지가 존재한다면 해당 정보 list 로 onNext
- */
-/**
- * live data + notify changed insert, removed 등 작업 수행하는 방법
- *
- * 1. DiffUtil 을 사용해서 최소한의 업데이트 수를 계산
- * - 두 목록간의 차이점을 찾고, 업데이트 되어야 할 목록을 반환해준다
- * https://blog.kmshack.kr/RecyclerView-DiffUtil%EB%A1%9C-%EC%84%B1%EB%8A%A5-%ED%96%A5%EC%83%81%ED%95%98%EA%B8%B0/
- * - 그런데 아무리 생각을해봐도, view model 에서는 list 가 변경되는 정보를 알고 있는데, 그걸 공유를 안해서 view 에서 다시 목록의 차이점을 계산한다는게 조금 이상한거같다.
- *
- * 2. view model 에서 필요에 따라 변경된 데이터의 정보를 내보내준다
- *  * - repository 에서 list 를 fetch 해온다 => db, network 작업이 될 수 있겠다. 중요한것은 늘 새로운 list 를 리턴( 새로운 객체 )
- * - view model, list 보관, 필요에 따라 liveData 에 등록해서 내보내준다
- * - view : adapter list 보관(할수밖에없다)
- *
- * 3. 일단 repository 를 만들까
- *
- * 4. event live data 와 data live data 를 잘 구분해보자
- * https://vagabond95.me/posts/live-data-with-event-issue/
- * => google 공식 repo 2개 소개(1개는 이미 보고있는것)
- */
-
 @HiltViewModel
 class SearchImageViewModel @Inject constructor(
     private val fetchSearchDataQueryDataUseCase: FetchQueryDataUseCase
