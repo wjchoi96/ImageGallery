@@ -7,6 +7,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.gallery.kakaogallery.domain.model.ImageListTypeModel
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.MaxPageException
 import com.gallery.kakaogallery.domain.usecase.FetchQueryDataUseCase
@@ -66,12 +67,8 @@ class SearchImageViewModel @Inject constructor(
     /**
      * live data for data
      */
-    // 이거를 ImageModels 만 넘기는게 아니라 Pair 를 통해 payload 도 함께 넘길까? nullable 로 해서
-    private val _searchImages = MutableLiveData<Pair<List<ImageModel>, ImageModel.Payload>>()
-    val searchImages: LiveData<Pair<List<ImageModel>, ImageModel.Payload>> = _searchImages
-
-    private val _searchImagesUseDiff = MutableLiveData<List<ImageModel>>()
-    val searchImagesUseDiff: LiveData<List<ImageModel>> = _searchImagesUseDiff
+    private val _searchImages = MutableLiveData<List<ImageListTypeModel>>()
+    val searchImages: LiveData<List<ImageListTypeModel>> = _searchImages
 
     private val _lastQuery = MutableLiveData<String>()
     val lastQuery: LiveData<String> = _lastQuery
@@ -101,39 +98,42 @@ class SearchImageViewModel @Inject constructor(
     private val _selectMode = MutableLiveData<Boolean>()
     val selectMode: LiveData<Boolean> = _selectMode
 
+    init {
+        fetchSearchQuery("")
+    }
 
     /**
      * repository code
      */
     fun saveSelectImage() {
-        if (selectImageIdxList.isEmpty()) {
-            showToast("이미지를 선택해주세요")
-            return
-        }
-        _dataLoading.value = true
-        val imageList = searchImages.value?.first ?: return
-        Thread {
-            Timber.d("requestSaveImage : " + selectImageIdxList.size + " - thread : " + Thread.currentThread().name)
-            val saveImageList = mutableListOf<ImageModel>()
-            selectImageIdxList.sort() // idx 순으로 정렬
-            for (idx in selectImageIdxList) {
-                tempSavedImageMap[imageList[idx].imageUrl] = idx
-                saveImageList.add(imageList[idx].apply { isSelect = false })
-            }
-//            saveImageStorage.saveImageList(saveImageList)
-
-            Handler(Looper.getMainLooper()).post {
-                _dataLoading.value = false
-                _searchImages.value = Pair(
-                    imageList,
-                    ImageModel.Payload(
-                        selectImageIdxList,
-                        ImageModel.Payload.PayloadType.Changed,
-                        ImageModel.Payload.ChangedType.Save
-                    )
-                )
-            }
-        }.start()
+//        if (selectImageIdxList.isEmpty()) {
+//            showToast("이미지를 선택해주세요")
+//            return
+//        }
+//        _dataLoading.value = true
+//        val imageList = searchImages.value?.first ?: return
+//        Thread {
+//            Timber.d("requestSaveImage : " + selectImageIdxList.size + " - thread : " + Thread.currentThread().name)
+//            val saveImageList = mutableListOf<ImageModel>()
+//            selectImageIdxList.sort() // idx 순으로 정렬
+//            for (idx in selectImageIdxList) {
+//                tempSavedImageMap[imageList[idx].imageUrl] = idx
+//                saveImageList.add(imageList[idx].apply { isSelect = false })
+//            }
+////            saveImageStorage.saveImageList(saveImageList)
+//
+//            Handler(Looper.getMainLooper()).post {
+//                _dataLoading.value = false
+//                _searchImages.value = Pair(
+//                    imageList,
+//                    ImageModel.Payload(
+//                        selectImageIdxList,
+//                        ImageModel.Payload.PayloadType.Changed,
+//                        ImageModel.Payload.ChangedType.Save
+//                    )
+//                )
+//            }
+//        }.start()
     }
 
     // query 를 비워서 보내면 에러뜬다
@@ -148,7 +148,7 @@ class SearchImageViewModel @Inject constructor(
                 _dataLoading.value = false
                 res.onSuccess {
                     page++
-                    _searchImagesUseDiff.value = it
+                    _searchImages.value = it
                 }.onFailure {
                     when (it) {
                         is MaxPageException -> showToast("마지막 페이지입니다")
@@ -166,8 +166,8 @@ class SearchImageViewModel @Inject constructor(
                 _pagingDataLoading.value = false
                 res.onSuccess {
                     page = searchPage + 1
-                    val prevList = searchImagesUseDiff.value ?: emptyList()
-                    _searchImagesUseDiff.value = prevList + it
+                    val prevList = _searchImages.value ?: emptyList()
+                    _searchImages.value = prevList + it
                 }.onFailure {
                     when (it) {
                         is MaxPageException -> showToast("마지막 페이지입니다")
@@ -188,50 +188,50 @@ class SearchImageViewModel @Inject constructor(
     }
 
     private fun releaseAllSelectImage() {
-        val imageList = searchImages.value?.first?.toList() ?: return
-        for (idx in selectImageIdxList) {
-            imageList[idx].isSelect = false
-        }
-        _searchImages.value = Pair(
-            imageList,
-            ImageModel.Payload(
-                selectImageIdxList,
-                ImageModel.Payload.PayloadType.Changed,
-                ImageModel.Payload.ChangedType.Select
-            )
-        )
-        selectImageIdxList.clear()
+//        val imageList = searchImages.value?.first?.toList() ?: return
+//        for (idx in selectImageIdxList) {
+//            imageList[idx].isSelect = false
+//        }
+//        _searchImages.value = Pair(
+//            imageList,
+//            ImageModel.Payload(
+//                selectImageIdxList,
+//                ImageModel.Payload.PayloadType.Changed,
+//                ImageModel.Payload.ChangedType.Select
+//            )
+//        )
+//        selectImageIdxList.clear()
     }
 
     /**
      * Called by Data Binding
      */
-    fun selectImage(image: ImageModel, idx: Int) {
-        Timber.d("select image item : " + idx + ", selectMode : " + selectMode.value)
-        val imageList = searchImages.value?.first?.toMutableList() ?: return
-        Timber.d("select image item : " + idx + ", selectMode : " + selectMode.value + ", imageList : " + imageList.size)
-        if (selectMode.value == true) {
-            Timber.d("before imageList[" + idx + "].isSelect = " + imageList[idx].isSelect)
-            imageList[idx] = imageList[idx].copy().apply {
-                isSelect = !isSelect
-            }
-            Timber.d("after imageList[" + idx + "].isSelect = " + imageList[idx].isSelect)
-            if (imageList[idx].isSelect) {
-                selectImageIdxList.add(idx)
-            } else {
-                selectImageIdxList.remove(idx) // 여기서 remove 를 해버리니까 select 해제 시 해당 idx 전달이 안되네
-            }
-            _headerTitle.value = "${selectImageIdxList.size}장 선택중"
-            Timber.d("imageList address : $imageList")
-            _searchImages.value = Pair(
-                imageList,
-                ImageModel.Payload(
-                    List(1) { idx },
-                    ImageModel.Payload.PayloadType.Changed,
-                    ImageModel.Payload.ChangedType.Select
-                )
-            )
-        }
+    fun touchImageEvent(image: ImageModel, idx: Int) {
+//        Timber.d("select image item : " + idx + ", selectMode : " + selectMode.value)
+//        val imageList = searchImages.value?.first?.toMutableList() ?: return
+//        Timber.d("select image item : " + idx + ", selectMode : " + selectMode.value + ", imageList : " + imageList.size)
+//        if (selectMode.value == true) {
+//            Timber.d("before imageList[" + idx + "].isSelect = " + imageList[idx].isSelect)
+//            imageList[idx] = imageList[idx].copy().apply {
+//                isSelect = !isSelect
+//            }
+//            Timber.d("after imageList[" + idx + "].isSelect = " + imageList[idx].isSelect)
+//            if (imageList[idx].isSelect) {
+//                selectImageIdxList.add(idx)
+//            } else {
+//                selectImageIdxList.remove(idx) // 여기서 remove 를 해버리니까 select 해제 시 해당 idx 전달이 안되네
+//            }
+//            _headerTitle.value = "${selectImageIdxList.size}장 선택중"
+//            Timber.d("imageList address : $imageList")
+//            _searchImages.value = Pair(
+//                imageList,
+//                ImageModel.Payload(
+//                    List(1) { idx },
+//                    ImageModel.Payload.PayloadType.Changed,
+//                    ImageModel.Payload.ChangedType.Select
+//                )
+//            )
+//        }
         _keyboardShownEvent.value = false
     }
 
@@ -257,19 +257,6 @@ class SearchImageViewModel @Inject constructor(
             return
         }
         fetchNextSearchQuery(lastQuery.value!!, page)
-    }
-
-    val searchEditorActionListener = object : TextView.OnEditorActionListener {
-        //android:imeOptions="actionSearch" 설정해놔야지 search action 이 enter key 에 들어온다
-        override fun onEditorAction(v: TextView?, actionId: Int, event: KeyEvent?): Boolean {
-            when (actionId) {
-                EditorInfo.IME_ACTION_SEARCH -> {
-                    searchQuery(v?.text.toString())
-                    return true
-                }
-            }
-            return false
-        }
     }
 
     private fun showToast(message: String) {

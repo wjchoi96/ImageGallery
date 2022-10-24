@@ -126,13 +126,13 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     private fun releaseAllSelectImage() {
         for (idx in viewModel.selectImageIdxList) {
             viewModel.imageList[idx].isSelect = false
-            imageListAdapter?.notifyItemChanged(idx, GalleryAdapter.ImagePayload.Select)
+            imageListAdapter?.notifyItemChanged(idx, GalleryAdapter.Payload.Select)
         }
         viewModel.selectImageIdxList.clear()
     }
 
     private fun setRecyclerView() {
-        imageListAdapter = GalleryAdapter(mContext ?: return) { image, idx ->
+        imageListAdapter = GalleryAdapter() { image, idx ->
             Timber.d("select image item : " + idx + ", " + viewModel.selectMode)
             if (viewModel.selectMode) {
                 viewModel.imageList[idx].isSelect = !viewModel.imageList[idx].isSelect
@@ -148,9 +148,9 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
                         binding.layoutToolbar.toolBar.title = it
                     }
                 }
-                imageListAdapter?.notifyItemChanged(idx, GalleryAdapter.ImagePayload.Select)
+                imageListAdapter?.notifyItemChanged(idx, GalleryAdapter.Payload.Select)
             }
-            return@GalleryAdapter viewModel.selectMode
+            return@GalleryAdapter
         }
         val viewManager = GridLayoutManager(mContext, itemCount)
         binding.rvGallery.apply {

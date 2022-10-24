@@ -1,42 +1,64 @@
 package com.gallery.kakaogallery.presentation.ui.gallery
 
-import android.content.Context
-import android.graphics.Color
-import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.gallery.kakaogallery.R
-import com.gallery.kakaogallery.databinding.ViewImageItemBinding
+import com.gallery.kakaogallery.domain.model.ImageListTypeModel
 import com.gallery.kakaogallery.domain.model.ImageModel
-import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
+import com.gallery.kakaogallery.presentation.ui.searchimage.GalleryImageItemViewHolder
+import com.gallery.kakaogallery.presentation.ui.searchimage.ImageDiffUtilCallback
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import timber.log.Timber
 
 class GalleryAdapter(
-    private val context: Context,
-    private val itemSelectListener: (ImageModel, Int) -> (Boolean)
-) : RecyclerView.Adapter<GalleryAdapter.GalleryItemViewHolder>() {
+    private val imageItemSelectListener: (ImageModel, Int) -> Unit
+) : RecyclerView.Adapter<GalleryImageItemViewHolder>() {
 
-    enum class ImagePayload() {
+    enum class Payload {
         Save,
         Select
     }
 
     private var imageList: List<ImageModel> = emptyList()
+    private val currentItemSize: Int
+        get() = imageList.size
+
     fun setList(list: List<ImageModel>) {
         imageList = list
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GalleryItemViewHolder {
-        return GalleryItemViewHolder(
-            DataBindingUtil.inflate(
-                (context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater),
-                R.layout.view_image_item,
-                parent,
-                false
-            ), context, itemSelectListener
+    private fun getDiffRes(newList: List<ImageModel>): DiffUtil.DiffResult {
+        Timber.d("getDiffRes run at ${Thread.currentThread().name}")
+        val diffCallback = ImageDiffUtilCallback(
+            this.imageList.map { ImageListTypeModel.Image(it) },
+            newList.map { ImageListTypeModel.Image(it) },
+            null,
+            Payload.Save,
+            Payload.Select
+        )
+        return DiffUtil.calculateDiff(diffCallback)
+    }
+
+    fun updateList(list: List<ImageModel>) {
+        val newList = list.toList()
+        Observable.defer{
+            Observable.just (getDiffRes(newList))
+        }.subscribeOn(Schedulers.computation())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                Timber.d("getDiffRes subscribe run at ${Thread.currentThread().name}")
+                this.setList(newList) // must call main thread
+                Timber.d("diff debug updateList post : setList[" + this.currentItemSize + "], newList[" + newList.size + "]")
+                it.dispatchUpdatesTo(this)
+            }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GalleryImageItemViewHolder {
+        return GalleryImageItemViewHolder.from(
+            parent,
+            imageItemSelectListener
         )
     }
 
@@ -44,75 +66,28 @@ class GalleryAdapter(
         return imageList.size
     }
 
-    override fun onBindViewHolder(holder: GalleryItemViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: GalleryImageItemViewHolder, position: Int) {
         holder.bind(imageList[position])
     }
 
     override fun onBindViewHolder(
-        holder: GalleryItemViewHolder,
+        holder: GalleryImageItemViewHolder,
         position: Int,
         payloads: MutableList<Any>
     ) {
         super.onBindViewHolder(holder, position, payloads)
         for (payload in payloads) {
             when (payload) {
-                ImagePayload.Save -> {
-                    Timber.d("paload Save : $position => $position")
-                    holder.setSaveIcon(imageList[position].isSaveImage)
-                    holder.setSelectEffect(imageList[position].isSelect)
+                Payload.Save -> {
+                    Timber.d("payload Save : $position => $position")
+                    holder.bindIsSave(imageList[position])
+                    holder.bindIsSelect(imageList[position])
                 }
-                ImagePayload.Select -> {
-                    Timber.d("paload Select : $position => $position")
-                    holder.setSelectEffect(imageList[position].isSelect)
+                Payload.Select -> {
+                    Timber.d("payload Select : $position => $position")
+                    holder.bindIsSelect(imageList[position])
                 }
             }
-        }
-    }
-
-    class GalleryItemViewHolder(
-        private val binding: ViewImageItemBinding,
-        private val context: Context,
-        private val itemSelectListener: (ImageModel, Int) -> (Boolean)
-    ) : RecyclerView.ViewHolder(binding.root) {
-
-        fun bind(item: ImageModel) {
-            loadImage(item.imageThumbUrl)
-            binding.tvDateTime.text = item.saveDateTime
-            setSaveIcon(item.isSaveImage)
-            setSelectEffect(item.isSelect)
-            binding.background.setOnClickListener {
-                itemSelectListener.invoke(item, adapterPosition)
-            }
-
-            if (item.isImageType) {
-                binding.ivTag.setImageResource(R.drawable.ic_video)
-            } else {
-                binding.ivTag.setImageResource(R.drawable.ic_image)
-            }
-        }
-
-        fun setSelectEffect(show: Boolean) {
-            if (show) {
-                binding.background.setBackgroundResource(R.drawable.bg_select_image)
-            } else {
-                binding.background.setBackgroundColor(Color.parseColor("#FFFFFF"))
-            }
-        }
-
-        fun setSaveIcon(isSave: Boolean) {
-            if (isSave)
-                binding.ivStar.visibility = View.VISIBLE
-            else
-                binding.ivStar.visibility = View.GONE
-        }
-
-        private fun loadImage(url: String) {
-            Glide.with(context)
-                .load(url)
-                .error(R.drawable.bg_image_error)
-                .placeholder(R.drawable.bg_image_placeholder)
-                .override(binding.ivImage.layoutParams.width, binding.ivImage.layoutParams.height)
-                .into(binding.ivImage)
         }
     }
 }
