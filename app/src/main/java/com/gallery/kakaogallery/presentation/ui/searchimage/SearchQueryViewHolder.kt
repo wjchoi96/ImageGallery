@@ -6,8 +6,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.databinding.ItemSearchQueryBinding
 import com.gallery.kakaogallery.domain.model.ImageListTypeModel
-import com.gallery.kakaogallery.domain.model.ImageModel
-import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
 import timber.log.Timber
 
 
