@@ -8,6 +8,7 @@ import com.gallery.kakaogallery.domain.usecase.FetchSaveImageUseCase
 import com.gallery.kakaogallery.domain.usecase.RemoveSaveImageUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.kotlin.addTo
 import javax.inject.Inject
 
@@ -69,9 +70,13 @@ class GalleryViewModel @Inject constructor(
             }.addTo(compositeDisposable)
     }
 
+    private var saveImageDisposable: Disposable? = null
     fun fetchSaveImages() {
+        saveImageDisposable?.dispose()
+        saveImageDisposable = null
+
         _dataLoading.value = true
-        fetchSaveImageUseCase()
+        saveImageDisposable = fetchSaveImageUseCase()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { res ->
                 _dataLoading.value = false
