@@ -35,8 +35,8 @@ class GalleryAdapter(
             this.imageList.map { ImageListTypeModel.Image(it) },
             newList.map { ImageListTypeModel.Image(it) },
             null,
-            Payload.Save,
-            Payload.Select
+            Payload.Select,
+            Payload.Save
         )
         return DiffUtil.calculateDiff(diffCallback)
     }
@@ -75,7 +75,10 @@ class GalleryAdapter(
         position: Int,
         payloads: MutableList<Any>
     ) {
-        super.onBindViewHolder(holder, position, payloads)
+        if(payloads.isEmpty()) {
+            super.onBindViewHolder(holder, position, payloads)
+            return
+        }
         for (payload in payloads) {
             when (payload) {
                 Payload.Save -> {
