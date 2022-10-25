@@ -168,8 +168,10 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     }
 
     private fun observeData() {
-        viewModel.toastText.observe(this) {
-            mContext?.showToast(it)
+        viewModel.toastMessageEvent.observe(this) { event ->
+            event.getContentIfNotHandled()?.let {
+                mContext?.showToast(it)
+            }
         }
 
         viewModel.saveImages.observe(this) {
@@ -191,9 +193,12 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
             binding.layoutToolbar.toolBar.title = it
         }
 
-        viewModel.keyboardShownEvent.observe(this) {
-            if (it == false) {
-                mContext?.hideKeyboard(binding.background)
+        viewModel.keyboardShownEvent.observe(this) { event ->
+            event.getContentIfNotHandled()?.let {
+                when (it){
+                    false -> mContext?.hideKeyboard(binding.background)
+                    else -> {}
+                }
             }
         }
 
