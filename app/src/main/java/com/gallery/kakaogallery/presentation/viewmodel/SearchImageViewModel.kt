@@ -31,7 +31,7 @@ class SearchImageViewModel @Inject constructor(
     /**
      * live data for data
      */
-    private val _searchImages = MutableLiveData<List<ImageListTypeModel>>()
+    private val _searchImages = MutableLiveData<List<ImageListTypeModel>>(emptyList())
     val searchImages: LiveData<List<ImageListTypeModel>> = _searchImages
 
     private val _lastQuery = MutableLiveData<String>()
@@ -40,22 +40,13 @@ class SearchImageViewModel @Inject constructor(
     private val _headerTitle = MutableLiveData("이미지 검색")
     var headerTitle: LiveData<String> = _headerTitle
 
-    /**
-     * live data for event
-     */
-    private val _toastText = MutableLiveData<String>()
-    val toastText: LiveData<String> = _toastText
-
-    private val _dataLoading = MutableLiveData<Boolean>()
+    private val _dataLoading = MutableLiveData(false)
     val dataLoading: LiveData<Boolean> = _dataLoading
 
-    private val _pagingDataLoading = MutableLiveData<Boolean>()
+    private val _pagingDataLoading = MutableLiveData(false)
     val pagingDataLoading: LiveData<Boolean> = _pagingDataLoading
 
-    private val _keyboardShownEvent = MutableLiveData<Boolean>()
-    val keyboardShownEvent: LiveData<Boolean> = _keyboardShownEvent
-
-    private val _selectMode = MutableLiveData<Boolean>()
+    private val _selectMode = MutableLiveData(false)
     val selectMode: LiveData<Boolean> = _selectMode
     /**
      * live data for event
