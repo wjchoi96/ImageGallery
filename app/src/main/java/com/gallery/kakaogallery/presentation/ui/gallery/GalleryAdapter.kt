@@ -9,6 +9,7 @@ import com.gallery.kakaogallery.presentation.ui.searchimage.GalleryImageItemView
 import com.gallery.kakaogallery.presentation.ui.searchimage.ImageDiffUtilCallback
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import timber.log.Timber
 
@@ -22,7 +23,7 @@ class GalleryAdapter(
     }
 
     private var imageList: List<ImageModel> = emptyList()
-    private val currentItemSize: Int
+    val currentItemSize: Int
         get() = imageList.size
 
     fun setList(list: List<ImageModel>) {
@@ -35,15 +36,20 @@ class GalleryAdapter(
             this.imageList.map { ImageListTypeModel.Image(it) },
             newList.map { ImageListTypeModel.Image(it) },
             null,
-            Payload.Save,
-            Payload.Select
+            Payload.Select,
+            Payload.Save
         )
         return DiffUtil.calculateDiff(diffCallback)
     }
 
+    private var adapterDisposable: Disposable? = null
     fun updateList(list: List<ImageModel>) {
+        adapterDisposable?.dispose()
+        adapterDisposable = null
+
         val newList = list.toList()
-        Observable.defer{
+        Timber.d("diff debug updateList called oldList[${imageList.size}], newList[${newList.size}]")
+        adapterDisposable = Observable.defer{
             Observable.just (getDiffRes(newList))
         }.subscribeOn(Schedulers.computation())
             .observeOn(AndroidSchedulers.mainThread())
@@ -75,7 +81,10 @@ class GalleryAdapter(
         position: Int,
         payloads: MutableList<Any>
     ) {
-        super.onBindViewHolder(holder, position, payloads)
+        if(payloads.isEmpty()) {
+            super.onBindViewHolder(holder, position, payloads)
+            return
+        }
         for (payload in payloads) {
             when (payload) {
                 Payload.Save -> {

@@ -24,12 +24,10 @@ class ImageDiffUtilCallback(
     override fun getNewListSize(): Int = newList.size
 
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        Timber.d("areItemsTheSame called => ${oldList[oldItemPosition] isSameItem newList[newItemPosition]}")
         return oldList[oldItemPosition] isSameItem newList[newItemPosition]
     }
 
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        Timber.d("areContentsTheSame called => ${oldList[oldItemPosition] isSameContent newList[newItemPosition]}")
         return oldList[oldItemPosition] isSameContent newList[newItemPosition]
     }
 
@@ -39,16 +37,16 @@ class ImageDiffUtilCallback(
         Timber.d("getChangePayload called")
         return when {
             old is ImageListTypeModel.Query && new is ImageListTypeModel.Query -> {
-                return if (old.query != new.query) {
+                if (old.query != new.query) {
                     queryPayload
                 } else {
                     super.getChangePayload(oldItemPosition, newItemPosition)
                 }
             }
             old is ImageListTypeModel.Image && new is ImageListTypeModel.Image -> {
-                return when {
+                when {
                     old.image.isSelect != new.image.isSelect -> selectPayload
-                    old.image.isSaveImage != new.image.isSaveImage -> selectPayload
+                    old.image.isSaveImage != new.image.isSaveImage -> savePayload
                     else -> super.getChangePayload(oldItemPosition, newItemPosition)
                 }
             }

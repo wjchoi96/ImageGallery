@@ -21,13 +21,12 @@ class GalleryImageItemViewHolder private constructor(
         }
     }
 
-    private val itemPosition: Int
+    val itemPosition: Int
         get() = adapterPosition
 
     fun bind(item: ImageModel) {
         binding.holder = this
         binding.imageItem = item
-        binding.position = itemPosition
         bindIsSelect(item)
         bindIsSave(item)
     }

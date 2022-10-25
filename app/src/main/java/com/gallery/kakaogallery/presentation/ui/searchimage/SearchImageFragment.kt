@@ -25,25 +25,13 @@ import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
-/*
-    보관된 이미지는 특별한 표시를 보여줍니다. (좋아요/별표/하트 등)
-    응답 이미지마다 보관된 이미지인지 체크를 해야하나?
-
-    LiveData 설명 잘되어있다
-    https://comoi.io/300
-
-    ListAdapter Issue
-    https://bb-library.tistory.com/257 새로운 List 가 필요한 이슈
-
- */
-
 @AndroidEntryPoint
 class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
     override val layoutResId: Int
         get() = R.layout.fragment_search_image
 
     //https://kotlinworld.com/87
-    //같은 ViewModelStoreOwner(Acitivty, Fragment)에 대해 같은 이름의 ViewModel 클래스를 get하면 같은 인스턴스가 반환된다.
+    //같은 ViewModelStoreOwner(Activity, Fragment)에 대해 같은 이름의 ViewModel 클래스를 get 하면 같은 인스턴스가 반환된다.
     private val viewModel: SearchImageViewModel by viewModels()
 
     private val imageSearchAdapter: SearchImagesAdapter by lazy {
@@ -139,7 +127,6 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
                     viewModel.setSelectMode(false)
                 }
             }
-            it.toolBar.title = "0장 선택중"
         }
     }
 
@@ -155,7 +142,6 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
                     viewModel.setSelectMode(true)
                 }
             }
-            it.toolBar.title = "이미지 검색"
         }
     }
 

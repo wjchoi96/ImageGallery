@@ -1,64 +1,28 @@
 package com.gallery.kakaogallery.presentation.viewmodel
 
-import android.os.Handler
-import android.os.Looper
-import android.view.KeyEvent
-import android.view.inputmethod.EditorInfo
-import android.widget.TextView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.gallery.kakaogallery.domain.model.ImageListTypeModel
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.MaxPageException
 import com.gallery.kakaogallery.domain.usecase.FetchQueryDataUseCase
+import com.gallery.kakaogallery.domain.usecase.SaveSelectImageUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.subjects.PublishSubject
+import io.reactivex.rxjava3.kotlin.addTo
 import timber.log.Timber
 import javax.inject.Inject
 
-/*
-    1. image list 는 view model 에서 관리
-     - 필요시 가져가서 사용할 수는 있다
-    2. observable 리턴 결과들
-     - list?
-     - idx 정보?
-
-    1. save 하는 이미지 리스트를 저장해서 가지고 있는다 ( idx + url )
-    2. 새로 search 하면 해당 리스트 비운다
-    3. 이미지 보관함에서 지워진 이미지들을 observe 하다가, tempSavedList 가 존재한다면 비교해서 지워진 이미지 탐색
-    4. tempSavedList 에서 지워진 이미지가 존재한다면 해당 정보 list 로 onNext
- */
-/**
- * live data + notify changed insert, removed 등 작업 수행하는 방법
- *
- * 1. DiffUtil 을 사용해서 최소한의 업데이트 수를 계산
- * - 두 목록간의 차이점을 찾고, 업데이트 되어야 할 목록을 반환해준다
- * https://blog.kmshack.kr/RecyclerView-DiffUtil%EB%A1%9C-%EC%84%B1%EB%8A%A5-%ED%96%A5%EC%83%81%ED%95%98%EA%B8%B0/
- * - 그런데 아무리 생각을해봐도, view model 에서는 list 가 변경되는 정보를 알고 있는데, 그걸 공유를 안해서 view 에서 다시 목록의 차이점을 계산한다는게 조금 이상한거같다.
- *
- * 2. view model 에서 필요에 따라 변경된 데이터의 정보를 내보내준다
- *  * - repository 에서 list 를 fetch 해온다 => db, network 작업이 될 수 있겠다. 중요한것은 늘 새로운 list 를 리턴( 새로운 객체 )
- * - view model, list 보관, 필요에 따라 liveData 에 등록해서 내보내준다
- * - view : adapter list 보관(할수밖에없다)
- *
- * 3. 일단 repository 를 만들까
- *
- * 4. event live data 와 data live data 를 잘 구분해보자
- * https://vagabond95.me/posts/live-data-with-event-issue/
- * => google 공식 repo 2개 소개(1개는 이미 보고있는것)
- */
-
 @HiltViewModel
 class SearchImageViewModel @Inject constructor(
-    private val fetchSearchDataQueryDataUseCase: FetchQueryDataUseCase
+    private val fetchSearchDataQueryDataUseCase: FetchQueryDataUseCase,
+    private val saveSelectImageUseCase: SaveSelectImageUseCase
 ) : DisposableManageViewModel() {
     private var page = 1
 
     private val searchFailMessage: String = "검색을 실패했습니다"
 
-    private val selectImageIdxList = mutableListOf<Int>()
+    private val selectImageUrlMap = mutableMapOf<String, Int>()
 
     // select 해서 저장한 이미지들의 map
     // 이미지보관함에서 이미지를 지울때, 대응 가능한 이미지들은 대응해주기 위함
@@ -73,16 +37,12 @@ class SearchImageViewModel @Inject constructor(
     private val _lastQuery = MutableLiveData<String>()
     val lastQuery: LiveData<String> = _lastQuery
 
-    private val _headerTitle = MutableLiveData<String>()
+    private val _headerTitle = MutableLiveData("이미지 검색")
     var headerTitle: LiveData<String> = _headerTitle
 
     /**
      * live data for event
      */
-    private val errorMessageSubject: PublishSubject<String> = PublishSubject.create()
-    var errorMessageObservable: Observable<String> =
-        errorMessageSubject.observeOn(AndroidSchedulers.mainThread())
-
     private val _toastText = MutableLiveData<String>()
     val toastText: LiveData<String> = _toastText
 
@@ -106,34 +66,31 @@ class SearchImageViewModel @Inject constructor(
      * repository code
      */
     fun saveSelectImage() {
-//        if (selectImageIdxList.isEmpty()) {
-//            showToast("이미지를 선택해주세요")
-//            return
-//        }
-//        _dataLoading.value = true
-//        val imageList = searchImages.value?.first ?: return
-//        Thread {
-//            Timber.d("requestSaveImage : " + selectImageIdxList.size + " - thread : " + Thread.currentThread().name)
-//            val saveImageList = mutableListOf<ImageModel>()
-//            selectImageIdxList.sort() // idx 순으로 정렬
-//            for (idx in selectImageIdxList) {
-//                tempSavedImageMap[imageList[idx].imageUrl] = idx
-//                saveImageList.add(imageList[idx].apply { isSelect = false })
-//            }
-////            saveImageStorage.saveImageList(saveImageList)
-//
-//            Handler(Looper.getMainLooper()).post {
-//                _dataLoading.value = false
-//                _searchImages.value = Pair(
-//                    imageList,
-//                    ImageModel.Payload(
-//                        selectImageIdxList,
-//                        ImageModel.Payload.PayloadType.Changed,
-//                        ImageModel.Payload.ChangedType.Save
-//                    )
-//                )
-//            }
-//        }.start()
+        if (selectImageUrlMap.isEmpty()) {
+            showToast("이미지를 선택해주세요")
+            return
+        }
+        _dataLoading.value = true
+        val images = searchImages.value ?: return
+        saveSelectImageUseCase(
+            selectImageUrlMap,
+            images
+        ).observeOn(AndroidSchedulers.mainThread())
+            .subscribe { res ->
+            _dataLoading.value = false
+            res.onSuccess {
+                when(it){
+                    true -> {
+                        showToast("저장 성공")
+                        setSelectMode(false)
+                    }
+                    else -> showToast("저장 실패")
+                }
+            }.onFailure {
+                it.printStackTrace()
+                showToast("저장 실패 $it")
+            }
+        }.addTo(compositeDisposable)
     }
 
     // query 를 비워서 보내면 에러뜬다
@@ -181,58 +138,59 @@ class SearchImageViewModel @Inject constructor(
      * Called by View
      */
     fun setSelectMode(selectMode: Boolean) {
-        if (!selectMode) {
-            releaseAllSelectImage()
+        when(selectMode){
+            true -> _headerTitle.value = "${selectImageUrlMap.size}장 선택중"
+            else -> {
+                unSelectAllImage()
+                _headerTitle.value = "이미지 검색"
+            }
         }
         _selectMode.value = selectMode
     }
 
-    private fun releaseAllSelectImage() {
-//        val imageList = searchImages.value?.first?.toList() ?: return
-//        for (idx in selectImageIdxList) {
-//            imageList[idx].isSelect = false
-//        }
-//        _searchImages.value = Pair(
-//            imageList,
-//            ImageModel.Payload(
-//                selectImageIdxList,
-//                ImageModel.Payload.PayloadType.Changed,
-//                ImageModel.Payload.ChangedType.Select
-//            )
-//        )
-//        selectImageIdxList.clear()
+    private fun unSelectAllImage() {
+        val images = searchImages.value?.toMutableList() ?: return
+        try {
+            for(idx in selectImageUrlMap.values){
+                images[idx] = (images[idx] as ImageListTypeModel.Image).let {
+                    it.copy(image = it.image.copy(isSelect = false))
+                }
+            }
+        }catch (e: Exception){
+            e.printStackTrace()
+        }
+        selectImageUrlMap.clear()
+        _searchImages.value = images
+    }
+
+    private fun setSelectImage(image: ImageModel, idx: Int, select: Boolean) {
+        val images = searchImages.value?.toMutableList() ?: return
+        try {
+            images[idx] = (images[idx] as ImageListTypeModel.Image).let {
+                it.copy(image = it.image.copy(isSelect = select))
+            }
+            when (select){
+                true -> selectImageUrlMap[image.imageUrl] = idx
+                else -> selectImageUrlMap.remove(image.imageUrl)
+            }
+            _searchImages.value = images
+            _headerTitle.value = "${selectImageUrlMap.size}장 선택중"
+        }catch (e: Exception){
+            e.printStackTrace()
+            showToast("선택 실패")
+        }
     }
 
     /**
      * Called by Data Binding
      */
     fun touchImageEvent(image: ImageModel, idx: Int) {
-//        Timber.d("select image item : " + idx + ", selectMode : " + selectMode.value)
-//        val imageList = searchImages.value?.first?.toMutableList() ?: return
-//        Timber.d("select image item : " + idx + ", selectMode : " + selectMode.value + ", imageList : " + imageList.size)
-//        if (selectMode.value == true) {
-//            Timber.d("before imageList[" + idx + "].isSelect = " + imageList[idx].isSelect)
-//            imageList[idx] = imageList[idx].copy().apply {
-//                isSelect = !isSelect
-//            }
-//            Timber.d("after imageList[" + idx + "].isSelect = " + imageList[idx].isSelect)
-//            if (imageList[idx].isSelect) {
-//                selectImageIdxList.add(idx)
-//            } else {
-//                selectImageIdxList.remove(idx) // 여기서 remove 를 해버리니까 select 해제 시 해당 idx 전달이 안되네
-//            }
-//            _headerTitle.value = "${selectImageIdxList.size}장 선택중"
-//            Timber.d("imageList address : $imageList")
-//            _searchImages.value = Pair(
-//                imageList,
-//                ImageModel.Payload(
-//                    List(1) { idx },
-//                    ImageModel.Payload.PayloadType.Changed,
-//                    ImageModel.Payload.ChangedType.Select
-//                )
-//            )
-//        }
         _keyboardShownEvent.value = false
+        when (selectMode.value){
+            true ->
+                setSelectImage(image, idx, !selectImageUrlMap.containsKey(image.imageUrl))
+            else -> {}
+        }
     }
 
     fun searchQuery(query: String) {

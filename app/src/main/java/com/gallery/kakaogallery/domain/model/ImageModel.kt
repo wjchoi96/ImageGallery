@@ -20,7 +20,7 @@ data class ImageModel internal constructor(
     val dateTimeMill: Long?,
     val imageUrl: String,
     private val thumbnailUrl: String?,
-    var saveDateTime: String? = null,
+    var saveDateTimeToShow: String? = null,
     var saveTimeMill: Long? = null,
     var isSelect: Boolean = false
 ) {
@@ -28,27 +28,22 @@ data class ImageModel internal constructor(
         val Empty: ImageModel = ImageModel("", 0, "", null)
     }
 
+    val hash: String = imageUrl + if(saveDateTimeToShow.isNullOrBlank()) dateTimeToShow else saveDateTimeToShow
+
     val isImageType: Boolean
         get() = thumbnailUrl.isNullOrBlank()
     val imageThumbUrl: String
         get() = thumbnailUrl ?: imageUrl
     val isSaveImage: Boolean
-        get() = saveDateTime != null && saveTimeMill != null
+        get() = saveDateTimeToShow != null && saveTimeMill != null
 
     fun setRemovedImage() {
-        saveDateTime = null
+        saveDateTimeToShow = null
         saveTimeMill = null
     }
 
-    fun setSaveDateTime(): String {
-        saveTimeMill = Date().time
-        val formatter = SimpleDateFormat("yyyy.MM.dd HH:mm:ss")
-        saveDateTime = formatter.format(Date(saveTimeMill!!))
-        return saveDateTime!!
-    }
-
     fun toMinString(): String {
-        return "dateTime : $dateTimeToShow, isSaveImage : ${isSaveImage}, imageUrl : $imageUrl\nisSelect : $isSelect, saveDateTime : $saveDateTime, saveTimeMill : $saveTimeMill"
+        return "dateTime : $dateTimeToShow, isSaveImage : ${isSaveImage}, imageUrl : $imageUrl\nisSelect : $isSelect, saveDateTime : $saveDateTimeToShow, saveTimeMill : $saveTimeMill"
     }
     
 }

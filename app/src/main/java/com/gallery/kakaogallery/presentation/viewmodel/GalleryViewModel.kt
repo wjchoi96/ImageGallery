@@ -1,70 +1,146 @@
 package com.gallery.kakaogallery.presentation.viewmodel
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.gallery.kakaogallery.domain.model.ImageModel
-import com.gallery.kakaogallery.domain.repository.ImageRepository
+import com.gallery.kakaogallery.domain.model.MaxPageException
+import com.gallery.kakaogallery.domain.usecase.FetchSaveImageUseCase
+import com.gallery.kakaogallery.domain.usecase.RemoveSaveImageUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.subjects.PublishSubject
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.kotlin.addTo
 import javax.inject.Inject
 
 @HiltViewModel
 class GalleryViewModel @Inject constructor(
-    private val imageRepository: ImageRepository
+    private val fetchSaveImageUseCase: FetchSaveImageUseCase,
+    private val removeSaveImageUseCase: RemoveSaveImageUseCase
 ) : DisposableManageViewModel() {
-    private val errorMessageSubject: PublishSubject<String> = PublishSubject.create()
-    var errorMessageObservable: Observable<String> =
-        errorMessageSubject.observeOn(AndroidSchedulers.mainThread())
 
-    private val savedImageSubject: PublishSubject<List<ImageModel>> = PublishSubject.create()
-    var savedImageListObservable: Observable<List<ImageModel>> =
-        savedImageSubject.observeOn(AndroidSchedulers.mainThread())
+    private val fetchImageFailMessage: String = "이미지를 불러올수 없습니다"
+    private val selectImageHashMap = mutableMapOf<String, Int>()
 
-    private val removeImageIdxSubject: PublishSubject<List<Int>> = PublishSubject.create()
-    var removeImageIdxListObservable: Observable<List<Int>> =
-        removeImageIdxSubject.observeOn(AndroidSchedulers.mainThread())
+    /**
+     * live data for data
+     */
+    private val _saveImages = MutableLiveData<List<ImageModel>>()
+    val saveImages: LiveData<List<ImageModel>> = _saveImages
 
-    private val insertedImageIdxSubject: PublishSubject<List<Int>> = PublishSubject.create()
-    var insertedImageIdxListObservable: Observable<List<Int>> =
-        insertedImageIdxSubject.observeOn(AndroidSchedulers.mainThread())
+    private val _headerTitle = MutableLiveData("내 보관함")
+    var headerTitle: LiveData<String> = _headerTitle
 
+    private val _selectMode = MutableLiveData(false)
+    val selectMode: LiveData<Boolean> = _selectMode
 
-    val imageList = mutableListOf<ImageModel>()
-    var selectMode: Boolean = false
-    val selectImageIdxList = mutableListOf<Int>()
+    /**
+     * live data for event
+     */
+    private val _toastText = MutableLiveData<String>()
+    val toastText: LiveData<String> = _toastText
+
+    private val _dataLoading = MutableLiveData<Boolean>()
+    val dataLoading: LiveData<Boolean> = _dataLoading
+
+    private val _keyboardShownEvent = MutableLiveData<Boolean>()
+    val keyboardShownEvent: LiveData<Boolean> = _keyboardShownEvent
 
     init {
-        bind()
+        fetchSaveImages()
     }
 
-    private fun bind() {
-//        saveImageStorage.imageInsertedSubject.subscribe {
-//            getSavedImageList()
-//            if(selectMode){
-//                for(idx in 0 until selectImageIdxList.size){
-//                    selectImageIdxList[idx] += it.size // 해당 개수만큼 item 이 앞쪽에 추가된것
-//                }
-//            }
-//            insertedImageIdxSubject.onNext(it)
-//        }.apply { addDisposable(this) }
+    fun removeSelectImage(){
+        _dataLoading.value = true
+        removeSaveImageUseCase(selectImageHashMap)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { res ->
+                _dataLoading.value = false
+                res.onSuccess {
+                    when(it){
+                        true -> {
+                            showToast("삭제 성공")
+                            clickSelectModeEvent() // 삭제라면 선택모드 였을테니, toggle 해주면 선택모드가 해제됨
+                        }
+                        else -> showToast("삭제 실패")
+                    }
+                }.onFailure {
+                    it.printStackTrace()
+                    showToast("삭제 실패 $it")
+                }
+            }.addTo(compositeDisposable)
     }
 
-    private fun getSavedImageList() {
-//        imageList.clear()
-//        imageList.addAll(saveImageStorage.imageList)
+    private var saveImageDisposable: Disposable? = null
+    fun fetchSaveImages() {
+        saveImageDisposable?.dispose()
+        saveImageDisposable = null
+
+        _dataLoading.value = true
+        saveImageDisposable = fetchSaveImageUseCase()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { res ->
+                _dataLoading.value = false
+                res.onSuccess {
+                    _saveImages.value = it
+                }.onFailure {
+                    when (it) {
+                        is MaxPageException -> showToast("마지막 페이지입니다")
+                        else -> showToast("$fetchImageFailMessage\n${it.message}")
+                    }
+                }
+            }.addTo(compositeDisposable)
     }
 
-    fun requestSavedImageList() {
-        getSavedImageList()
-        savedImageSubject.onNext(imageList)
+    fun clickSelectModeEvent(){
+        when(_selectMode.value){
+            true -> {
+                unSelectAllImage()
+                _headerTitle.value = "내 보관함"
+            }
+            else -> _headerTitle.value = "${selectImageHashMap.size}장 선택중"
+        }
+        _selectMode.value = !(_selectMode.value ?: false)
     }
 
-    fun requestRemoveImageList(imgIdxList: List<Int>) {
-//        Thread{
-//            Timber.d("requestRemoveImageList : ${imgIdxList.size} - thread : ${Thread.currentThread().name}")
-//            val res = saveImageStorage.removeImageList(imgIdxList)
-//            getSavedImageList()
-//            removeImageIdxSubject.onNext(res)
-//        }.start()
+    fun touchImageEvent(image: ImageModel, idx: Int){
+        _keyboardShownEvent.value = false
+        when (selectMode.value){
+            true ->
+                setSelectImage(image, idx, !selectImageHashMap.containsKey(image.hash))
+            else -> {}
+        }
+    }
+
+    private fun unSelectAllImage() {
+        val images = saveImages.value?.toMutableList() ?: return
+        try {
+            for(idx in selectImageHashMap.values){
+                images[idx] = images[idx].copy(isSelect = false)
+            }
+        }catch (e: Exception){
+            e.printStackTrace()
+        }
+        selectImageHashMap.clear()
+        _saveImages.value = images
+    }
+
+    private fun setSelectImage(image: ImageModel, idx: Int, select: Boolean) {
+        val images = saveImages.value?.toMutableList() ?: return
+        try {
+            images[idx] = images[idx].copy(isSelect = select)
+            when (select){
+                true -> selectImageHashMap[image.hash] = idx
+                else -> selectImageHashMap.remove(image.hash)
+            }
+            _saveImages.value = images
+            _headerTitle.value = "${selectImageHashMap.size}장 선택중"
+        }catch (e: Exception){
+            e.printStackTrace()
+            showToast("선택 실패")
+        }
+    }
+
+    private fun showToast(message: String){
+        _toastText.value = message
     }
 }
