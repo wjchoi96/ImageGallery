@@ -19,9 +19,9 @@ class SearchImageViewModel @Inject constructor(
     private val saveSelectImageUseCase: SaveSelectImageUseCase
 ) : DisposableManageViewModel() {
     private var page = 1
+    private var lastQuery: String? = null
 
     private val searchFailMessage: String = "검색을 실패했습니다"
-
     private val selectImageUrlMap = mutableMapOf<String, Int>()
 
     // select 해서 저장한 이미지들의 map
@@ -31,32 +31,29 @@ class SearchImageViewModel @Inject constructor(
     /**
      * live data for data
      */
-    private val _searchImages = MutableLiveData<List<ImageListTypeModel>>()
+    private val _searchImages = MutableLiveData<List<ImageListTypeModel>>(emptyList())
     val searchImages: LiveData<List<ImageListTypeModel>> = _searchImages
-
-    private val _lastQuery = MutableLiveData<String>()
-    val lastQuery: LiveData<String> = _lastQuery
 
     private val _headerTitle = MutableLiveData("이미지 검색")
     var headerTitle: LiveData<String> = _headerTitle
 
+    private val _dataLoading = MutableLiveData(false)
+    val dataLoading: LiveData<Boolean> = _dataLoading
+
+    private val _pagingDataLoading = MutableLiveData(false)
+    val pagingDataLoading: LiveData<Boolean> = _pagingDataLoading
+
+    private val _selectMode = MutableLiveData(false)
+    val selectMode: LiveData<Boolean> = _selectMode
     /**
      * live data for event
      */
-    private val _toastText = MutableLiveData<String>()
-    val toastText: LiveData<String> = _toastText
+    private val _toastMessageEvent = MutableLiveData<SingleEvent<String>>()
+    val toastMessageEvent: LiveData<SingleEvent<String>> = _toastMessageEvent
 
-    private val _dataLoading = MutableLiveData<Boolean>()
-    val dataLoading: LiveData<Boolean> = _dataLoading
+    private val _keyboardShownEvent = MutableLiveData<SingleEvent<Boolean>>()
+    val keyboardShownEvent: LiveData<SingleEvent<Boolean>> = _keyboardShownEvent
 
-    private val _pagingDataLoading = MutableLiveData<Boolean>()
-    val pagingDataLoading: LiveData<Boolean> = _pagingDataLoading
-
-    private val _keyboardShownEvent = MutableLiveData<Boolean>()
-    val keyboardShownEvent: LiveData<Boolean> = _keyboardShownEvent
-
-    private val _selectMode = MutableLiveData<Boolean>()
-    val selectMode: LiveData<Boolean> = _selectMode
 
     init {
         fetchSearchQuery("")
@@ -95,7 +92,7 @@ class SearchImageViewModel @Inject constructor(
 
     // query 를 비워서 보내면 에러뜬다
     private fun fetchSearchQuery(query: String) {
-        _lastQuery.value = query
+        lastQuery = query
         page = 1
         tempSavedImageMap.clear()
         _dataLoading.value = true
@@ -185,7 +182,7 @@ class SearchImageViewModel @Inject constructor(
      * Called by Data Binding
      */
     fun touchImageEvent(image: ImageModel, idx: Int) {
-        _keyboardShownEvent.value = false
+        _keyboardShownEvent.value = SingleEvent(false)
         when (selectMode.value){
             true ->
                 setSelectImage(image, idx, !selectImageUrlMap.containsKey(image.imageUrl))
@@ -195,7 +192,7 @@ class SearchImageViewModel @Inject constructor(
 
     fun searchQuery(query: String) {
         Timber.d("search query : $query")
-        _keyboardShownEvent.value = false
+        _keyboardShownEvent.value = SingleEvent(false)
         if (query.isBlank()) {
             showToast("검색어를 입력해주세요")
             return
@@ -208,16 +205,16 @@ class SearchImageViewModel @Inject constructor(
     }
 
     fun fetchNextPage() {
-        if (lastQuery.value == null) {
+        if (lastQuery.isNullOrBlank()) {
             return
         }
         if (pagingDataLoading.value == true) {
             return
         }
-        fetchNextSearchQuery(lastQuery.value!!, page)
+        fetchNextSearchQuery(lastQuery!!, page)
     }
 
     private fun showToast(message: String) {
-        _toastText.value = message
+        _toastMessageEvent.value = SingleEvent(message)
     }
 }
