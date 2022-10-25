@@ -1,5 +1,6 @@
 package com.gallery.kakaogallery.domain.usecase
 
+import com.gallery.kakaogallery.domain.model.ImageListTypeModel
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.repository.ImageRepository
 import com.gallery.kakaogallery.domain.util.GalleryDateConvertUtil
@@ -10,16 +11,20 @@ import java.util.*
 class SaveSelectImageUseCase(
     private val imageRepository: ImageRepository
 ) {
-    operator fun invoke(selectImageUrlMap: MutableMap<String, Int>, images: List<ImageModel>): Observable<Result<Boolean>>{
+    operator fun invoke(selectImageUrlMap: MutableMap<String, Int>, images: List<ImageListTypeModel>): Observable<Result<Boolean>>{
         return Observable.defer{
             val saveImages = mutableListOf<ImageModel>()
             for(selectIdx in selectImageUrlMap.values){
                 val saveTimeMill = Date().time
-                saveImages.add(images[selectIdx].copy(
-                    saveTimeMill = saveTimeMill,
-                    saveDateTimeToShow = GalleryDateConvertUtil.convertToPrint(saveTimeMill),
-                    isSelect = false
-                ))
+                saveImages.add(
+                    (images[selectIdx] as ImageListTypeModel.Image).let {
+                        it.copy(image = it.image.copy(
+                            saveTimeMill = saveTimeMill,
+                            saveDateTimeToShow = GalleryDateConvertUtil.convertToPrint(saveTimeMill),
+                            isSelect = false
+                        ))
+                    }.image
+                )
             }
             imageRepository.saveImages(saveImages)
         }.subscribeOn(Schedulers.computation())
