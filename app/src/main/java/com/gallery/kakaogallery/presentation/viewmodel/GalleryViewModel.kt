@@ -24,7 +24,7 @@ class GalleryViewModel @Inject constructor(
     /**
      * live data for data
      */
-    private val _saveImages = MutableLiveData<List<ImageModel>>()
+    private val _saveImages = MutableLiveData<List<ImageModel>>(emptyList())
     val saveImages: LiveData<List<ImageModel>> = _saveImages
 
     private val _headerTitle = MutableLiveData("내 보관함")
@@ -33,14 +33,11 @@ class GalleryViewModel @Inject constructor(
     private val _selectMode = MutableLiveData(false)
     val selectMode: LiveData<Boolean> = _selectMode
 
+    private val _dataLoading = MutableLiveData(false)
+    val dataLoading: LiveData<Boolean> = _dataLoading
     /**
      * live data for event
      */
-    private val _toastText = MutableLiveData<String>()
-    val toastText: LiveData<String> = _toastText
-
-    private val _dataLoading = MutableLiveData<Boolean>()
-    val dataLoading: LiveData<Boolean> = _dataLoading
     private val _toastMessageEvent = MutableLiveData<SingleEvent<String>>()
     val toastMessageEvent: LiveData<SingleEvent<String>> = _toastMessageEvent
 
