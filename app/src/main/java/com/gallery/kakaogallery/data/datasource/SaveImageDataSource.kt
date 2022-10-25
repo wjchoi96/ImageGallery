@@ -8,5 +8,5 @@ interface SaveImageDataSource {
 
     fun removeImages(idxList: List<Int>): Observable<Boolean>
 
-    fun saveImage(image: ImageModel): Observable<Boolean>
+    fun saveImages(image: List<ImageModel>): Observable<Boolean>
 }

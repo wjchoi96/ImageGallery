@@ -4,8 +4,7 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.ActivityRootBinding
-import com.gallery.kakaogallery.presentation.ui.base.HeaderCompActivity
-import com.gallery.kakaogallery.presentation.ui.comp.HeaderComp
+import com.gallery.kakaogallery.presentation.ui.base.BindingActivity
 import com.gallery.kakaogallery.presentation.ui.gallery.GalleryFragment
 import com.gallery.kakaogallery.presentation.ui.searchimage.SearchImageFragment
 import com.gallery.kakaogallery.presentation.viewmodel.RootViewModel
@@ -50,7 +49,7 @@ import timber.log.Timber
  */
 
 @AndroidEntryPoint
-class RootActivity : HeaderCompActivity<ActivityRootBinding>(), FragmentRootHandler {
+class RootActivity : BindingActivity<ActivityRootBinding>() {
     override val layoutResId: Int
         get() = R.layout.activity_root
     private val viewModel: RootViewModel by viewModels()
@@ -59,10 +58,6 @@ class RootActivity : HeaderCompActivity<ActivityRootBinding>(), FragmentRootHand
         R.id.bottom_menu_search_image,
         R.id.bottom_menu_save_image
     )
-
-    override fun getHeader(): HeaderComp {
-        return HeaderComp(this)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -114,9 +109,5 @@ class RootActivity : HeaderCompActivity<ActivityRootBinding>(), FragmentRootHand
             }
         }
         transaction.commitAllowingStateLoss()
-    }
-
-    override fun getHeaderCompFromRoot(): HeaderComp? {
-        return headerComp
     }
 }

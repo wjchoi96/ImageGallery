@@ -4,7 +4,6 @@ import android.content.res.Configuration
 import android.graphics.Rect
 import android.os.Bundle
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -12,6 +11,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.FragmentGalleryBinding
+import com.gallery.kakaogallery.presentation.extension.hideKeyboard
 import com.gallery.kakaogallery.presentation.extension.showToast
 import com.gallery.kakaogallery.presentation.ui.base.DisposableManageFragment
 import com.gallery.kakaogallery.presentation.util.DialogUtil
@@ -25,31 +25,14 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
         get() = R.layout.fragment_gallery
     private val viewModel: GalleryViewModel by viewModels()
 
-    private var imageListAdapter: GalleryAdapter? = null
-    private var itemCount = 3
-
-    /*
-        1. search view 에서 이미지 저장시 자동으로 현재 뷰에 적용
-        2. 이미지 선택중에 새로운 이미지가 추가되면? -> select idx 안꼬이게 처리
-     */
-    override fun onHiddenChanged(hidden: Boolean) {
-        super.onHiddenChanged(hidden)
-        Timber.d("save onHiddenChanged => $hidden")
-        if (!hidden) {
-            fHandler?.getHeaderCompFromRoot()?.setBackgroundClickListener { scrollToTop() }
-            if (viewModel.selectMode)
-                startSelectMode()
-            else
-                finishSelectMode()
-        }
-    }
+    private val galleryAdapter: GalleryAdapter by lazy { GalleryAdapter(viewModel::touchImageEvent) }
+    private var itemCount: Int = 3
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initData()
         initView(view)
         observeData()
-        requestSavedImageList()
     }
 
     private fun initData() {
@@ -68,90 +51,56 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     }
 
 
-    // header 를 save, search 둘이서 같은걸 공유하다보니, 가로, 세로 전환이 되며 두 뷰가 모드 새로 reCreate 될때
-    // fragment 두개가 하나의 header 를 바꿔버리면서 충돌난다
-    // onHiddenChanged 와 연계해서 어떻게 가능하려나?
     private fun initHeader() {
-        if (isHidden) //  현재 보이는 fragment 가 header setting 에 우선권을 가지도록 설정
-            return
-        // 상대 fragment 탭의 onStop 이후로 여기보다 먼저 호출되는 파괴 관련 생명주기 콜백이 없다
-        // onStop 에서 header button 을 제거할 수는 없으니, init code 에서 처리하자
-        fHandler?.getHeaderCompFromRoot()?.apply {
-            clearView()
-//            setTitle("내 보관함")
-//            setRightBtnListener("선택"){
-//                startSelectMode()
-//            }
+        binding.layoutToolbar.let {
+            it.tvBtnRight.isVisible = false
+            it.tvBtnLeft.isVisible = false
+            it.toolBar.setOnClickListener {
+                scrollToTop()
+            }
         }
-        Timber.d("init header " + viewModel.selectMode)
-        if (viewModel.selectMode)
-            startSelectMode()
-        else
-            finishSelectMode()
     }
 
     private fun startSelectMode() {
-        viewModel.selectMode = true
-        fHandler?.getHeaderCompFromRoot()?.apply {
-            setLeftBtnListener("취소") {
-                releaseAllSelectImage()
-                finishSelectMode()
+        binding.layoutToolbar.let {
+            it.tvBtnLeft.apply {
+                isVisible = true
+                text = "삭제"
+                setOnClickListener {
+                    showRemoveDialog()
+                }
             }
-            setRightBtnListener("삭제") {
-                showRemoveDialog()
+            it.tvBtnRight.apply {
+                isVisible = true
+                text = "취소"
+                setOnClickListener {
+                    viewModel.clickSelectModeEvent()
+                }
             }
-            setTitle("0장 선택중")
         }
     }
 
     private fun finishSelectMode() {
-        viewModel.selectImageIdxList.clear()
-        viewModel.selectMode = false
-        fHandler?.getHeaderCompFromRoot()?.apply {
-            removeLeftBtn()
-            setRightBtnListener("선택") {
-                startSelectMode()
+        binding.layoutToolbar.let {
+            it.tvBtnLeft.apply {
+                isVisible = false
             }
-            setTitle("내 보관함")
+            it.tvBtnRight.apply {
+                isVisible = true
+                text = "선택"
+                setOnClickListener {
+                    viewModel.clickSelectModeEvent()
+                }
+            }
         }
-    }
-
-    private fun releaseAllSelectImage() {
-        for (idx in viewModel.selectImageIdxList) {
-            viewModel.imageList[idx].isSelect = false
-            imageListAdapter?.notifyItemChanged(idx, GalleryAdapter.ImagePayload.Select)
-        }
-        viewModel.selectImageIdxList.clear()
     }
 
     private fun setRecyclerView() {
-        imageListAdapter = GalleryAdapter(mContext ?: return) { image, idx ->
-            Timber.d("select image item : " + idx + ", " + viewModel.selectMode)
-            if (viewModel.selectMode) {
-                viewModel.imageList[idx].isSelect = !viewModel.imageList[idx].isSelect
-                Timber.d("viewModel.imageList[" + idx + "].isSelect = " + viewModel.imageList[idx].isSelect)
-                if (viewModel.imageList[idx].isSelect) {
-                    viewModel.selectImageIdxList.add(idx)
-                    fHandler?.getHeaderCompFromRoot()
-                        ?.setTitle("${viewModel.selectImageIdxList.size}장 선택중")
-                } else {
-                    viewModel.selectImageIdxList.remove(idx)
-                    fHandler?.getHeaderCompFromRoot()
-                        ?.setTitle("${viewModel.selectImageIdxList.size}장 선택중")
-                }
-                imageListAdapter?.notifyItemChanged(idx, GalleryAdapter.ImagePayload.Select)
-            }
-            return@GalleryAdapter viewModel.selectMode
-        }
         val viewManager = GridLayoutManager(mContext, itemCount)
         binding.rvGallery.apply {
             layoutManager = viewManager
-            adapter = imageListAdapter
+            adapter = galleryAdapter
             addItemDecoration(itemDecoration)
-        }
-        if (viewModel.imageList.isNotEmpty()) {
-            imageListAdapter?.setList(viewModel.imageList)
-            imageListAdapter?.notifyDataSetChanged()
         }
     }
 
@@ -187,7 +136,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
 
     private fun setSwipeRefreshListener() {
         binding.layoutSwipeRefresh.setOnRefreshListener {
-            requestSavedImageList()
+            viewModel.fetchSaveImages()
         }
         binding.layoutSwipeRefresh.setColorSchemeResources(
             android.R.color.holo_blue_bright,
@@ -198,90 +147,91 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     }
 
     private fun scrollToTop() {
-        if (viewModel.imageList.isNotEmpty()) {
+        if (galleryAdapter.currentItemSize != 0) {
             binding.rvGallery.smoothScrollToPosition(0)
         }
     }
 
     private fun showRemoveDialog() {
-        if (viewModel.selectImageIdxList.isEmpty()) {
-            mContext?.showToast("이미지를 선택해주세요")
-            return
-        }
+//        if (viewModel.selectImageIdxList.isEmpty()) {
+//            mContext?.showToast("이미지를 선택해주세요")
+//            return
+//        }
         DialogUtil.showBottom(
             mContext ?: return,
-            "${viewModel.selectImageIdxList.size}개의 이미지를 삭제하시겠습니까?",
+            "선택한 이미지를 삭제하시겠습니까?",
             "삭제",
             "취소",
             {
-                requestRemoveSelectImage()
+                viewModel.removeSelectImage()
             }) {}
     }
 
-    private fun requestRemoveSelectImage() {
-        if (viewModel.selectImageIdxList.isEmpty()) {
-            mContext?.showToast("이미지를 선택해주세요")
-            return
-        }
-        setProgress(true)
-        viewModel.requestRemoveImageList(viewModel.selectImageIdxList)
-    }
-
-    private fun requestSavedImageList() {
-        setProgress(true)
-        viewModel.requestSavedImageList()
-    }
-
     private fun observeData() {
-        viewModel.errorMessageObservable.subscribe {
-            setProgress(false)
+        viewModel.toastText.observe(this) {
             mContext?.showToast(it)
-        }.apply { compositeDisposable.add(this) }
+        }
 
-        viewModel.savedImageListObservable.subscribe {
+        viewModel.saveImages.observe(this) {
             Timber.d("savedImageListObservable subscribe thread - " + Thread.currentThread().name)
             for ((idx, i) in it.withIndex()) {
                 Timber.d("[" + idx + "] : " + i.toMinString())
             }
-            setProgress(false)
-            imageListAdapter?.setList(it)
-            imageListAdapter?.notifyDataSetChanged()
+            galleryAdapter.updateList(it)
             setEmptyListView()
-        }.apply { compositeDisposable.add(this) }
+        }
 
-        viewModel.removeImageIdxListObservable.subscribe {
-            setProgress(false)
-            imageListAdapter?.setList(viewModel.imageList)
-            if (it.size == 1)
-                imageListAdapter?.notifyItemRemoved(it.first())
-            else
-                imageListAdapter?.notifyDataSetChanged()
-            finishSelectMode()
-            setEmptyListView()
-        }.apply { compositeDisposable.add(this) }
+        viewModel.dataLoading.observe(this) {
+            binding.progress.isVisible = it
+            if(!it)
+                finishRefresh()
+        }
 
-        viewModel.insertedImageIdxListObservable.subscribe {
-            imageListAdapter?.setList(viewModel.imageList)
-            imageListAdapter?.notifyItemRangeInserted(0, it.size)
-            setEmptyListView()
-        }.apply { compositeDisposable.add(this) }
+        viewModel.headerTitle.observe(this) {
+            binding.layoutToolbar.toolBar.title = it
+        }
+
+        viewModel.keyboardShownEvent.observe(this) {
+            if (it == false) {
+                mContext?.hideKeyboard(binding.background)
+            }
+        }
+
+        viewModel.selectMode.observe(this) {
+            Timber.d("select mode debug at observe -> $it")
+            when (it){
+                true -> startSelectMode()
+                else -> finishSelectMode()
+            }
+        }
+
+//        viewModel.removeImageIdxListObservable.subscribe {
+//            setProgress(false)
+//            imageListAdapter?.setList(viewModel.imageList)
+//            if (it.size == 1)
+//                imageListAdapter?.notifyItemRemoved(it.first())
+//            else
+//                imageListAdapter?.notifyDataSetChanged()
+//            finishSelectMode()
+//            setEmptyListView()
+//        }.apply { compositeDisposable.add(this) }
+//
+//        viewModel.insertedImageIdxListObservable.subscribe {
+//            imageListAdapter?.setList(viewModel.imageList)
+//            imageListAdapter?.notifyItemRangeInserted(0, it.size)
+//            setEmptyListView()
+//        }.apply { compositeDisposable.add(this) }
     }
 
     private fun setEmptyListView() {
-        if (viewModel.imageList.isEmpty())
-            binding.tvNoneNotify.visibility = View.VISIBLE
-        else
-            binding.tvNoneNotify.visibility = View.GONE
+//        if (viewModel.imageList.isEmpty())
+//            binding.tvNoneNotify.visibility = View.VISIBLE
+//        else
+//            binding.tvNoneNotify.visibility = View.GONE
     }
 
     private fun finishRefresh() {
         if (binding.layoutSwipeRefresh.isRefreshing)
             binding.layoutSwipeRefresh.isRefreshing = false
-    }
-
-    private fun setProgress(visible: Boolean) {
-        binding.progress.isVisible = visible
-        if (!visible)
-            finishRefresh()
     }
 }
