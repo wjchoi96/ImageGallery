@@ -44,29 +44,7 @@ class GalleryViewModel @Inject constructor(
     val keyboardShownEvent: LiveData<Boolean> = _keyboardShownEvent
 
     init {
-        bind()
         fetchSaveImages()
-    }
-
-    private fun bind() {
-//        saveImageStorage.imageInsertedSubject.subscribe {
-//            getSavedImageList()
-//            if(selectMode){
-//                for(idx in 0 until selectImageIdxList.size){
-//                    selectImageIdxList[idx] += it.size // 해당 개수만큼 item 이 앞쪽에 추가된것
-//                }
-//            }
-//            insertedImageIdxSubject.onNext(it)
-//        }.apply { addDisposable(this) }
-    }
-
-    fun requestRemoveImageList(imgIdxList: List<Int>) {
-//        Thread{
-//            Timber.d("requestRemoveImageList : ${imgIdxList.size} - thread : ${Thread.currentThread().name}")
-//            val res = saveImageStorage.removeImageList(imgIdxList)
-//            getSavedImageList()
-//            removeImageIdxSubject.onNext(res)
-//        }.start()
     }
 
     fun removeSelectImage(){
