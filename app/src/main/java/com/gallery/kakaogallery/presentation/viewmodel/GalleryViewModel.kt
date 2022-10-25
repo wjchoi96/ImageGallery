@@ -17,7 +17,7 @@ class GalleryViewModel @Inject constructor(
 ) : DisposableManageViewModel() {
 
     private val fetchImageFailMessage: String = "이미지를 불러올수 없습니다"
-    private val selectImageUrlMap = mutableMapOf<String, Int>()
+    private val selectImageHashMap = mutableMapOf<String, Int>()
 
     /**
      * live data for data
@@ -113,7 +113,7 @@ class GalleryViewModel @Inject constructor(
                 unSelectAllImage()
                 _headerTitle.value = "내 보관함"
             }
-            else -> _headerTitle.value = "${selectImageUrlMap.size}장 선택중"
+            else -> _headerTitle.value = "${selectImageHashMap.size}장 선택중"
         }
         _selectMode.value = !(_selectMode.value ?: false)
     }
@@ -122,7 +122,7 @@ class GalleryViewModel @Inject constructor(
         _keyboardShownEvent.value = false
         when (selectMode.value){
             true ->
-                setSelectImage(image, idx, !selectImageUrlMap.containsKey(image.imageUrl))
+                setSelectImage(image, idx, !selectImageHashMap.containsKey(image.hash))
             else -> {}
         }
     }
@@ -130,13 +130,13 @@ class GalleryViewModel @Inject constructor(
     private fun unSelectAllImage() {
         val images = saveImages.value?.toMutableList() ?: return
         try {
-            for(idx in selectImageUrlMap.values){
+            for(idx in selectImageHashMap.values){
                 images[idx] = images[idx].copy(isSelect = false)
             }
         }catch (e: Exception){
             e.printStackTrace()
         }
-        selectImageUrlMap.clear()
+        selectImageHashMap.clear()
         _saveImages.value = images
     }
 
@@ -145,11 +145,11 @@ class GalleryViewModel @Inject constructor(
         try {
             images[idx] = images[idx].copy(isSelect = select)
             when (select){
-                true -> selectImageUrlMap[image.imageUrl] = idx
-                else -> selectImageUrlMap.remove(image.imageUrl)
+                true -> selectImageHashMap[image.hash] = idx
+                else -> selectImageHashMap.remove(image.hash)
             }
             _saveImages.value = images
-            _headerTitle.value = "${selectImageUrlMap.size}장 선택중"
+            _headerTitle.value = "${selectImageHashMap.size}장 선택중"
         }catch (e: Exception){
             e.printStackTrace()
             showToast("선택 실패")
