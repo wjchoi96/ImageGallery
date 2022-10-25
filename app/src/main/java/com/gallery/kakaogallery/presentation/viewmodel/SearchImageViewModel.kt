@@ -57,6 +57,15 @@ class SearchImageViewModel @Inject constructor(
 
     private val _selectMode = MutableLiveData<Boolean>()
     val selectMode: LiveData<Boolean> = _selectMode
+    /**
+     * live data for event
+     */
+    private val _toastMessageEvent = MutableLiveData<SingleEvent<String>>()
+    val toastMessageEvent: LiveData<SingleEvent<String>> = _toastMessageEvent
+
+    private val _keyboardShownEvent = MutableLiveData<SingleEvent<Boolean>>()
+    val keyboardShownEvent: LiveData<SingleEvent<Boolean>> = _keyboardShownEvent
+
 
     init {
         fetchSearchQuery("")
@@ -185,7 +194,7 @@ class SearchImageViewModel @Inject constructor(
      * Called by Data Binding
      */
     fun touchImageEvent(image: ImageModel, idx: Int) {
-        _keyboardShownEvent.value = false
+        _keyboardShownEvent.value = SingleEvent(false)
         when (selectMode.value){
             true ->
                 setSelectImage(image, idx, !selectImageUrlMap.containsKey(image.imageUrl))
@@ -195,7 +204,7 @@ class SearchImageViewModel @Inject constructor(
 
     fun searchQuery(query: String) {
         Timber.d("search query : $query")
-        _keyboardShownEvent.value = false
+        _keyboardShownEvent.value = SingleEvent(false)
         if (query.isBlank()) {
             showToast("검색어를 입력해주세요")
             return
@@ -218,6 +227,6 @@ class SearchImageViewModel @Inject constructor(
     }
 
     private fun showToast(message: String) {
-        _toastText.value = message
+        _toastMessageEvent.value = SingleEvent(message)
     }
 }
