@@ -60,8 +60,8 @@ class SearchImagesAdapter(
             this.imageList,
             newList,
             Payload.Query,
-            Payload.Save,
-            Payload.Select
+            Payload.Select,
+            Payload.Save
         )
         return DiffUtil.calculateDiff(diffCallback)
     }

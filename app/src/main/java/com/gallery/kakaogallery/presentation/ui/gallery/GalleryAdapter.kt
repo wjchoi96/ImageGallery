@@ -35,8 +35,8 @@ class GalleryAdapter(
             this.imageList.map { ImageListTypeModel.Image(it) },
             newList.map { ImageListTypeModel.Image(it) },
             null,
-            Payload.Save,
-            Payload.Select
+            Payload.Select,
+            Payload.Save
         )
         return DiffUtil.calculateDiff(diffCallback)
     }
