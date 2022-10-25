@@ -28,6 +28,8 @@ data class ImageModel internal constructor(
         val Empty: ImageModel = ImageModel("", 0, "", null)
     }
 
+    val hash: String = imageUrl + if(saveDateTimeToShow.isNullOrBlank()) dateTimeToShow else saveDateTimeToShow
+
     val isImageType: Boolean
         get() = thumbnailUrl.isNullOrBlank()
     val imageThumbUrl: String
