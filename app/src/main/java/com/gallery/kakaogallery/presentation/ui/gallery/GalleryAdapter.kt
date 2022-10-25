@@ -9,6 +9,7 @@ import com.gallery.kakaogallery.presentation.ui.searchimage.GalleryImageItemView
 import com.gallery.kakaogallery.presentation.ui.searchimage.ImageDiffUtilCallback
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import timber.log.Timber
 
@@ -41,9 +42,14 @@ class GalleryAdapter(
         return DiffUtil.calculateDiff(diffCallback)
     }
 
+    private var adapterDisposable: Disposable? = null
     fun updateList(list: List<ImageModel>) {
+        adapterDisposable?.dispose()
+        adapterDisposable = null
+
         val newList = list.toList()
-        Observable.defer{
+        Timber.d("diff debug updateList called oldList[${imageList.size}], newList[${newList.size}]")
+        adapterDisposable = Observable.defer{
             Observable.just (getDiffRes(newList))
         }.subscribeOn(Schedulers.computation())
             .observeOn(AndroidSchedulers.mainThread())
