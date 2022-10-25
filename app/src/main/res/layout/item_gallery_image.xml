@@ -15,9 +15,6 @@
         <variable
             name="isSaveImage"
             type="Boolean" />
-        <variable
-            name="position"
-            type="Integer" />
     </data>
     <RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -27,7 +24,7 @@
         android:id="@+id/background"
         android:padding="1dp"
         android:background="@{isSelectImage ? @drawable/bg_select_image : @drawable/bg_unselect_image}"
-        android:onClick="@{() -> holder.imageItemSelectListener.invoke(imageItem, position)}">
+        android:onClick="@{() -> holder.imageItemSelectListener.invoke(imageItem, holder.itemPosition)}">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
