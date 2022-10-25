@@ -4,8 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.MaxPageException
-import com.gallery.kakaogallery.domain.repository.ImageRepository
 import com.gallery.kakaogallery.domain.usecase.FetchSaveImageUseCase
+import com.gallery.kakaogallery.domain.usecase.RemoveSaveImageUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.kotlin.addTo
@@ -13,7 +13,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GalleryViewModel @Inject constructor(
-    private val fetchSaveImageUseCase: FetchSaveImageUseCase
+    private val fetchSaveImageUseCase: FetchSaveImageUseCase,
+    private val removeSaveImageUseCase: RemoveSaveImageUseCase
 ) : DisposableManageViewModel() {
 
     private val fetchImageFailMessage: String = "이미지를 불러올수 없습니다"
