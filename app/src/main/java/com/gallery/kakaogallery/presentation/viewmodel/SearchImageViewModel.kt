@@ -74,8 +74,7 @@ class SearchImageViewModel @Inject constructor(
         val images = searchImages.value ?: return
         saveSelectImageUseCase(
             selectImageUrlMap,
-            images.filterIsInstance(ImageListTypeModel.Image::class.java)
-                .map { it.image }
+            images
         ).observeOn(AndroidSchedulers.mainThread())
             .subscribe { res ->
             _dataLoading.value = false
