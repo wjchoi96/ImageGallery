@@ -69,6 +69,27 @@ class GalleryViewModel @Inject constructor(
 //        }.start()
     }
 
+    fun removeSelectImage(){
+        _dataLoading.value = true
+        removeSaveImageUseCase(selectImageHashMap)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { res ->
+                _dataLoading.value = false
+                res.onSuccess {
+                    when(it){
+                        true -> {
+                            showToast("삭제 성공")
+                            clickSelectModeEvent() // 삭제라면 선택모드 였을테니, toggle 해주면 선택모드가 해제됨
+                        }
+                        else -> showToast("삭제 실패")
+                    }
+                }.onFailure {
+                    it.printStackTrace()
+                    showToast("삭제 실패 $it")
+                }
+            }.addTo(compositeDisposable)
+    }
+
     fun fetchSaveImages() {
         _dataLoading.value = true
         fetchSaveImageUseCase()
