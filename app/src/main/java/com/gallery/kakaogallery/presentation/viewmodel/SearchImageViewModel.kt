@@ -7,6 +7,7 @@ import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.MaxPageException
 import com.gallery.kakaogallery.domain.usecase.FetchQueryDataUseCase
 import com.gallery.kakaogallery.domain.usecase.SaveSelectImageUseCase
+import com.gallery.kakaogallery.presentation.application.StringResourceProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.kotlin.addTo
@@ -15,13 +16,14 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchImageViewModel @Inject constructor(
+    private val resourceProvider: StringResourceProvider,
     private val fetchSearchDataQueryDataUseCase: FetchQueryDataUseCase,
     private val saveSelectImageUseCase: SaveSelectImageUseCase
 ) : DisposableManageViewModel() {
     private var page = 1
     private var lastQuery: String? = null
 
-    private val searchFailMessage: String = "검색을 실패했습니다"
+    private val searchFailMessage: String = resourceProvider.getString(StringResourceProvider.StringResourceId.SearchFail)
     private val selectImageUrlMap = mutableMapOf<String, Int>()
 
     // select 해서 저장한 이미지들의 map
@@ -34,7 +36,7 @@ class SearchImageViewModel @Inject constructor(
     private val _searchImages = MutableLiveData<List<ImageListTypeModel>>(emptyList())
     val searchImages: LiveData<List<ImageListTypeModel>> = _searchImages
 
-    private val _headerTitle = MutableLiveData("이미지 검색")
+    private val _headerTitle = MutableLiveData(resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage))
     var headerTitle: LiveData<String> = _headerTitle
 
     private val _dataLoading = MutableLiveData(false)
@@ -64,7 +66,7 @@ class SearchImageViewModel @Inject constructor(
      */
     fun saveSelectImage() {
         if (selectImageUrlMap.isEmpty()) {
-            showToast("이미지를 선택해주세요")
+            showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage))
             return
         }
         _dataLoading.value = true
@@ -78,14 +80,14 @@ class SearchImageViewModel @Inject constructor(
             res.onSuccess {
                 when(it){
                     true -> {
-                        showToast("저장 성공")
+                        showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveSuccess))
                         setSelectMode(false)
                     }
-                    else -> showToast("저장 실패")
+                    else -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveFail))
                 }
             }.onFailure {
                 it.printStackTrace()
-                showToast("저장 실패 $it")
+                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveFail) + " $it")
             }
         }.addTo(compositeDisposable)
     }
@@ -105,7 +107,7 @@ class SearchImageViewModel @Inject constructor(
                     _searchImages.value = it
                 }.onFailure {
                     when (it) {
-                        is MaxPageException -> showToast("마지막 페이지입니다")
+                        is MaxPageException -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.LastPage))
                         else -> showToast("$searchFailMessage\n${it.message}")
                     }
                 }
@@ -124,7 +126,7 @@ class SearchImageViewModel @Inject constructor(
                     _searchImages.value = prevList + it
                 }.onFailure {
                     when (it) {
-                        is MaxPageException -> showToast("마지막 페이지입니다")
+                        is MaxPageException -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.LastPage))
                         else -> showToast("$searchFailMessage\n${it.message}")
                     }
                 }
@@ -136,10 +138,10 @@ class SearchImageViewModel @Inject constructor(
      */
     fun setSelectMode(selectMode: Boolean) {
         when(selectMode){
-            true -> _headerTitle.value = "${selectImageUrlMap.size}장 선택중"
+            true -> _headerTitle.value = resourceProvider.getString(StringResourceProvider.StringResourceId.SelectState, selectImageUrlMap.size)
             else -> {
                 unSelectAllImage()
-                _headerTitle.value = "이미지 검색"
+                _headerTitle.value = resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage)
             }
         }
         _selectMode.value = selectMode
@@ -171,10 +173,10 @@ class SearchImageViewModel @Inject constructor(
                 else -> selectImageUrlMap.remove(image.imageUrl)
             }
             _searchImages.value = images
-            _headerTitle.value = "${selectImageUrlMap.size}장 선택중"
+            _headerTitle.value = resourceProvider.getString(StringResourceProvider.StringResourceId.SelectState, selectImageUrlMap.size)
         }catch (e: Exception){
             e.printStackTrace()
-            showToast("선택 실패")
+            showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SelectFail))
         }
     }
 
@@ -194,11 +196,11 @@ class SearchImageViewModel @Inject constructor(
         Timber.d("search query : $query")
         _keyboardShownEvent.value = SingleEvent(false)
         if (query.isBlank()) {
-            showToast("검색어를 입력해주세요")
+            showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneQuery))
             return
         }
         if (dataLoading.value == true) {
-            showToast("로딩중")
+            showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.Loading))
             return
         }
         fetchSearchQuery(query)
