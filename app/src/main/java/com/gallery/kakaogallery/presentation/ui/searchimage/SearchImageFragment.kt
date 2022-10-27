@@ -244,9 +244,16 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
             imageSearchAdapter.updateList(it)
         }
 
-        viewModel.toastMessageEvent.observe(this) { event ->
+        viewModel.uiEvent.observe(this) { event ->
             event.getContentIfNotHandled()?.let {
-                mContext?.showToast(it)
+                when (it) {
+                    is SearchImageViewModel.UiEvent.ShowToast ->
+                        mContext?.showToast(it.message)
+                    is SearchImageViewModel.UiEvent.KeyboardVisibleEvent ->
+                        mContext?.setSoftKeyboardVisible(binding.background, it.visible)
+                    is SearchImageViewModel.UiEvent.PresentSaveDialog ->
+                        showSaveDialog(it.selectCount)
+                }
             }
         }
 
@@ -260,15 +267,6 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
 
         viewModel.headerTitle.observe(this) {
             binding.layoutToolbar.toolBar.title = it
-        }
-
-        viewModel.keyboardShownEvent.observe(this) { event ->
-            event.getContentIfNotHandled()?.let {
-                when (it){
-                    false -> mContext?.hideKeyboard(binding.background)
-                    else -> {}
-                }
-            }
         }
 
         viewModel.selectMode.observe(this) {
