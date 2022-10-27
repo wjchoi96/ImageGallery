@@ -168,9 +168,16 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     }
 
     private fun observeData() {
-        viewModel.toastMessageEvent.observe(this) { event ->
+        viewModel.uiEvent.observe(this) { event ->
             event.getContentIfNotHandled()?.let {
-                mContext?.showToast(it)
+                when (it) {
+                    is GalleryViewModel.UiEvent.ShowToast ->
+                        mContext?.showToast(it.message)
+                    is GalleryViewModel.UiEvent.KeyboardVisibleEvent ->
+                        mContext?.setSoftKeyboardVisible(binding.background, it.visible)
+                    is GalleryViewModel.UiEvent.PresentRemoveDialog ->
+                        showRemoveDialog(it.selectCount)
+                }
             }
         }
 
@@ -191,15 +198,6 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
 
         viewModel.headerTitle.observe(this) {
             binding.layoutToolbar.toolBar.title = it
-        }
-
-        viewModel.keyboardShownEvent.observe(this) { event ->
-            event.getContentIfNotHandled()?.let {
-                when (it){
-                    false -> mContext?.hideKeyboard(binding.background)
-                    else -> {}
-                }
-            }
         }
 
         viewModel.selectMode.observe(this) {
