@@ -65,14 +65,14 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
         binding.layoutToolbar.let {
             it.tvBtnLeft.apply {
                 isVisible = true
-                text = "삭제"
+                text = getString(R.string.remove)
                 setOnClickListener {
-                    showRemoveDialog()
+                    showRemoveDialog(0)
                 }
             }
             it.tvBtnRight.apply {
                 isVisible = true
-                text = "취소"
+                text = getString(R.string.cancel)
                 setOnClickListener {
                     viewModel.clickSelectModeEvent()
                 }
@@ -87,7 +87,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
             }
             it.tvBtnRight.apply {
                 isVisible = true
-                text = "선택"
+                text = getString(R.string.select)
                 setOnClickListener {
                     viewModel.clickSelectModeEvent()
                 }
@@ -152,16 +152,16 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
         }
     }
 
-    private fun showRemoveDialog() {
+    private fun showRemoveDialog(selectCount: Int) {
 //        if (viewModel.selectImageIdxList.isEmpty()) {
 //            mContext?.showToast("이미지를 선택해주세요")
 //            return
 //        }
         DialogUtil.showBottom(
             mContext ?: return,
-            "선택한 이미지를 삭제하시겠습니까?",
-            "삭제",
-            "취소",
+            getString(R.string.message_is_remove_select_image, selectCount),
+            getString(R.string.remove),
+            getString(R.string.cancel),
             {
                 viewModel.removeSelectImage()
             }) {}
