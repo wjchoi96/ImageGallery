@@ -23,9 +23,6 @@ class GalleryViewModel @Inject constructor(
     private val fetchImageFailMessage: String = resourceProvider.getString(StringResourceProvider.StringResourceId.FetchFailSaveImage)
     private val selectImageHashMap = mutableMapOf<String, Int>()
 
-    /**
-     * live data for data
-     */
     private val _saveImages = MutableLiveData<List<ImageModel>>(emptyList())
     val saveImages: LiveData<List<ImageModel>> = _saveImages
 
@@ -102,7 +99,10 @@ class GalleryViewModel @Inject constructor(
                 unSelectAllImage()
                 _headerTitle.value = resourceProvider.getString(StringResourceProvider.StringResourceId.MenuGallery)
             }
-            else -> _headerTitle.value = resourceProvider.getString(StringResourceProvider.StringResourceId.SelectState, selectImageHashMap.size)
+            else -> _headerTitle.value = resourceProvider.getString(
+                StringResourceProvider.StringResourceId.SelectState,
+                selectImageHashMap.size
+            )
         }
         _selectMode.value = !(_selectMode.value ?: false)
     }
