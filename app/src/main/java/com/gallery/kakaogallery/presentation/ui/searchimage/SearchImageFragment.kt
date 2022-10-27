@@ -117,7 +117,7 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
                 isVisible = true
                 text = getString(R.string.save)
                 setOnClickListener {
-                    showSaveDialog(0)
+                    viewModel.clickSaveEvent()
                 }
             }
             it.tvBtnRight.apply {

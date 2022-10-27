@@ -132,6 +132,14 @@ class SearchImageViewModel @Inject constructor(
         when(selectMode){
             true -> _headerTitle.value = resourceProvider.getString(StringResourceProvider.StringResourceId.SelectState, selectImageUrlMap.size)
             else -> {
+    fun clickSaveEvent(){
+        if(selectImageUrlMap.isEmpty()){
+            _uiEvent.value =
+                SingleEvent(UiEvent.ShowToast(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)))
+            return
+        }
+        _uiEvent.value = SingleEvent(UiEvent.PresentSaveDialog(selectImageUrlMap.size))
+    }
                 unSelectAllImage()
                 _headerTitle.value = resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage)
             }
