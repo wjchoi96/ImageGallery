@@ -87,6 +87,15 @@ class GalleryViewModel @Inject constructor(
             }.addTo(compositeDisposable)
     }
 
+    fun clickRemoveEvent(){
+        if (selectImageHashMap.isEmpty()) {
+            _uiEvent.value =
+                SingleEvent(UiEvent.ShowToast(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)))
+            return
+        }
+        _uiEvent.value = SingleEvent(UiEvent.PresentRemoveDialog(selectImageHashMap.size))
+    }
+
     fun clickSelectModeEvent(){
         when(_selectMode.value){
             true -> {

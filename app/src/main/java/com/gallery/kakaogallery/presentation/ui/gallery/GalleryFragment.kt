@@ -67,7 +67,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
                 isVisible = true
                 text = getString(R.string.remove)
                 setOnClickListener {
-                    showRemoveDialog(0)
+                    viewModel.clickRemoveEvent()
                 }
             }
             it.tvBtnRight.apply {
