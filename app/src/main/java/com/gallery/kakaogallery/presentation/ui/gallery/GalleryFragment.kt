@@ -82,9 +82,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
 
     private fun finishSelectMode() {
         binding.layoutToolbar.let {
-            it.tvBtnLeft.apply {
-                isVisible = false
-            }
+            it.tvBtnLeft.isVisible = false
             it.tvBtnRight.apply {
                 isVisible = true
                 text = getString(R.string.select)
