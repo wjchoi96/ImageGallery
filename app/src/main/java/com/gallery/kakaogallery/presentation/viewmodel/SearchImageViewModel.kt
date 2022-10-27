@@ -30,9 +30,6 @@ class SearchImageViewModel @Inject constructor(
     // 이미지보관함에서 이미지를 지울때, 대응 가능한 이미지들은 대응해주기 위함
     private val tempSavedImageMap = mutableMapOf<String, Int>()
 
-    /**
-     * live data for data
-     */
     private val _searchImages = MutableLiveData<List<ImageListTypeModel>>(emptyList())
     val searchImages: LiveData<List<ImageListTypeModel>> = _searchImages
 
@@ -47,14 +44,9 @@ class SearchImageViewModel @Inject constructor(
 
     private val _selectMode = MutableLiveData(false)
     val selectMode: LiveData<Boolean> = _selectMode
-    /**
-     * live data for event
-     */
-    private val _toastMessageEvent = MutableLiveData<SingleEvent<String>>()
-    val toastMessageEvent: LiveData<SingleEvent<String>> = _toastMessageEvent
 
-    private val _keyboardShownEvent = MutableLiveData<SingleEvent<Boolean>>()
-    val keyboardShownEvent: LiveData<SingleEvent<Boolean>> = _keyboardShownEvent
+    private val _uiEvent = MutableLiveData<SingleEvent<UiEvent>>()
+    val uiEvent: LiveData<SingleEvent<UiEvent>> = _uiEvent
 
 
     init {
@@ -184,7 +176,7 @@ class SearchImageViewModel @Inject constructor(
      * Called by Data Binding
      */
     fun touchImageEvent(image: ImageModel, idx: Int) {
-        _keyboardShownEvent.value = SingleEvent(false)
+        _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
         when (selectMode.value){
             true ->
                 setSelectImage(image, idx, !selectImageUrlMap.containsKey(image.imageUrl))
@@ -194,7 +186,7 @@ class SearchImageViewModel @Inject constructor(
 
     fun searchQuery(query: String) {
         Timber.d("search query : $query")
-        _keyboardShownEvent.value = SingleEvent(false)
+        _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
         if (query.isBlank()) {
             showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneQuery))
             return
@@ -217,6 +209,12 @@ class SearchImageViewModel @Inject constructor(
     }
 
     private fun showToast(message: String) {
-        _toastMessageEvent.value = SingleEvent(message)
+        _uiEvent.value = SingleEvent(UiEvent.ShowToast(message))
+    }
+
+    sealed class UiEvent {
+        data class ShowToast(val message: String) : UiEvent()
+        data class PresentSaveDialog(val selectCount: Int): UiEvent()
+        data class KeyboardVisibleEvent(val visible: Boolean): UiEvent()
     }
 }
