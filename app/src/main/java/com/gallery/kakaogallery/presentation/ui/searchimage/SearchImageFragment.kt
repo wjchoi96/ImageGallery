@@ -115,14 +115,14 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
         binding.layoutToolbar.let {
             it.tvBtnLeft.apply {
                 isVisible = true
-                text = "저장"
+                text = getString(R.string.save)
                 setOnClickListener {
-                    showSaveDialog()
+                    showSaveDialog(0)
                 }
             }
             it.tvBtnRight.apply {
                 isVisible = true
-                text = "취소"
+                text = getString(R.string.cancel)
                 setOnClickListener {
                     viewModel.setSelectMode(false)
                 }
@@ -137,7 +137,7 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
             }
             it.tvBtnRight.apply {
                 isVisible = true
-                text = "선택"
+                text = getString(R.string.select)
                 setOnClickListener {
                     viewModel.setSelectMode(true)
                 }
@@ -226,13 +226,13 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
         }
     }
 
-    private fun showSaveDialog() {
+    private fun showSaveDialog(selectCount: Int) {
 //        if(viewModel.selectImageIdxList.isEmpty()){
 //            showToast("이미지를 선택해주세요")
 //            return
 //        }
         //${viewModel.selectImageIdxList.size}장의 이미지를 저장하시겠습니까?
-        DialogUtil.showBottom(mContext ?: return, "선택한 이미지를 저장하시겠습니까?", "저장", "취소", {
+        DialogUtil.showBottom(mContext ?: return, getString(R.string.message_is_save_select_image, selectCount), getString(R.string.save), getString(R.string.cancel), {
             viewModel.saveSelectImage()
         }) {}
     }
