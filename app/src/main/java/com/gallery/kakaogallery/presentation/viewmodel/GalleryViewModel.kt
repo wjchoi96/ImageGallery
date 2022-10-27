@@ -37,14 +37,9 @@ class GalleryViewModel @Inject constructor(
 
     private val _dataLoading = MutableLiveData(false)
     val dataLoading: LiveData<Boolean> = _dataLoading
-    /**
-     * live data for event
-     */
-    private val _toastMessageEvent = MutableLiveData<SingleEvent<String>>()
-    val toastMessageEvent: LiveData<SingleEvent<String>> = _toastMessageEvent
 
-    private val _keyboardShownEvent = MutableLiveData<SingleEvent<Boolean>>()
-    val keyboardShownEvent: LiveData<SingleEvent<Boolean>> = _keyboardShownEvent
+    private val _uiEvent = MutableLiveData<SingleEvent<UiEvent>>()
+    val uiEvent: LiveData<SingleEvent<UiEvent>> = _uiEvent
 
     init {
         fetchSaveImages()
@@ -104,7 +99,7 @@ class GalleryViewModel @Inject constructor(
     }
 
     fun touchImageEvent(image: ImageModel, idx: Int){
-        _keyboardShownEvent.value = SingleEvent(false)
+        _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
         when (selectMode.value){
             true ->
                 setSelectImage(image, idx, !selectImageHashMap.containsKey(image.hash))
@@ -142,6 +137,12 @@ class GalleryViewModel @Inject constructor(
     }
 
     private fun showToast(message: String){
-        _toastMessageEvent.value = SingleEvent(message)
+        _uiEvent.value = SingleEvent(UiEvent.ShowToast(message))
+    }
+
+    sealed class UiEvent {
+        data class ShowToast(val message: String) : UiEvent()
+        data class PresentRemoveDialog(val selectCount: Int): UiEvent()
+        data class KeyboardVisibleEvent(val visible: Boolean): UiEvent()
     }
 }
