@@ -125,13 +125,10 @@ class SearchImageViewModel @Inject constructor(
             }.let { compositeDisposable.add(it) }
     }
 
-    /**
-     * Called by View
-     */
-    fun setSelectMode(selectMode: Boolean) {
-        when(selectMode){
-            true -> _headerTitle.value = resourceProvider.getString(StringResourceProvider.StringResourceId.SelectState, selectImageUrlMap.size)
-            else -> {
+    fun backgroundTouchEvent(){
+        _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
+    }
+
     fun clickSaveEvent(){
         if(selectImageUrlMap.isEmpty()){
             _uiEvent.value =

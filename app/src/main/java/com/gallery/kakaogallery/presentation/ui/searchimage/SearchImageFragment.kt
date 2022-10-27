@@ -149,7 +149,7 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
     private fun setListener() {
         binding.rvSearch.setOnTouchListener { v, event ->
             when (event?.action) {
-                MotionEvent.ACTION_UP -> mContext?.hideKeyboard(v)
+                MotionEvent.ACTION_UP -> viewModel.backgroundTouchEvent()
             }
             return@setOnTouchListener false
         }
