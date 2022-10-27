@@ -153,10 +153,6 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     }
 
     private fun showRemoveDialog(selectCount: Int) {
-//        if (viewModel.selectImageIdxList.isEmpty()) {
-//            mContext?.showToast("이미지를 선택해주세요")
-//            return
-//        }
         DialogUtil.showBottom(
             mContext ?: return,
             getString(R.string.message_is_remove_select_image, selectCount),
@@ -207,23 +203,6 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
                 else -> finishSelectMode()
             }
         }
-
-//        viewModel.removeImageIdxListObservable.subscribe {
-//            setProgress(false)
-//            imageListAdapter?.setList(viewModel.imageList)
-//            if (it.size == 1)
-//                imageListAdapter?.notifyItemRemoved(it.first())
-//            else
-//                imageListAdapter?.notifyDataSetChanged()
-//            finishSelectMode()
-//            setEmptyListView()
-//        }.apply { compositeDisposable.add(this) }
-//
-//        viewModel.insertedImageIdxListObservable.subscribe {
-//            imageListAdapter?.setList(viewModel.imageList)
-//            imageListAdapter?.notifyItemRangeInserted(0, it.size)
-//            setEmptyListView()
-//        }.apply { compositeDisposable.add(this) }
     }
 
     private fun setEmptyListView() {
