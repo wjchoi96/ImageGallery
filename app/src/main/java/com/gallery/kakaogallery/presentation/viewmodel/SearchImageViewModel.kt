@@ -53,9 +53,6 @@ class SearchImageViewModel @Inject constructor(
         fetchSearchQuery("")
     }
 
-    /**
-     * repository code
-     */
     fun saveSelectImage() {
         if (selectImageUrlMap.isEmpty()) {
             showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage))
@@ -185,9 +182,7 @@ class SearchImageViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Called by Data Binding
-     */
+
     fun touchImageEvent(image: ImageModel, idx: Int) {
         _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
         when (selectMode.value){
