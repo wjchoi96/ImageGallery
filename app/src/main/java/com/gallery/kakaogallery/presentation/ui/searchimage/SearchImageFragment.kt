@@ -132,9 +132,7 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
 
     private fun finishSelectMode() {
         binding.layoutToolbar.let {
-            it.tvBtnLeft.apply {
-                isVisible = false
-            }
+            it.tvBtnLeft.isVisible = false
             it.tvBtnRight.apply {
                 isVisible = true
                 text = getString(R.string.select)
@@ -227,14 +225,14 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
     }
 
     private fun showSaveDialog(selectCount: Int) {
-//        if(viewModel.selectImageIdxList.isEmpty()){
-//            showToast("이미지를 선택해주세요")
-//            return
-//        }
-        //${viewModel.selectImageIdxList.size}장의 이미지를 저장하시겠습니까?
-        DialogUtil.showBottom(mContext ?: return, getString(R.string.message_is_save_select_image, selectCount), getString(R.string.save), getString(R.string.cancel), {
-            viewModel.saveSelectImage()
-        }) {}
+        DialogUtil.showBottom(
+            mContext ?: return,
+            getString(R.string.message_is_save_select_image, selectCount),
+            getString(R.string.save),
+            getString(R.string.cancel),
+            {
+                viewModel.saveSelectImage()
+            }) {}
     }
 
     private fun observeData() {
