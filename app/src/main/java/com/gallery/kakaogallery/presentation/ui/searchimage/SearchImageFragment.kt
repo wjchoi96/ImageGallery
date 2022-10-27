@@ -124,7 +124,7 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
                 isVisible = true
                 text = getString(R.string.cancel)
                 setOnClickListener {
-                    viewModel.setSelectMode(false)
+                    viewModel.clickSelectModeEvent()
                 }
             }
         }
@@ -139,7 +139,7 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
                 isVisible = true
                 text = getString(R.string.select)
                 setOnClickListener {
-                    viewModel.setSelectMode(true)
+                    viewModel.clickSelectModeEvent()
                 }
             }
         }

@@ -73,7 +73,7 @@ class SearchImageViewModel @Inject constructor(
                 when(it){
                     true -> {
                         showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveSuccess))
-                        setSelectMode(false)
+                        clickSelectModeEvent()
                     }
                     else -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveFail))
                 }
@@ -140,11 +140,19 @@ class SearchImageViewModel @Inject constructor(
         }
         _uiEvent.value = SingleEvent(UiEvent.PresentSaveDialog(selectImageUrlMap.size))
     }
+
+    fun clickSelectModeEvent(){
+        when(_selectMode.value){
+            true -> {
                 unSelectAllImage()
                 _headerTitle.value = resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage)
             }
+            else -> _headerTitle.value = resourceProvider.getString(
+                StringResourceProvider.StringResourceId.SelectState,
+                selectImageUrlMap.size
+            )
         }
-        _selectMode.value = selectMode
+        _selectMode.value = !(_selectMode.value ?: false)
     }
 
     private fun unSelectAllImage() {
