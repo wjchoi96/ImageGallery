@@ -5,9 +5,13 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 
-fun Context.hideKeyboard(view: View) {
+
+fun Context.setSoftKeyboardVisible(view: View, visible: Boolean) {
     val imm = applicationContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-    imm.hideSoftInputFromWindow(view.windowToken, 0)
+    when (visible) {
+        false -> imm.hideSoftInputFromWindow(view.windowToken, 0)
+        else -> imm.showSoftInput(view, 0)
+    }
 }
 
 fun Context.showToast(message: String) {

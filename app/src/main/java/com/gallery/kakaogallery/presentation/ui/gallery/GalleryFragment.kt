@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.FragmentGalleryBinding
-import com.gallery.kakaogallery.presentation.extension.hideKeyboard
+import com.gallery.kakaogallery.presentation.extension.setSoftKeyboardVisible
 import com.gallery.kakaogallery.presentation.extension.showToast
 import com.gallery.kakaogallery.presentation.ui.base.DisposableManageFragment
 import com.gallery.kakaogallery.presentation.util.DialogUtil
