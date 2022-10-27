@@ -6,6 +6,7 @@ import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.MaxPageException
 import com.gallery.kakaogallery.domain.usecase.FetchSaveImageUseCase
 import com.gallery.kakaogallery.domain.usecase.RemoveSaveImageUseCase
+import com.gallery.kakaogallery.presentation.application.StringResourceProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.Disposable
@@ -14,11 +15,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GalleryViewModel @Inject constructor(
+    private val resourceProvider: StringResourceProvider,
     private val fetchSaveImageUseCase: FetchSaveImageUseCase,
     private val removeSaveImageUseCase: RemoveSaveImageUseCase
 ) : DisposableManageViewModel() {
 
-    private val fetchImageFailMessage: String = "이미지를 불러올수 없습니다"
+    private val fetchImageFailMessage: String = resourceProvider.getString(StringResourceProvider.StringResourceId.FetchFailSaveImage)
     private val selectImageHashMap = mutableMapOf<String, Int>()
 
     /**
@@ -27,7 +29,7 @@ class GalleryViewModel @Inject constructor(
     private val _saveImages = MutableLiveData<List<ImageModel>>(emptyList())
     val saveImages: LiveData<List<ImageModel>> = _saveImages
 
-    private val _headerTitle = MutableLiveData("내 보관함")
+    private val _headerTitle = MutableLiveData(resourceProvider.getString(StringResourceProvider.StringResourceId.MenuGallery))
     var headerTitle: LiveData<String> = _headerTitle
 
     private val _selectMode = MutableLiveData(false)
@@ -57,14 +59,14 @@ class GalleryViewModel @Inject constructor(
                 res.onSuccess {
                     when(it){
                         true -> {
-                            showToast("삭제 성공")
+                            showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveSuccess))
                             clickSelectModeEvent() // 삭제라면 선택모드 였을테니, toggle 해주면 선택모드가 해제됨
                         }
-                        else -> showToast("삭제 실패")
+                        else -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail))
                     }
                 }.onFailure {
                     it.printStackTrace()
-                    showToast("삭제 실패 $it")
+                    showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail) + " $it")
                 }
             }.addTo(compositeDisposable)
     }
@@ -83,7 +85,7 @@ class GalleryViewModel @Inject constructor(
                     _saveImages.value = it
                 }.onFailure {
                     when (it) {
-                        is MaxPageException -> showToast("마지막 페이지입니다")
+                        is MaxPageException -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.LastPage))
                         else -> showToast("$fetchImageFailMessage\n${it.message}")
                     }
                 }
@@ -94,9 +96,9 @@ class GalleryViewModel @Inject constructor(
         when(_selectMode.value){
             true -> {
                 unSelectAllImage()
-                _headerTitle.value = "내 보관함"
+                _headerTitle.value = resourceProvider.getString(StringResourceProvider.StringResourceId.MenuGallery)
             }
-            else -> _headerTitle.value = "${selectImageHashMap.size}장 선택중"
+            else -> _headerTitle.value = resourceProvider.getString(StringResourceProvider.StringResourceId.SelectState, selectImageHashMap.size)
         }
         _selectMode.value = !(_selectMode.value ?: false)
     }
@@ -132,10 +134,10 @@ class GalleryViewModel @Inject constructor(
                 else -> selectImageHashMap.remove(image.hash)
             }
             _saveImages.value = images
-            _headerTitle.value = "${selectImageHashMap.size}장 선택중"
+            _headerTitle.value = resourceProvider.getString(StringResourceProvider.StringResourceId.SelectState, selectImageHashMap.size)
         }catch (e: Exception){
             e.printStackTrace()
-            showToast("선택 실패")
+            showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SelectFail))
         }
     }
 
