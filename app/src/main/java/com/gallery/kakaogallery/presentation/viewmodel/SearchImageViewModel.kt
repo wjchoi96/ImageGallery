@@ -19,7 +19,7 @@ class SearchImageViewModel @Inject constructor(
     private val resourceProvider: StringResourceProvider,
     private val fetchSearchDataQueryDataUseCase: FetchQueryDataUseCase,
     private val saveSelectImageUseCase: SaveSelectImageUseCase
-) : DisposableManageViewModel() {
+) : DisposableManageViewModel(), ToolBarViewModel {
     private var page = 1
     private var lastQuery: String? = null
 
@@ -34,7 +34,7 @@ class SearchImageViewModel @Inject constructor(
     val searchImages: LiveData<List<ImageListTypeModel>> = _searchImages
 
     private val _headerTitle = MutableLiveData(resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage))
-    var headerTitle: LiveData<String> = _headerTitle
+    override val headerTitle: LiveData<String> = _headerTitle
 
     private val _dataLoading = MutableLiveData(false)
     val dataLoading: LiveData<Boolean> = _dataLoading
