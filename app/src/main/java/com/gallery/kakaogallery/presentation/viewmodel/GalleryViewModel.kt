@@ -18,7 +18,7 @@ class GalleryViewModel @Inject constructor(
     private val resourceProvider: StringResourceProvider,
     private val fetchSaveImageUseCase: FetchSaveImageUseCase,
     private val removeSaveImageUseCase: RemoveSaveImageUseCase
-) : DisposableManageViewModel() {
+) : DisposableManageViewModel(), ToolBarViewModel {
 
     private val fetchImageFailMessage: String = resourceProvider.getString(StringResourceProvider.StringResourceId.FetchFailSaveImage)
     private val selectImageHashMap = mutableMapOf<String, Int>()
@@ -27,7 +27,7 @@ class GalleryViewModel @Inject constructor(
     val saveImages: LiveData<List<ImageModel>> = _saveImages
 
     private val _headerTitle = MutableLiveData(resourceProvider.getString(StringResourceProvider.StringResourceId.MenuGallery))
-    var headerTitle: LiveData<String> = _headerTitle
+    override val headerTitle: LiveData<String> = _headerTitle
 
     private val _selectMode = MutableLiveData(false)
     val selectMode: LiveData<Boolean> = _selectMode
