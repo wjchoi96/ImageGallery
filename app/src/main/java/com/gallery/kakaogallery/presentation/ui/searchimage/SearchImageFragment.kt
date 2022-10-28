@@ -95,45 +95,6 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
         }
     }
 
-    private fun setSelectMode(selectMode: Boolean) {
-        if (selectMode)
-            startSelectMode()
-        else
-            finishSelectMode()
-    }
-
-    private fun startSelectMode() {
-        binding.layoutToolbar.let {
-            it.tvBtnLeft.apply {
-                isVisible = true
-                text = getString(R.string.save)
-                setOnClickListener {
-                    viewModel.clickSaveEvent()
-                }
-            }
-            it.tvBtnRight.apply {
-                isVisible = true
-                text = getString(R.string.cancel)
-                setOnClickListener {
-                    viewModel.clickSelectModeEvent()
-                }
-            }
-        }
-    }
-
-    private fun finishSelectMode() {
-        binding.layoutToolbar.let {
-            it.tvBtnLeft.isVisible = false
-            it.tvBtnRight.apply {
-                isVisible = true
-                text = getString(R.string.select)
-                setOnClickListener {
-                    viewModel.clickSelectModeEvent()
-                }
-            }
-        }
-    }
-
     @SuppressLint("ClickableViewAccessibility")
     private fun setListener() {
         binding.rvSearch.setOnTouchListener { v, event ->
@@ -206,17 +167,6 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
         }
     }
 
-    private fun showSaveDialog(selectCount: Int) {
-        DialogUtil.showBottom(
-            mContext ?: return,
-            getString(R.string.message_is_save_select_image, selectCount),
-            getString(R.string.save),
-            getString(R.string.cancel),
-            {
-                viewModel.saveSelectImage()
-            }) {}
-    }
-
     private fun observeData() {
         viewModel.uiEvent.observe(this) { event ->
             event.getContentIfNotHandled()?.let {
@@ -239,7 +189,54 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
 
         viewModel.selectMode.observe(this) {
             Timber.d("select mode debug at observe -> $it")
-            setSelectMode(it)
+            when (it) {
+                true -> startSelectMode()
+                else -> finishSelectMode()
+            }
         }
     }
+
+    private fun showSaveDialog(selectCount: Int) {
+        DialogUtil.showBottom(
+            mContext ?: return,
+            getString(R.string.message_is_save_select_image, selectCount),
+            getString(R.string.save),
+            getString(R.string.cancel),
+            {
+                viewModel.saveSelectImage()
+            }) {}
+    }
+
+    private fun startSelectMode() {
+        binding.layoutToolbar.let {
+            it.tvBtnLeft.apply {
+                isVisible = true
+                text = getString(R.string.save)
+                setOnClickListener {
+                    viewModel.clickSaveEvent()
+                }
+            }
+            it.tvBtnRight.apply {
+                isVisible = true
+                text = getString(R.string.cancel)
+                setOnClickListener {
+                    viewModel.clickSelectModeEvent()
+                }
+            }
+        }
+    }
+
+    private fun finishSelectMode() {
+        binding.layoutToolbar.let {
+            it.tvBtnLeft.isVisible = false
+            it.tvBtnRight.apply {
+                isVisible = true
+                text = getString(R.string.select)
+                setOnClickListener {
+                    viewModel.clickSelectModeEvent()
+                }
+            }
+        }
+    }
+
 }
