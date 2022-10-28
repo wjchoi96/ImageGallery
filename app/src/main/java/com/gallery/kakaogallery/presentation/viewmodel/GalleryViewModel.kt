@@ -35,6 +35,9 @@ class GalleryViewModel @Inject constructor(
     private val _dataLoading = MutableLiveData(false)
     val dataLoading: LiveData<Boolean> = _dataLoading
 
+    private val _refreshLoading = MutableLiveData(false)
+    val refreshLoading: LiveData<Boolean> = _refreshLoading
+
     private val _uiEvent = MutableLiveData<SingleEvent<UiEvent>>()
     val uiEvent: LiveData<SingleEvent<UiEvent>> = _uiEvent
 
@@ -64,7 +67,7 @@ class GalleryViewModel @Inject constructor(
     }
 
     private var saveImageDisposable: Disposable? = null
-    fun fetchSaveImages() {
+    private fun fetchSaveImages(isRefresh: Boolean = false) {
         saveImageDisposable?.dispose()
         saveImageDisposable = null
 
@@ -73,6 +76,7 @@ class GalleryViewModel @Inject constructor(
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { res ->
                 _dataLoading.value = false
+                if(isRefresh) _refreshLoading.value = false
                 res.onSuccess {
                     _saveImages.value = it
                 }.onFailure {
@@ -82,6 +86,11 @@ class GalleryViewModel @Inject constructor(
                     }
                 }
             }.addTo(compositeDisposable)
+    }
+
+    fun refreshGalleryEvent(){
+        _refreshLoading.value = true
+        fetchSaveImages(isRefresh = true)
     }
 
     fun clickRemoveEvent(){

@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.FragmentGalleryBinding
+import com.gallery.kakaogallery.presentation.extension.safeScrollToTop
 import com.gallery.kakaogallery.presentation.extension.setSoftKeyboardVisible
 import com.gallery.kakaogallery.presentation.extension.showToast
 import com.gallery.kakaogallery.presentation.ui.base.DisposableManageFragment
@@ -31,7 +32,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initData()
-        initView(view)
+        initView()
         observeData()
     }
 
@@ -43,13 +44,18 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
         }
     }
 
-    private fun initView(root: View) {
+    private fun initView() {
         Timber.d("initView => isHidden : $isHidden")
+        bindView()
         initHeader()
-        setRecyclerView()
-        setSwipeRefreshListener()
+        setSwipeRefreshLayout()
     }
 
+    private fun bindView(){
+        binding.viewModel = viewModel
+        binding.layoutToolbar.viewModel = viewModel
+        bindRecyclerView()
+    }
 
     private fun initHeader() {
         binding.layoutToolbar.let {
@@ -93,13 +99,10 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
         }
     }
 
-    private fun setRecyclerView() {
-        val viewManager = GridLayoutManager(mContext, itemCount)
-        binding.rvGallery.apply {
-            layoutManager = viewManager
-            adapter = galleryAdapter
-            addItemDecoration(itemDecoration)
-        }
+    private fun bindRecyclerView() {
+        binding.galleryGridLayoutManager = GridLayoutManager(mContext, itemCount)
+        binding.galleryAdapter = galleryAdapter
+        binding.galleryItemDecoration = itemDecoration
     }
 
     private val itemDecoration = object : RecyclerView.ItemDecoration() {
@@ -127,15 +130,12 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
         }
     }
 
-    fun getPxFromDp(dp: Int): Float {
+    private fun getPxFromDp(dp: Int): Float {
         val displayMetrics = resources.displayMetrics
         return dp * (displayMetrics.densityDpi.toFloat() / DisplayMetrics.DENSITY_DEFAULT)
     }
 
-    private fun setSwipeRefreshListener() {
-        binding.layoutSwipeRefresh.setOnRefreshListener {
-            viewModel.fetchSaveImages()
-        }
+    private fun setSwipeRefreshLayout() {
         binding.layoutSwipeRefresh.setColorSchemeResources(
             android.R.color.holo_blue_bright,
             android.R.color.holo_green_light,
@@ -175,17 +175,6 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
                 Timber.d("[" + idx + "] : " + i.toMinString())
             }
             galleryAdapter.updateList(it)
-            setEmptyListView()
-        }
-
-        viewModel.dataLoading.observe(this) {
-            binding.progress.isVisible = it
-            if(!it)
-                finishRefresh()
-        }
-
-        viewModel.headerTitle.observe(this) {
-            binding.layoutToolbar.toolBar.title = it
         }
 
         viewModel.selectMode.observe(this) {
@@ -195,13 +184,6 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
                 else -> finishSelectMode()
             }
         }
-    }
-
-    private fun setEmptyListView() {
-//        if (viewModel.imageList.isEmpty())
-//            binding.tvNoneNotify.visibility = View.VISIBLE
-//        else
-//            binding.tvNoneNotify.visibility = View.GONE
     }
 
     private fun finishRefresh() {
