@@ -33,6 +33,9 @@ class SearchImageViewModel @Inject constructor(
     private val _searchImages = MutableLiveData<List<ImageListTypeModel>>(emptyList())
     val searchImages: LiveData<List<ImageListTypeModel>> = _searchImages
 
+    private val _searchResultIsEmpty = MutableLiveData(false)
+    val searchResultIsEmpty: LiveData<Boolean> = _searchResultIsEmpty
+
     private val _headerTitle = MutableLiveData(resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage))
     override val headerTitle: LiveData<String> = _headerTitle
 
@@ -93,6 +96,7 @@ class SearchImageViewModel @Inject constructor(
                 _dataLoading.value = false
                 res.onSuccess {
                     page++
+                    if(query.isNotEmpty()) _searchResultIsEmpty.value = it.size <= 1
                     _searchImages.value = it
                 }.onFailure {
                     when (it) {

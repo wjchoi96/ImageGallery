@@ -58,21 +58,10 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
         }
     }
 
-    override fun onHiddenChanged(hidden: Boolean) {
-        super.onHiddenChanged(hidden)
-        Timber.d("search onHiddenChanged => $hidden")
-        if (!hidden) {
-            binding.layoutToolbar.layoutAppBar.setOnClickListener {
-                binding.rvSearch.safeScrollToTop(true)
-            }
-            setSelectMode(viewModel.selectMode.value == true)
-        }
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initData()
-        initView(view)
+        initView()
         observeData()
     }
 
@@ -84,16 +73,19 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
         }
     }
 
-    private fun initView(root: View) {
-        Timber.d("initView => isHidden : $isHidden")
+    private fun initView() {
+        bindView()
         initHeader()
-        setupRecyclerView()
         setListener()
     }
 
+    private fun bindView(){
+        binding.viewModel = viewModel
+        binding.layoutToolbar.viewModel = viewModel
+        bindRecyclerView()
+    }
+
     private fun initHeader() {
-        if (isHidden) //  현재 보이는 fragment 가 header setting 에 우선권을 가지도록 설정
-            return
         binding.layoutToolbar.let {
             it.tvBtnLeft.isVisible = false
             it.tvBtnRight.isVisible = false
@@ -101,8 +93,6 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
                 binding.rvSearch.safeScrollToTop(true)
             }
         }
-        Timber.d("init header " + viewModel.selectMode.value)
-        setSelectMode(viewModel.selectMode.value == true)
     }
 
     private fun setSelectMode(selectMode: Boolean) {
@@ -154,8 +144,8 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
         }
     }
 
-    private fun setupRecyclerView() {
-        val viewManager =
+    private fun bindRecyclerView() {
+        binding.searchLayoutManager =
             GridLayoutManager(mContext, itemCount, GridLayoutManager.VERTICAL, false).apply {
                 spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
                     override fun getSpanSize(position: Int): Int {
@@ -166,12 +156,9 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
                     }
                 }
             }
-        binding.rvSearch.apply {
-            layoutManager = viewManager
-            adapter = imageSearchAdapter
-            addItemDecoration(itemDecoration)
-            addOnScrollListener(pagingListener)
-        }
+        binding.searchAdapter = imageSearchAdapter
+        binding.searchItemDecoration = itemDecoration
+        binding.rvSearch.addOnScrollListener(pagingListener)
     }
 
     // https://medium.com/@bigstark/recyclerview-grid-space-%EC%97%90-%EB%8C%80%ED%95%9C-%EA%B3%A0%EC%B0%B0-7cab7a725f98
@@ -202,7 +189,7 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
         }
     }
 
-    fun getPxFromDp(dp: Int): Float {
+    private fun getPxFromDp(dp: Int): Float {
         val displayMetrics = resources.displayMetrics
         return dp * (displayMetrics.densityDpi.toFloat() / DisplayMetrics.DENSITY_DEFAULT)
     }
@@ -231,12 +218,6 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
     }
 
     private fun observeData() {
-        viewModel.searchImages.observe(this) {
-            Timber.d("searchResultObservable subscribe thread - " + Thread.currentThread().name + ", it.address : " + it)
-            Timber.d("diff debug searchImagesUseDiff observe")
-            imageSearchAdapter.updateList(it)
-        }
-
         viewModel.uiEvent.observe(this) { event ->
             event.getContentIfNotHandled()?.let {
                 when (it) {
@@ -250,16 +231,10 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
             }
         }
 
-        viewModel.dataLoading.observe(this) {
-            binding.progress.isVisible = it
-        }
-
-        viewModel.pagingDataLoading.observe(this) {
-            binding.progressPaging.isVisible = it
-        }
-
-        viewModel.headerTitle.observe(this) {
-            binding.layoutToolbar.toolBar.title = it
+        viewModel.searchImages.observe(this) {
+            Timber.d("searchResultObservable subscribe thread - " + Thread.currentThread().name + ", it.address : " + it)
+            Timber.d("diff debug searchImagesUseDiff observe")
+            imageSearchAdapter.updateList(it)
         }
 
         viewModel.selectMode.observe(this) {
