@@ -11,7 +11,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.FragmentGalleryBinding
-import com.gallery.kakaogallery.presentation.extension.hideKeyboard
+import com.gallery.kakaogallery.presentation.extension.safeScrollToTop
+import com.gallery.kakaogallery.presentation.extension.setSoftKeyboardVisible
 import com.gallery.kakaogallery.presentation.extension.showToast
 import com.gallery.kakaogallery.presentation.ui.base.DisposableManageFragment
 import com.gallery.kakaogallery.presentation.util.DialogUtil
@@ -31,7 +32,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initData()
-        initView(view)
+        initView()
         observeData()
     }
 
@@ -43,65 +44,32 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
         }
     }
 
-    private fun initView(root: View) {
-        Timber.d("initView => isHidden : $isHidden")
+    private fun initView() {
+        bindView()
         initHeader()
-        setRecyclerView()
-        setSwipeRefreshListener()
+        setSwipeRefreshLayout()
     }
 
+    private fun bindView(){
+        binding.viewModel = viewModel
+        binding.layoutToolbar.viewModel = viewModel
+        bindRecyclerView()
+    }
 
     private fun initHeader() {
         binding.layoutToolbar.let {
             it.tvBtnRight.isVisible = false
             it.tvBtnLeft.isVisible = false
             it.toolBar.setOnClickListener {
-                scrollToTop()
+                binding.rvGallery.safeScrollToTop(true)
             }
         }
     }
 
-    private fun startSelectMode() {
-        binding.layoutToolbar.let {
-            it.tvBtnLeft.apply {
-                isVisible = true
-                text = "삭제"
-                setOnClickListener {
-                    showRemoveDialog()
-                }
-            }
-            it.tvBtnRight.apply {
-                isVisible = true
-                text = "취소"
-                setOnClickListener {
-                    viewModel.clickSelectModeEvent()
-                }
-            }
-        }
-    }
-
-    private fun finishSelectMode() {
-        binding.layoutToolbar.let {
-            it.tvBtnLeft.apply {
-                isVisible = false
-            }
-            it.tvBtnRight.apply {
-                isVisible = true
-                text = "선택"
-                setOnClickListener {
-                    viewModel.clickSelectModeEvent()
-                }
-            }
-        }
-    }
-
-    private fun setRecyclerView() {
-        val viewManager = GridLayoutManager(mContext, itemCount)
-        binding.rvGallery.apply {
-            layoutManager = viewManager
-            adapter = galleryAdapter
-            addItemDecoration(itemDecoration)
-        }
+    private fun bindRecyclerView() {
+        binding.galleryGridLayoutManager = GridLayoutManager(mContext, itemCount)
+        binding.galleryAdapter = galleryAdapter
+        binding.galleryItemDecoration = itemDecoration
     }
 
     private val itemDecoration = object : RecyclerView.ItemDecoration() {
@@ -129,15 +97,12 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
         }
     }
 
-    fun getPxFromDp(dp: Int): Float {
+    private fun getPxFromDp(dp: Int): Float {
         val displayMetrics = resources.displayMetrics
         return dp * (displayMetrics.densityDpi.toFloat() / DisplayMetrics.DENSITY_DEFAULT)
     }
 
-    private fun setSwipeRefreshListener() {
-        binding.layoutSwipeRefresh.setOnRefreshListener {
-            viewModel.fetchSaveImages()
-        }
+    private fun setSwipeRefreshLayout() {
         binding.layoutSwipeRefresh.setColorSchemeResources(
             android.R.color.holo_blue_bright,
             android.R.color.holo_green_light,
@@ -146,31 +111,17 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
         )
     }
 
-    private fun scrollToTop() {
-        if (galleryAdapter.currentItemSize != 0) {
-            binding.rvGallery.smoothScrollToPosition(0)
-        }
-    }
-
-    private fun showRemoveDialog() {
-//        if (viewModel.selectImageIdxList.isEmpty()) {
-//            mContext?.showToast("이미지를 선택해주세요")
-//            return
-//        }
-        DialogUtil.showBottom(
-            mContext ?: return,
-            "선택한 이미지를 삭제하시겠습니까?",
-            "삭제",
-            "취소",
-            {
-                viewModel.removeSelectImage()
-            }) {}
-    }
-
     private fun observeData() {
-        viewModel.toastMessageEvent.observe(this) { event ->
+        viewModel.uiEvent.observe(this) { event ->
             event.getContentIfNotHandled()?.let {
-                mContext?.showToast(it)
+                when (it) {
+                    is GalleryViewModel.UiEvent.ShowToast ->
+                        mContext?.showToast(it.message)
+                    is GalleryViewModel.UiEvent.KeyboardVisibleEvent ->
+                        mContext?.setSoftKeyboardVisible(binding.background, it.visible)
+                    is GalleryViewModel.UiEvent.PresentRemoveDialog ->
+                        showRemoveDialog(it.selectCount)
+                }
             }
         }
 
@@ -180,26 +131,6 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
                 Timber.d("[" + idx + "] : " + i.toMinString())
             }
             galleryAdapter.updateList(it)
-            setEmptyListView()
-        }
-
-        viewModel.dataLoading.observe(this) {
-            binding.progress.isVisible = it
-            if(!it)
-                finishRefresh()
-        }
-
-        viewModel.headerTitle.observe(this) {
-            binding.layoutToolbar.toolBar.title = it
-        }
-
-        viewModel.keyboardShownEvent.observe(this) { event ->
-            event.getContentIfNotHandled()?.let {
-                when (it){
-                    false -> mContext?.hideKeyboard(binding.background)
-                    else -> {}
-                }
-            }
         }
 
         viewModel.selectMode.observe(this) {
@@ -209,34 +140,49 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
                 else -> finishSelectMode()
             }
         }
-
-//        viewModel.removeImageIdxListObservable.subscribe {
-//            setProgress(false)
-//            imageListAdapter?.setList(viewModel.imageList)
-//            if (it.size == 1)
-//                imageListAdapter?.notifyItemRemoved(it.first())
-//            else
-//                imageListAdapter?.notifyDataSetChanged()
-//            finishSelectMode()
-//            setEmptyListView()
-//        }.apply { compositeDisposable.add(this) }
-//
-//        viewModel.insertedImageIdxListObservable.subscribe {
-//            imageListAdapter?.setList(viewModel.imageList)
-//            imageListAdapter?.notifyItemRangeInserted(0, it.size)
-//            setEmptyListView()
-//        }.apply { compositeDisposable.add(this) }
     }
 
-    private fun setEmptyListView() {
-//        if (viewModel.imageList.isEmpty())
-//            binding.tvNoneNotify.visibility = View.VISIBLE
-//        else
-//            binding.tvNoneNotify.visibility = View.GONE
+    private fun showRemoveDialog(selectCount: Int) {
+        DialogUtil.showBottom(
+            mContext ?: return,
+            getString(R.string.message_is_remove_select_image, selectCount),
+            getString(R.string.remove),
+            getString(R.string.cancel),
+            {
+                viewModel.removeSelectImage()
+            }) {}
     }
 
-    private fun finishRefresh() {
-        if (binding.layoutSwipeRefresh.isRefreshing)
-            binding.layoutSwipeRefresh.isRefreshing = false
+    private fun startSelectMode() {
+        binding.layoutToolbar.let {
+            it.tvBtnLeft.apply {
+                isVisible = true
+                text = getString(R.string.remove)
+                setOnClickListener {
+                    viewModel.clickRemoveEvent()
+                }
+            }
+            it.tvBtnRight.apply {
+                isVisible = true
+                text = getString(R.string.cancel)
+                setOnClickListener {
+                    viewModel.clickSelectModeEvent()
+                }
+            }
+        }
     }
+
+    private fun finishSelectMode() {
+        binding.layoutToolbar.let {
+            it.tvBtnLeft.isVisible = false
+            it.tvBtnRight.apply {
+                isVisible = true
+                text = getString(R.string.select)
+                setOnClickListener {
+                    viewModel.clickSelectModeEvent()
+                }
+            }
+        }
+    }
+
 }

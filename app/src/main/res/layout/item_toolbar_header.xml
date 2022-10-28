@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
 
+    <data>
+        <variable
+            name="viewModel"
+            type="com.gallery.kakaogallery.presentation.viewmodel.ToolBarViewModel" />
+    </data>
+
     <com.google.android.material.appbar.AppBarLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/layout_app_bar"
@@ -10,6 +16,7 @@
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/tool_bar"
+            app:title="@{viewModel.headerTitle}"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize">
 

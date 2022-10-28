@@ -17,7 +17,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.FragmentSearchImageBinding
 import com.gallery.kakaogallery.domain.model.ImageListTypeModel
-import com.gallery.kakaogallery.presentation.extension.hideKeyboard
+import com.gallery.kakaogallery.presentation.extension.safeScrollToTop
+import com.gallery.kakaogallery.presentation.extension.setSoftKeyboardVisible
 import com.gallery.kakaogallery.presentation.extension.showToast
 import com.gallery.kakaogallery.presentation.ui.base.BindingFragment
 import com.gallery.kakaogallery.presentation.util.DialogUtil
@@ -57,21 +58,10 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
         }
     }
 
-    override fun onHiddenChanged(hidden: Boolean) {
-        super.onHiddenChanged(hidden)
-        Timber.d("search onHiddenChanged => $hidden")
-        if (!hidden) {
-            binding.layoutToolbar.layoutAppBar.setOnClickListener {
-                scrollToTop()
-            }
-            setSelectMode(viewModel.selectMode.value == true)
-        }
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initData()
-        initView(view)
+        initView()
         observeData()
     }
 
@@ -83,64 +73,24 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
         }
     }
 
-    private fun initView(root: View) {
-        Timber.d("initView => isHidden : $isHidden")
+    private fun initView() {
+        bindView()
         initHeader()
-        setupRecyclerView()
         setListener()
     }
 
+    private fun bindView(){
+        binding.viewModel = viewModel
+        binding.layoutToolbar.viewModel = viewModel
+        bindRecyclerView()
+    }
+
     private fun initHeader() {
-        if (isHidden) //  현재 보이는 fragment 가 header setting 에 우선권을 가지도록 설정
-            return
         binding.layoutToolbar.let {
             it.tvBtnLeft.isVisible = false
             it.tvBtnRight.isVisible = false
             it.toolBar.setOnClickListener {
-                scrollToTop()
-            }
-        }
-        Timber.d("init header " + viewModel.selectMode.value)
-        setSelectMode(viewModel.selectMode.value == true)
-    }
-
-    private fun setSelectMode(selectMode: Boolean) {
-        if (selectMode)
-            startSelectMode()
-        else
-            finishSelectMode()
-    }
-
-    private fun startSelectMode() {
-        binding.layoutToolbar.let {
-            it.tvBtnLeft.apply {
-                isVisible = true
-                text = "저장"
-                setOnClickListener {
-                    showSaveDialog()
-                }
-            }
-            it.tvBtnRight.apply {
-                isVisible = true
-                text = "취소"
-                setOnClickListener {
-                    viewModel.setSelectMode(false)
-                }
-            }
-        }
-    }
-
-    private fun finishSelectMode() {
-        binding.layoutToolbar.let {
-            it.tvBtnLeft.apply {
-                isVisible = false
-            }
-            it.tvBtnRight.apply {
-                isVisible = true
-                text = "선택"
-                setOnClickListener {
-                    viewModel.setSelectMode(true)
-                }
+                binding.rvSearch.safeScrollToTop(true)
             }
         }
     }
@@ -149,14 +99,14 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
     private fun setListener() {
         binding.rvSearch.setOnTouchListener { v, event ->
             when (event?.action) {
-                MotionEvent.ACTION_UP -> mContext?.hideKeyboard(v)
+                MotionEvent.ACTION_UP -> viewModel.backgroundTouchEvent()
             }
             return@setOnTouchListener false
         }
     }
 
-    private fun setupRecyclerView() {
-        val viewManager =
+    private fun bindRecyclerView() {
+        binding.searchLayoutManager =
             GridLayoutManager(mContext, itemCount, GridLayoutManager.VERTICAL, false).apply {
                 spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
                     override fun getSpanSize(position: Int): Int {
@@ -167,12 +117,9 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
                     }
                 }
             }
-        binding.rvSearch.apply {
-            layoutManager = viewManager
-            adapter = imageSearchAdapter
-            addItemDecoration(itemDecoration)
-            addOnScrollListener(pagingListener)
-        }
+        binding.searchAdapter = imageSearchAdapter
+        binding.searchItemDecoration = itemDecoration
+        binding.rvSearch.addOnScrollListener(pagingListener)
     }
 
     // https://medium.com/@bigstark/recyclerview-grid-space-%EC%97%90-%EB%8C%80%ED%95%9C-%EA%B3%A0%EC%B0%B0-7cab7a725f98
@@ -203,7 +150,7 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
         }
     }
 
-    fun getPxFromDp(dp: Int): Float {
+    private fun getPxFromDp(dp: Int): Float {
         val displayMetrics = resources.displayMetrics
         return dp * (displayMetrics.densityDpi.toFloat() / DisplayMetrics.DENSITY_DEFAULT)
     }
@@ -220,60 +167,76 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
         }
     }
 
-    private fun scrollToTop() {
-        if (imageSearchAdapter.currentItemSize != 0) {
-            binding.rvSearch.smoothScrollToPosition(0)
-        }
-    }
-
-    private fun showSaveDialog() {
-//        if(viewModel.selectImageIdxList.isEmpty()){
-//            showToast("이미지를 선택해주세요")
-//            return
-//        }
-        //${viewModel.selectImageIdxList.size}장의 이미지를 저장하시겠습니까?
-        DialogUtil.showBottom(mContext ?: return, "선택한 이미지를 저장하시겠습니까?", "저장", "취소", {
-            viewModel.saveSelectImage()
-        }) {}
-    }
-
     private fun observeData() {
+        viewModel.uiEvent.observe(this) { event ->
+            event.getContentIfNotHandled()?.let {
+                when (it) {
+                    is SearchImageViewModel.UiEvent.ShowToast ->
+                        mContext?.showToast(it.message)
+                    is SearchImageViewModel.UiEvent.KeyboardVisibleEvent ->
+                        mContext?.setSoftKeyboardVisible(binding.background, it.visible)
+                    is SearchImageViewModel.UiEvent.PresentSaveDialog ->
+                        showSaveDialog(it.selectCount)
+                }
+            }
+        }
+
         viewModel.searchImages.observe(this) {
             Timber.d("searchResultObservable subscribe thread - " + Thread.currentThread().name + ", it.address : " + it)
             Timber.d("diff debug searchImagesUseDiff observe")
             imageSearchAdapter.updateList(it)
         }
 
-        viewModel.toastMessageEvent.observe(this) { event ->
-            event.getContentIfNotHandled()?.let {
-                mContext?.showToast(it)
+        viewModel.selectMode.observe(this) {
+            Timber.d("select mode debug at observe -> $it")
+            when (it) {
+                true -> startSelectMode()
+                else -> finishSelectMode()
             }
         }
+    }
 
-        viewModel.dataLoading.observe(this) {
-            binding.progress.isVisible = it
-        }
+    private fun showSaveDialog(selectCount: Int) {
+        DialogUtil.showBottom(
+            mContext ?: return,
+            getString(R.string.message_is_save_select_image, selectCount),
+            getString(R.string.save),
+            getString(R.string.cancel),
+            {
+                viewModel.saveSelectImage()
+            }) {}
+    }
 
-        viewModel.pagingDataLoading.observe(this) {
-            binding.progressPaging.isVisible = it
-        }
-
-        viewModel.headerTitle.observe(this) {
-            binding.layoutToolbar.toolBar.title = it
-        }
-
-        viewModel.keyboardShownEvent.observe(this) { event ->
-            event.getContentIfNotHandled()?.let {
-                when (it){
-                    false -> mContext?.hideKeyboard(binding.background)
-                    else -> {}
+    private fun startSelectMode() {
+        binding.layoutToolbar.let {
+            it.tvBtnLeft.apply {
+                isVisible = true
+                text = getString(R.string.save)
+                setOnClickListener {
+                    viewModel.clickSaveEvent()
+                }
+            }
+            it.tvBtnRight.apply {
+                isVisible = true
+                text = getString(R.string.cancel)
+                setOnClickListener {
+                    viewModel.clickSelectModeEvent()
                 }
             }
         }
+    }
 
-        viewModel.selectMode.observe(this) {
-            Timber.d("select mode debug at observe -> $it")
-            setSelectMode(it)
+    private fun finishSelectMode() {
+        binding.layoutToolbar.let {
+            it.tvBtnLeft.isVisible = false
+            it.tvBtnRight.apply {
+                isVisible = true
+                text = getString(R.string.select)
+                setOnClickListener {
+                    viewModel.clickSelectModeEvent()
+                }
+            }
         }
     }
+
 }
