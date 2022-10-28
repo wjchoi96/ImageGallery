@@ -56,7 +56,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
             it.tvBtnRight.isVisible = false
             it.tvBtnLeft.isVisible = false
             it.toolBar.setOnClickListener {
-                scrollToTop()
+                binding.rvGallery.safeScrollToTop(true)
             }
         }
     }
@@ -142,12 +142,6 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
             android.R.color.holo_orange_light,
             android.R.color.holo_red_light
         )
-    }
-
-    private fun scrollToTop() {
-        if (galleryAdapter.currentItemSize != 0) {
-            binding.rvGallery.smoothScrollToPosition(0)
-        }
     }
 
     private fun showRemoveDialog(selectCount: Int) {

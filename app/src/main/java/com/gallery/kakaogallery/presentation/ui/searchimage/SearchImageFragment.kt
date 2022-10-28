@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.FragmentSearchImageBinding
 import com.gallery.kakaogallery.domain.model.ImageListTypeModel
+import com.gallery.kakaogallery.presentation.extension.safeScrollToTop
 import com.gallery.kakaogallery.presentation.extension.setSoftKeyboardVisible
 import com.gallery.kakaogallery.presentation.extension.showToast
 import com.gallery.kakaogallery.presentation.ui.base.BindingFragment
@@ -62,7 +63,7 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
         Timber.d("search onHiddenChanged => $hidden")
         if (!hidden) {
             binding.layoutToolbar.layoutAppBar.setOnClickListener {
-                scrollToTop()
+                binding.rvSearch.safeScrollToTop(true)
             }
             setSelectMode(viewModel.selectMode.value == true)
         }
@@ -97,7 +98,7 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
             it.tvBtnLeft.isVisible = false
             it.tvBtnRight.isVisible = false
             it.toolBar.setOnClickListener {
-                scrollToTop()
+                binding.rvSearch.safeScrollToTop(true)
             }
         }
         Timber.d("init header " + viewModel.selectMode.value)
@@ -215,12 +216,6 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
                     viewModel.fetchNextPage()
                 }
             }
-        }
-    }
-
-    private fun scrollToTop() {
-        if (imageSearchAdapter.currentItemSize != 0) {
-            binding.rvSearch.smoothScrollToPosition(0)
         }
     }
 
