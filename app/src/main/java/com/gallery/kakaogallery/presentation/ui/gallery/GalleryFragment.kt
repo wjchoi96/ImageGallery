@@ -45,7 +45,6 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     }
 
     private fun initView() {
-        Timber.d("initView => isHidden : $isHidden")
         bindView()
         initHeader()
         setSwipeRefreshLayout()
@@ -63,38 +62,6 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
             it.tvBtnLeft.isVisible = false
             it.toolBar.setOnClickListener {
                 binding.rvGallery.safeScrollToTop(true)
-            }
-        }
-    }
-
-    private fun startSelectMode() {
-        binding.layoutToolbar.let {
-            it.tvBtnLeft.apply {
-                isVisible = true
-                text = getString(R.string.remove)
-                setOnClickListener {
-                    viewModel.clickRemoveEvent()
-                }
-            }
-            it.tvBtnRight.apply {
-                isVisible = true
-                text = getString(R.string.cancel)
-                setOnClickListener {
-                    viewModel.clickSelectModeEvent()
-                }
-            }
-        }
-    }
-
-    private fun finishSelectMode() {
-        binding.layoutToolbar.let {
-            it.tvBtnLeft.isVisible = false
-            it.tvBtnRight.apply {
-                isVisible = true
-                text = getString(R.string.select)
-                setOnClickListener {
-                    viewModel.clickSelectModeEvent()
-                }
             }
         }
     }
@@ -144,17 +111,6 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
         )
     }
 
-    private fun showRemoveDialog(selectCount: Int) {
-        DialogUtil.showBottom(
-            mContext ?: return,
-            getString(R.string.message_is_remove_select_image, selectCount),
-            getString(R.string.remove),
-            getString(R.string.cancel),
-            {
-                viewModel.removeSelectImage()
-            }) {}
-    }
-
     private fun observeData() {
         viewModel.uiEvent.observe(this) { event ->
             event.getContentIfNotHandled()?.let {
@@ -186,8 +142,47 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
         }
     }
 
-    private fun finishRefresh() {
-        if (binding.layoutSwipeRefresh.isRefreshing)
-            binding.layoutSwipeRefresh.isRefreshing = false
+    private fun showRemoveDialog(selectCount: Int) {
+        DialogUtil.showBottom(
+            mContext ?: return,
+            getString(R.string.message_is_remove_select_image, selectCount),
+            getString(R.string.remove),
+            getString(R.string.cancel),
+            {
+                viewModel.removeSelectImage()
+            }) {}
     }
+
+    private fun startSelectMode() {
+        binding.layoutToolbar.let {
+            it.tvBtnLeft.apply {
+                isVisible = true
+                text = getString(R.string.remove)
+                setOnClickListener {
+                    viewModel.clickRemoveEvent()
+                }
+            }
+            it.tvBtnRight.apply {
+                isVisible = true
+                text = getString(R.string.cancel)
+                setOnClickListener {
+                    viewModel.clickSelectModeEvent()
+                }
+            }
+        }
+    }
+
+    private fun finishSelectMode() {
+        binding.layoutToolbar.let {
+            it.tvBtnLeft.isVisible = false
+            it.tvBtnRight.apply {
+                isVisible = true
+                text = getString(R.string.select)
+                setOnClickListener {
+                    viewModel.clickSelectModeEvent()
+                }
+            }
+        }
+    }
+
 }
