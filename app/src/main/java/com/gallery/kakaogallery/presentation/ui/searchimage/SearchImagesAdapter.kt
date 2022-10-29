@@ -68,8 +68,8 @@ class SearchImagesAdapter(
 
     fun updateList(list: List<ImageListTypeModel>) {
         val newList = list.toList()
-        Observable.defer{
-            Observable.just (getDiffRes(newList))
+        Observable.fromCallable{
+            getDiffRes(newList)
         }.subscribeOn(Schedulers.computation())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
