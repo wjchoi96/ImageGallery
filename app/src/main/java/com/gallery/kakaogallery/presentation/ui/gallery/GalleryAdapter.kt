@@ -49,8 +49,8 @@ class GalleryAdapter(
 
         val newList = list.toList()
         Timber.d("diff debug updateList called oldList[${imageList.size}], newList[${newList.size}]")
-        adapterDisposable = Observable.defer{
-            Observable.just (getDiffRes(newList))
+        adapterDisposable = Observable.fromCallable{
+            getDiffRes(newList)
         }.subscribeOn(Schedulers.computation())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
