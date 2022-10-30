@@ -8,13 +8,14 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
+import timber.log.Timber
 
 abstract class BindingFragment<T : ViewDataBinding> : Fragment() {
-    lateinit var binding: T
+    private var _binding: T? = null
+    protected val binding: T get() = _binding ?: error("Binding not initialized")
     abstract val layoutResId: Int
 
     protected var mContext: Context? = null
-
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -26,13 +27,14 @@ abstract class BindingFragment<T : ViewDataBinding> : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = DataBindingUtil.inflate(inflater, layoutResId, container, false)
-        return binding.root as ViewGroup
+        _binding = DataBindingUtil.inflate(inflater, layoutResId, container, false)
+        binding.lifecycleOwner = viewLifecycleOwner
+        return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.lifecycleOwner = viewLifecycleOwner
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onDetach() {
