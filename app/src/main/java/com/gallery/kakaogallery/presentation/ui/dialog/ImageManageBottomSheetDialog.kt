@@ -1,43 +1,100 @@
 package com.gallery.kakaogallery.presentation.ui.dialog
 
-import android.content.Context
 import android.graphics.Color
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import androidx.databinding.DataBindingUtil
+import android.view.ViewGroup
+import androidx.core.os.bundleOf
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.viewModels
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.DialogImageManageBinding
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.gallery.kakaogallery.presentation.viewmodel.ImageManageBottomSheetViewModel
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import timber.log.Timber
 
+class ImageManageBottomSheetDialog : BottomSheetDialogFragment() {
+    companion object {
+        private const val TAG = "image_manage_bottom_sheet_dialog"
+        private const val EXTRA_CONTENT = "extra_content"
+        private const val EXTRA_POSITIVE_TEXT = "extra_positive_text"
+        private const val EXTRA_NEGATIVE_TEXT = "extra_negative_text"
 
-// https://stackoverflow.com/questions/55218663/customization-bottom-sheet-dialogs-view
-// margin style => https://stackoverflow.com/questions/37640031/android-bottom-sheet-layout-margin
-// background null set => https://stackoverflow.com/questions/39670847/how-to-set-left-and-right-margin-in-buttomsheetdialogfragment-android
-class ImageManageBottomSheetDialog : BottomSheetDialog {
-    constructor(context: Context) : super(context) {
-        initView()
+        fun get(
+            content: String,
+            positiveBtnText: String,
+            negativeBtnText: String,
+            positiveListener: (() -> Unit)? = null,
+            negativeListener: (() -> Unit)? = null
+        ) = ImageManageBottomSheetDialog().apply {
+            arguments = bundleOf(
+                EXTRA_CONTENT to content,
+                EXTRA_POSITIVE_TEXT to positiveBtnText,
+                EXTRA_NEGATIVE_TEXT to negativeBtnText
+            )
+            setPositiveBtnListener(positiveListener)
+            setNegativeBtnListener(negativeListener)
+        }
     }
 
-    constructor(context: Context, themeResId: Int) : super(context, themeResId) {
-        initView()
+    private var _binding: DialogImageManageBinding? = null
+    private val binding get() = _binding ?: error("Binding not Initialized")
+    private val viewModel: ImageManageBottomSheetViewModel by viewModels()
+
+
+    private var cachePositiveListener: (() -> Unit)? = null
+    private fun setPositiveBtnListener(positiveListener: (() -> Unit)? = null) {
+        cachePositiveListener = positiveListener
     }
 
-    lateinit var binding: DialogImageManageBinding
+    private var cacheNegativeListener: (() -> Unit)? = null
+    private fun setNegativeBtnListener(negativeListener: (() -> Unit)? = null) {
+        cacheNegativeListener = negativeListener
+    }
 
-    private fun initView() {
-        binding = DataBindingUtil.inflate(
-            LayoutInflater.from(context),
-            R.layout.dialog_image_manage,
-            null,
-            false
-        )
-        setContentView(binding.root)
+    private val defaultBtnText: String by lazy { requireContext().getString(R.string.confirm) }
+
+    fun show(fragmentManager: FragmentManager){
+        if(fragmentManager.findFragmentByTag(TAG) == null)
+            this.show(fragmentManager, TAG)
+    }
+
+    override fun getTheme(): Int {
+        return R.style.CustomBottomSheetDialog
+    }
+
+    override fun onDestroyView() {
+        _binding = null
+        super.onDestroyView()
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        Timber.d("onCreateView at bottom sheet")
+        _binding = DialogImageManageBinding.inflate(LayoutInflater.from(context), container, false)
+        binding.lifecycleOwner = viewLifecycleOwner
+        binding.viewModel = viewModel
+        arguments?.let {
+            viewModel.initData(
+                it.getString(EXTRA_CONTENT),
+                it.getString(EXTRA_POSITIVE_TEXT) ?: defaultBtnText,
+                it.getString(EXTRA_NEGATIVE_TEXT),
+                cachePositiveListener,
+                cacheNegativeListener
+            )
+        }
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         (binding.root.parent as View).setBackgroundColor(Color.parseColor("#00000000"))
         setDefaultListener()
-
-        // 가로모드에서 접혀서 보이는 상태로 처리되는 문제 때문에 강제로 state 설정
-        behavior.state = BottomSheetBehavior.STATE_EXPANDED // 완전히 펼쳐진 상태
+        observeData()
     }
 
     private fun setDefaultListener() {
@@ -45,25 +102,16 @@ class ImageManageBottomSheetDialog : BottomSheetDialog {
         binding.btnNegative.setOnClickListener { this.dismiss() }
     }
 
-    fun setPositiveBtn(btnText: String? = null, positiveListener: ((View) -> (Unit))? = null) {
-        if (!btnText.isNullOrBlank())
-            binding.btnPositive.text = btnText
-        binding.btnPositive.setOnClickListener {
-            positiveListener?.invoke(it)
-            this.dismiss()
+    private fun observeData(){
+        viewModel.uiEvent.observe(viewLifecycleOwner){ event ->
+            event.getContentIfNotHandled()?.let {
+                when (it) {
+                    is ImageManageBottomSheetViewModel.UiEvent.Dismiss -> {
+                        this.dismiss()
+                    }
+                }
+            }
         }
     }
 
-    fun setNegativeBtn(btnText: String? = null, negativeListener: ((View) -> (Unit))? = null) {
-        if (!btnText.isNullOrBlank())
-            binding.btnNegative.text = btnText
-        binding.btnNegative.setOnClickListener {
-            negativeListener?.invoke(it)
-            this.dismiss()
-        }
-    }
-
-    fun setContent(content: String?) {
-        binding.tvContent.text = content
-    }
 }
