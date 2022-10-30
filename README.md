@@ -7,7 +7,7 @@
 2. 저장하고 싶은 이미지는 이미지 보관함에 저장 
 
 ## Docs
- - [스케쥴 관리](https://full-growth-4d2.notion.site/KakaoGallery-e1de93d4a6cb452989253006bc06e59d)
+ - [프로젝트 관리](https://full-growth-4d2.notion.site/KakaoGallery-e1de93d4a6cb452989253006bc06e59d)
 
 ## Development Environment
 - kotlin
