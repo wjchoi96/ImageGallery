@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.databinding.DataBindingUtil
 import com.gallery.kakaogallery.R
-import com.gallery.kakaogallery.databinding.DialogCustomBottomSheetBinding
+import com.gallery.kakaogallery.databinding.DialogImageManageBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 
@@ -23,12 +23,12 @@ class CustomBottomSheetDialog : BottomSheetDialog {
         initView()
     }
 
-    lateinit var binding: DialogCustomBottomSheetBinding
+    lateinit var binding: DialogImageManageBinding
 
     private fun initView() {
         binding = DataBindingUtil.inflate(
             LayoutInflater.from(context),
-            R.layout.dialog_custom_bottom_sheet,
+            R.layout.dialog_image_manage,
             null,
             false
         )
