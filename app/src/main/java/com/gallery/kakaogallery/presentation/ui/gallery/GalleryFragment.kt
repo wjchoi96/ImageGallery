@@ -15,7 +15,7 @@ import com.gallery.kakaogallery.presentation.extension.safeScrollToTop
 import com.gallery.kakaogallery.presentation.extension.setSoftKeyboardVisible
 import com.gallery.kakaogallery.presentation.extension.showToast
 import com.gallery.kakaogallery.presentation.ui.base.DisposableManageFragment
-import com.gallery.kakaogallery.presentation.util.DialogUtil
+import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetDialog
 import com.gallery.kakaogallery.presentation.viewmodel.GalleryViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -143,14 +143,14 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     }
 
     private fun showRemoveDialog(selectCount: Int) {
-        DialogUtil.showBottom(
-            mContext ?: return,
+        ImageManageBottomSheetDialog.get(
             getString(R.string.message_is_remove_select_image, selectCount),
             getString(R.string.remove),
             getString(R.string.cancel),
             {
                 viewModel.removeSelectImage()
-            }) {}
+            },{}
+        ).show(childFragmentManager)
     }
 
     private fun startSelectMode() {

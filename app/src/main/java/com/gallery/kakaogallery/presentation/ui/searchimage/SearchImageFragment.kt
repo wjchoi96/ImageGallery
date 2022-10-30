@@ -21,7 +21,7 @@ import com.gallery.kakaogallery.presentation.extension.safeScrollToTop
 import com.gallery.kakaogallery.presentation.extension.setSoftKeyboardVisible
 import com.gallery.kakaogallery.presentation.extension.showToast
 import com.gallery.kakaogallery.presentation.ui.base.BindingFragment
-import com.gallery.kakaogallery.presentation.util.DialogUtil
+import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetDialog
 import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -197,14 +197,14 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
     }
 
     private fun showSaveDialog(selectCount: Int) {
-        DialogUtil.showBottom(
-            mContext ?: return,
+        ImageManageBottomSheetDialog.get(
             getString(R.string.message_is_save_select_image, selectCount),
             getString(R.string.save),
             getString(R.string.cancel),
             {
                 viewModel.saveSelectImage()
-            }) {}
+            }, {}
+        ).show(childFragmentManager)
     }
 
     private fun startSelectMode() {
