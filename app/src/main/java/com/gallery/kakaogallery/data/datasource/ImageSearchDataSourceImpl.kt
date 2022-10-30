@@ -45,13 +45,11 @@ class ImageSearchDataSourceImpl @Inject constructor(
                     Timber.d("Image mapping run at " + Thread.currentThread().name)
                     imagePageable = !it.meta.isEnd
                     it.documents
+                }.onErrorResumeNext {
+                    it.printStackTrace()
+                    Timber.d("error debug => after api response => $it")
+                    Observable.error { it }
                 }
-                    .onErrorResumeNext {
-                        it.printStackTrace()
-                        Timber.d("error debug => after api response => $it")
-                        Flowable.error { it }
-                    }
-                    .toObservable()
             }
         }
     }

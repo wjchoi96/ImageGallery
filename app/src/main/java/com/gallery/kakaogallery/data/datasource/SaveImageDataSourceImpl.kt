@@ -16,14 +16,14 @@ class SaveImageDataSourceImpl @Inject constructor(
     }
 
     override fun removeImages(idxList: List<Int>): Observable<Boolean> {
-        return Observable.just(
+        return Observable.fromCallable {
             saveImageDao.removeImages(idxList)
-        ).subscribeOn(Schedulers.io())
+        }.subscribeOn(Schedulers.io())
     }
 
     override fun saveImages(image: List<ImageModel>): Observable<Boolean> {
-        return Observable.just(
+        return Observable.fromCallable {
             saveImageDao.saveImages(image)
-        ).subscribeOn(Schedulers.io())
+        }.subscribeOn(Schedulers.io())
     }
 }
