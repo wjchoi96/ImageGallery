@@ -3,7 +3,7 @@ package com.gallery.kakaogallery.presentation.util
 import android.app.AlertDialog
 import android.content.Context
 import com.gallery.kakaogallery.R
-import com.gallery.kakaogallery.presentation.ui.dialog.CustomBottomSheetDialog
+import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetDialog
 
 /*
     bottom sheet dialog
@@ -60,7 +60,7 @@ object DialogUtil {
         positiveListener: () -> Unit,
         negativeListener: () -> Unit
     ) {
-        CustomBottomSheetDialog(context ?: return, R.style.BottomSheetDialog).apply {
+        ImageManageBottomSheetDialog(context ?: return, R.style.BottomSheetDialog).apply {
             setContent(content)
             setPositiveBtn(positiveBtn) {
                 positiveListener.invoke()

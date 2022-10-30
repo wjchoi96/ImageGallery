@@ -14,7 +14,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 // https://stackoverflow.com/questions/55218663/customization-bottom-sheet-dialogs-view
 // margin style => https://stackoverflow.com/questions/37640031/android-bottom-sheet-layout-margin
 // background null set => https://stackoverflow.com/questions/39670847/how-to-set-left-and-right-margin-in-buttomsheetdialogfragment-android
-class CustomBottomSheetDialog : BottomSheetDialog {
+class ImageManageBottomSheetDialog : BottomSheetDialog {
     constructor(context: Context) : super(context) {
         initView()
     }
