@@ -37,13 +37,11 @@ class VideoSearchDataSourceImpl @Inject constructor(
                     Timber.d("Video mapping run at " + Thread.currentThread().name)
                     videoPageable = !it.meta.isEnd
                     it.documents
+                }.onErrorResumeNext {
+                    it.printStackTrace()
+                    Timber.d("error debug => after api response => $it")
+                    Observable.error { it }
                 }
-                    .onErrorResumeNext {
-                        it.printStackTrace()
-                        Timber.d("error debug => after api response => $it")
-                        Flowable.error { it }
-                    }
-                    .toObservable()
             }
         }
     }
