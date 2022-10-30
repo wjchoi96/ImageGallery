@@ -2,8 +2,6 @@ package com.gallery.kakaogallery.presentation.util
 
 import android.app.AlertDialog
 import android.content.Context
-import com.gallery.kakaogallery.R
-import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetDialog
 
 /*
     bottom sheet dialog
@@ -50,25 +48,5 @@ object DialogUtil {
         }.create().apply {
             show()
         }
-    }
-
-    fun showBottom(
-        context: Context,
-        content: String,
-        positiveBtn: String,
-        negativeBtn: String,
-        positiveListener: () -> Unit,
-        negativeListener: () -> Unit
-    ) {
-        ImageManageBottomSheetDialog(context ?: return, R.style.BottomSheetDialog).apply {
-            setContent(content)
-            setPositiveBtn(positiveBtn) {
-                positiveListener.invoke()
-            }
-            setNegativeBtn(negativeBtn) {
-                negativeListener.invoke()
-            }
-        }.show()
-
     }
 }
