@@ -19,13 +19,20 @@
         <item name="android:windowFullscreen">true</item>
     </style>
 
-    <style name="BottomSheetDialog" parent="Theme.Design.Light.BottomSheetDialog">
-        <item name="bottomSheetStyle">@style/bottomSheetStyleWrapper</item>
+    <!-- Bottom Sheet Radius -->
+    <style name="CustomBottomSheetDialog" parent="@style/ThemeOverlay.MaterialComponents.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/CustomBottomSheet</item>
     </style>
 
-    <style name="bottomSheetStyleWrapper" parent="Widget.Design.BottomSheet.Modal">
-<!--        <item name="behavior_peekHeight">350dp</item>-->
-<!--        <item name="android:layout_margin">30dp</item>-->
-        <item name="android:windowBackground">@null</item>
+    <style name="CustomBottomSheet" parent="Widget.MaterialComponents.BottomSheet">
+        <item name="shapeAppearanceOverlay">@style/CustomShapeAppearanceBottomSheetDialog</item>
+    </style>
+
+    <style name="CustomShapeAppearanceBottomSheetDialog" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopRight">15dp</item>
+        <item name="cornerSizeTopLeft">15dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
     </style>
 </resources>
