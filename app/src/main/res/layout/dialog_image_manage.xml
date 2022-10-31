@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
+    <data>
+        <import type="android.view.View"/>
+
+        <variable
+            name="viewModel"
+            type="com.gallery.kakaogallery.presentation.viewmodel.ImageManageBottomSheetViewModel" />
+    </data>
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -16,6 +23,7 @@
             android:orientation="vertical"
             >
             <TextView
+                android:text="@{viewModel.content}"
                 android:id="@+id/tv_content"
                 android:paddingTop="10dp"
                 android:paddingBottom="20dp"
@@ -31,6 +39,9 @@
                 android:orientation="horizontal"
                 >
                 <androidx.appcompat.widget.AppCompatButton
+                    android:text="@{viewModel.negativeBtnText}"
+                    android:visibility="@{viewModel.negativeBtnVisible ? View.VISIBLE : View.GONE, default=gone}"
+                    android:onClick="@{() -> viewModel.negativeEvent()}"
                     android:textSize="14sp"
                     android:layout_marginEnd="10dp"
                     android:textColor="#3d3d3d"
@@ -42,6 +53,9 @@
                     />
 
                 <androidx.appcompat.widget.AppCompatButton
+                    android:text="@{viewModel.positiveBtnText}"
+                    android:visibility="@{viewModel.positiveBtnVisible ? View.VISIBLE : View.GONE, default=gone}"
+                    android:onClick="@{() -> viewModel.positiveEvent()}"
                     android:textSize="14sp"
                     android:layout_marginStart="10dp"
                     android:id="@+id/btn_positive"
