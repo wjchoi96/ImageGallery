@@ -7,10 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
-import androidx.fragment.app.Fragment
-import timber.log.Timber
 
-abstract class BindingFragment<T : ViewDataBinding> : Fragment() {
+abstract class BindingFragment<T : ViewDataBinding> : LifeCycleLoggingFragment() {
     private var _binding: T? = null
     protected val binding: T get() = _binding ?: error("Binding not initialized")
     abstract val layoutResId: Int
