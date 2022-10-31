@@ -11,7 +11,7 @@ import timber.log.Timber
 
 abstract class LifeCycleLoggingFragment: Fragment() {
 
-    private val logLifecycleObserver = LifeCycleLogObserver(this::class.java.simpleName)
+    private val logLifecycleObserver = LifeCycleLogObserver(this::class.java.simpleName + " LifecycleLogging")
 
     override fun onAttach(context: Context) {
         super.onAttach(context)

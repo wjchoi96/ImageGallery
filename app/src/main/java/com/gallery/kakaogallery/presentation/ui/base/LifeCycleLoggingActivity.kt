@@ -7,7 +7,7 @@ import timber.log.Timber
 
 abstract class LifeCycleLoggingActivity: AppCompatActivity() {
 
-    private val logLifecycleObserver = LifeCycleLogObserver(this::class.java.simpleName)
+    private val logLifecycleObserver = LifeCycleLogObserver(this::class.java.simpleName + " LifecycleLogging")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
