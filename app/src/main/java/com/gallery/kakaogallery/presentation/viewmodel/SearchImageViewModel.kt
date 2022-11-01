@@ -23,7 +23,8 @@ class SearchImageViewModel @Inject constructor(
     private var page = 1
     private var lastQuery: String? = null
 
-    private val searchFailMessage: String = resourceProvider.getString(StringResourceProvider.StringResourceId.SearchFail)
+    private val searchFailMessage: String =
+        resourceProvider.getString(StringResourceProvider.StringResourceId.SearchFail)
     private val selectImageUrlMap = mutableMapOf<String, Int>()
 
     // select 해서 저장한 이미지들의 map
@@ -36,7 +37,8 @@ class SearchImageViewModel @Inject constructor(
     private val _searchResultIsEmpty = MutableLiveData(false)
     val searchResultIsEmpty: LiveData<Boolean> = _searchResultIsEmpty
 
-    private val _headerTitle = MutableLiveData(resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage))
+    private val _headerTitle =
+        MutableLiveData(resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage))
     override val headerTitle: LiveData<String> = _headerTitle
 
     private val _dataLoading = MutableLiveData(false)
@@ -67,21 +69,19 @@ class SearchImageViewModel @Inject constructor(
             selectImageUrlMap,
             images
         ).observeOn(AndroidSchedulers.mainThread())
-            .subscribe { res ->
-            _dataLoading.value = false
-            res.onSuccess {
-                when(it){
+            .subscribe({
+                _dataLoading.value = false
+                when (it) {
                     true -> {
                         showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveSuccess))
                         clickSelectModeEvent()
                     }
                     else -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveFail))
                 }
-            }.onFailure {
+            }) {
                 it.printStackTrace()
                 showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveFail) + " $it")
-            }
-        }.addTo(compositeDisposable)
+            }.addTo(compositeDisposable)
     }
 
     // query 를 비워서 보내면 에러뜬다
@@ -92,17 +92,19 @@ class SearchImageViewModel @Inject constructor(
         _dataLoading.value = true
         fetchSearchDataQueryDataUseCase(query, page)
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { res ->
+            .subscribe({
                 _dataLoading.value = false
-                res.onSuccess {
-                    page++
-                    if(query.isNotEmpty()) _searchResultIsEmpty.value = it.size <= 1
-                    _searchImages.value = it
-                }.onFailure {
-                    when (it) {
-                        is MaxPageException -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.LastPage))
-                        else -> showToast("$searchFailMessage\n${it.message}")
-                    }
+                page++
+                if (query.isNotEmpty()) _searchResultIsEmpty.value = it.size <= 1
+                _searchImages.value = it
+            }) {
+                when (it) {
+                    is MaxPageException -> showToast(
+                        resourceProvider.getString(
+                            StringResourceProvider.StringResourceId.LastPage
+                        )
+                    )
+                    else -> showToast("$searchFailMessage\n${it.message}")
                 }
             }.let { compositeDisposable.add(it) }
     }
@@ -111,27 +113,29 @@ class SearchImageViewModel @Inject constructor(
         _pagingDataLoading.value = true
         fetchSearchDataQueryDataUseCase(query, searchPage)
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { res ->
+            .subscribe({
                 _pagingDataLoading.value = false
-                res.onSuccess {
-                    page = searchPage + 1
-                    val prevList = _searchImages.value ?: emptyList()
-                    _searchImages.value = prevList + it
-                }.onFailure {
-                    when (it) {
-                        is MaxPageException -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.LastPage))
-                        else -> showToast("$searchFailMessage\n${it.message}")
-                    }
+                page = searchPage + 1
+                val prevList = _searchImages.value ?: emptyList()
+                _searchImages.value = prevList + it
+            }) {
+                when (it) {
+                    is MaxPageException -> showToast(
+                        resourceProvider.getString(
+                            StringResourceProvider.StringResourceId.LastPage
+                        )
+                    )
+                    else -> showToast("$searchFailMessage\n${it.message}")
                 }
             }.let { compositeDisposable.add(it) }
     }
 
-    fun backgroundTouchEvent(){
+    fun backgroundTouchEvent() {
         _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
     }
 
-    fun clickSaveEvent(){
-        if(selectImageUrlMap.isEmpty()){
+    fun clickSaveEvent() {
+        if (selectImageUrlMap.isEmpty()) {
             _uiEvent.value =
                 SingleEvent(UiEvent.ShowToast(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)))
             return
@@ -139,11 +143,12 @@ class SearchImageViewModel @Inject constructor(
         _uiEvent.value = SingleEvent(UiEvent.PresentSaveDialog(selectImageUrlMap.size))
     }
 
-    fun clickSelectModeEvent(){
-        when(_selectMode.value){
+    fun clickSelectModeEvent() {
+        when (_selectMode.value) {
             true -> {
                 unSelectAllImage()
-                _headerTitle.value = resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage)
+                _headerTitle.value =
+                    resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage)
             }
             else -> _headerTitle.value = resourceProvider.getString(
                 StringResourceProvider.StringResourceId.SelectState,
@@ -156,12 +161,12 @@ class SearchImageViewModel @Inject constructor(
     private fun unSelectAllImage() {
         val images = searchImages.value?.toMutableList() ?: return
         try {
-            for(idx in selectImageUrlMap.values){
+            for (idx in selectImageUrlMap.values) {
                 images[idx] = (images[idx] as ImageListTypeModel.Image).let {
                     it.copy(image = it.image.copy(isSelect = false))
                 }
             }
-        }catch (e: Exception){
+        } catch (e: Exception) {
             e.printStackTrace()
         }
         selectImageUrlMap.clear()
@@ -174,13 +179,16 @@ class SearchImageViewModel @Inject constructor(
             images[idx] = (images[idx] as ImageListTypeModel.Image).let {
                 it.copy(image = it.image.copy(isSelect = select))
             }
-            when (select){
+            when (select) {
                 true -> selectImageUrlMap[image.imageUrl] = idx
                 else -> selectImageUrlMap.remove(image.imageUrl)
             }
             _searchImages.value = images
-            _headerTitle.value = resourceProvider.getString(StringResourceProvider.StringResourceId.SelectState, selectImageUrlMap.size)
-        }catch (e: Exception){
+            _headerTitle.value = resourceProvider.getString(
+                StringResourceProvider.StringResourceId.SelectState,
+                selectImageUrlMap.size
+            )
+        } catch (e: Exception) {
             e.printStackTrace()
             showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SelectFail))
         }
@@ -189,7 +197,7 @@ class SearchImageViewModel @Inject constructor(
 
     fun touchImageEvent(image: ImageModel, idx: Int) {
         _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
-        when (selectMode.value){
+        when (selectMode.value) {
             true ->
                 setSelectImage(image, idx, !selectImageUrlMap.containsKey(image.imageUrl))
             else -> {}
@@ -226,7 +234,7 @@ class SearchImageViewModel @Inject constructor(
 
     sealed class UiEvent {
         data class ShowToast(val message: String) : UiEvent()
-        data class PresentSaveDialog(val selectCount: Int): UiEvent()
-        data class KeyboardVisibleEvent(val visible: Boolean): UiEvent()
+        data class PresentSaveDialog(val selectCount: Int) : UiEvent()
+        data class KeyboardVisibleEvent(val visible: Boolean) : UiEvent()
     }
 }
