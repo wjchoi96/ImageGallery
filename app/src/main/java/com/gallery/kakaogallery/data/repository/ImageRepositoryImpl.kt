@@ -7,6 +7,7 @@ import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.UnKnownException
 import com.gallery.kakaogallery.domain.repository.ImageRepository
 import com.gallery.kakaogallery.domain.util.GalleryDateConvertUtil
+import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -90,12 +91,12 @@ class ImageRepositoryImpl @Inject constructor(
             .subscribeOn(Schedulers.io())
     }
 
-    override fun removeImages(idxList: List<Int>): Observable<Boolean> {
+    override fun removeImages(idxList: List<Int>): Completable {
         return saveImageDataSource.removeImages(idxList)
             .subscribeOn(Schedulers.io())
     }
 
-    override fun saveImages(image: List<ImageModel>): Observable<Boolean> {
+    override fun saveImages(image: List<ImageModel>): Completable {
         return saveImageDataSource.saveImages(image)
             .subscribeOn(Schedulers.io())
     }
