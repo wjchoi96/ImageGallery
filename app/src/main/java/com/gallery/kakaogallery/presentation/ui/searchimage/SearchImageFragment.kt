@@ -168,7 +168,7 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
     }
 
     private fun observeData() {
-        viewModel.uiEvent.observe(this) { event ->
+        viewModel.uiEvent.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let {
                 when (it) {
                     is SearchImageViewModel.UiEvent.ShowToast ->
@@ -181,13 +181,13 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
             }
         }
 
-        viewModel.searchImages.observe(this) {
+        viewModel.searchImages.observe(viewLifecycleOwner) {
             Timber.d("searchResultObservable subscribe thread - " + Thread.currentThread().name + ", it.address : " + it)
             Timber.d("diff debug searchImagesUseDiff observe")
             imageSearchAdapter.updateList(it)
         }
 
-        viewModel.selectMode.observe(this) {
+        viewModel.selectMode.observe(viewLifecycleOwner) {
             Timber.d("select mode debug at observe -> $it")
             when (it) {
                 true -> startSelectMode()
