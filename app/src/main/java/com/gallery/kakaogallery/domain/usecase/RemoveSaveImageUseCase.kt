@@ -6,14 +6,13 @@ import io.reactivex.rxjava3.core.Single
 class RemoveSaveImageUseCase(
     private val imageRepository: ImageRepository
 ) {
-    operator fun invoke(selectImageHashMap: MutableMap<String, Int>): Single<Result<Boolean>> {
+    operator fun invoke(selectImageHashMap: MutableMap<String, Int>): Single<Boolean> {
         return imageRepository.removeImages(selectImageHashMap.values.toList())
             .toSingle {
-                Result.success(true)
+                true
             }
-            .onErrorReturn {
+            .doOnError {
                 it.printStackTrace()
-                Result.failure(it)
             }
     }
 }
