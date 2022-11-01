@@ -112,7 +112,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
     }
 
     private fun observeData() {
-        viewModel.uiEvent.observe(this) { event ->
+        viewModel.uiEvent.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let {
                 when (it) {
                     is GalleryViewModel.UiEvent.ShowToast ->
@@ -125,7 +125,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
             }
         }
 
-        viewModel.saveImages.observe(this) {
+        viewModel.saveImages.observe(viewLifecycleOwner) {
             Timber.d("savedImageListObservable subscribe thread - " + Thread.currentThread().name)
             for ((idx, i) in it.withIndex()) {
                 Timber.d("[" + idx + "] : " + i.toMinString())
@@ -133,7 +133,7 @@ class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
             galleryAdapter.updateList(it)
         }
 
-        viewModel.selectMode.observe(this) {
+        viewModel.selectMode.observe(viewLifecycleOwner) {
             Timber.d("select mode debug at observe -> $it")
             when (it){
                 true -> startSelectMode()
