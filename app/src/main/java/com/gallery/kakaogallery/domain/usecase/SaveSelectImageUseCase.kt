@@ -12,7 +12,7 @@ import java.util.*
 class SaveSelectImageUseCase(
     private val imageRepository: ImageRepository
 ) {
-    operator fun invoke(selectImageUrlMap: MutableMap<String, Int>, images: List<ImageListTypeModel>): Single<Result<Boolean>>{
+    operator fun invoke(selectImageUrlMap: MutableMap<String, Int>, images: List<ImageListTypeModel>): Single<Boolean>{
         return Completable.defer{
             val saveImages = mutableListOf<ImageModel>()
             for(selectIdx in selectImageUrlMap.values){
@@ -30,11 +30,10 @@ class SaveSelectImageUseCase(
             imageRepository.saveImages(saveImages)
         }.subscribeOn(Schedulers.computation())
             .toSingle {
-                Result.success(true)
+                true
             }
-            .onErrorReturn {
+            .doOnError {
                 it.printStackTrace()
-                Result.failure(it)
             }
     }
 }
