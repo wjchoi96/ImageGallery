@@ -5,8 +5,7 @@ import com.gallery.kakaogallery.data.entity.remote.request.VideoSearchRequest
 import com.gallery.kakaogallery.data.entity.remote.response.VideoSearchResponse
 import com.gallery.kakaogallery.data.service.VideoSearchService
 import com.gallery.kakaogallery.domain.model.MaxPageException
-import io.reactivex.rxjava3.core.Flowable
-import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Single
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -19,13 +18,13 @@ class VideoSearchDataSourceImpl @Inject constructor(
     override fun fetchVideoQueryRes(
         query: String,
         page: Int
-    ): Observable<List<VideoSearchResponse.Document>> {
+    ): Single<List<VideoSearchResponse.Document>> {
         if (page == 1)
             videoPageable = true
         return when (videoPageable) {
             false -> {
                 Timber.d("error debug => throw MaxPageException")
-                Observable.error { MaxPageException() }
+                Single.error { MaxPageException() }
             }
             true -> {
                 searchVideoApi.requestSearchVideo(
@@ -40,7 +39,7 @@ class VideoSearchDataSourceImpl @Inject constructor(
                 }.onErrorResumeNext {
                     it.printStackTrace()
                     Timber.d("error debug => after api response => $it")
-                    Observable.error { it }
+                    Single.error { it }
                 }
             }
         }

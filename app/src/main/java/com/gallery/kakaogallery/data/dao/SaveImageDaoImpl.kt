@@ -36,7 +36,7 @@ class SaveImageDaoImpl @Inject constructor(
         return saveImagesSubject // 공유된 하나의 hot stream 에서 데이터를 전달받게끔 설정
     }
 
-    override fun removeImages(idxList: List<Int>): Boolean {
+    override fun removeImages(idxList: List<Int>) {
         Timber.d("removeImages at Dao run in ${Thread.currentThread().name}")
         // idx 가 큰수부터 remove 를 실행해줘야 중간에 idx가 꼬이지 않는다
         val list = saveImagesSubject.value?.toMutableList() ?: mutableListOf()
@@ -45,16 +45,14 @@ class SaveImageDaoImpl @Inject constructor(
             list.removeAt(removeIdx)
         }
         syncData(list)
-        return true
     }
 
-    override fun saveImages(image: List<ImageModel>): Boolean {
+    override fun saveImages(image: List<ImageModel>) {
         Timber.d("saveImages at Dao run in ${Thread.currentThread().name}")
         val list = (saveImagesSubject.value?.toMutableList() ?: mutableListOf()).apply {
             addAll(image.toList())
         }
         syncData(list)
-        return true
     }
 
     private fun syncData(list: List<ImageModel>) {

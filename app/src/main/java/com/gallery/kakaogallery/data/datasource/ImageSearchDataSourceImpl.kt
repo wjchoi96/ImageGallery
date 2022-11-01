@@ -5,8 +5,7 @@ import com.gallery.kakaogallery.data.entity.remote.request.ImageSearchRequest
 import com.gallery.kakaogallery.data.entity.remote.response.ImageSearchResponse
 import com.gallery.kakaogallery.data.service.ImageSearchService
 import com.gallery.kakaogallery.domain.model.MaxPageException
-import io.reactivex.rxjava3.core.Flowable
-import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Single
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -27,13 +26,13 @@ class ImageSearchDataSourceImpl @Inject constructor(
     override fun fetchImageQueryRes(
         query: String,
         page: Int
-    ): Observable<List<ImageSearchResponse.Document>> {
+    ): Single<List<ImageSearchResponse.Document>> {
         if (page == 1)
             imagePageable = true
         return when (imagePageable) {
             false -> {
                 Timber.d("error debug => throw MaxPageException")
-                Observable.error { MaxPageException() }
+                Single.error { MaxPageException() }
             }
             true -> {
                 searchImageApi.requestSearchImage(
@@ -48,7 +47,7 @@ class ImageSearchDataSourceImpl @Inject constructor(
                 }.onErrorResumeNext {
                     it.printStackTrace()
                     Timber.d("error debug => after api response => $it")
-                    Observable.error { it }
+                    Single.error { it }
                 }
             }
         }

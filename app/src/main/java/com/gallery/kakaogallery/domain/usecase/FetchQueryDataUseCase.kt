@@ -2,15 +2,15 @@ package com.gallery.kakaogallery.domain.usecase
 
 import com.gallery.kakaogallery.domain.model.ImageListTypeModel
 import com.gallery.kakaogallery.domain.repository.ImageRepository
-import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.schedulers.Schedulers
 
 class FetchQueryDataUseCase(
     private val imageRepository: ImageRepository
 ) {
-    operator fun invoke(query: String, page: Int): Observable<Result<List<ImageListTypeModel>>> {
+    operator fun invoke(query: String, page: Int): Single<Result<List<ImageListTypeModel>>> {
         return if(query.isBlank()){
-            Observable.just(Result.success(listOf(ImageListTypeModel.Query(query))))
+            Single.just(Result.success(listOf(ImageListTypeModel.Query(query))))
         } else {
             imageRepository
                 .fetchQueryData(query, page)
