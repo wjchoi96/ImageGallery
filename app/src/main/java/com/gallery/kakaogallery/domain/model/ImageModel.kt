@@ -1,5 +1,6 @@
 package com.gallery.kakaogallery.domain.model
 
+import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -23,7 +24,7 @@ data class ImageModel internal constructor(
     var saveDateTimeToShow: String? = null,
     var saveTimeMill: Long? = null,
     var isSelect: Boolean = false
-) {
+) : Serializable {
     companion object {
         val Empty: ImageModel = ImageModel("", 0, "", null)
     }
