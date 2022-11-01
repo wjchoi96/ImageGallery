@@ -14,14 +14,14 @@ import com.gallery.kakaogallery.databinding.FragmentGalleryBinding
 import com.gallery.kakaogallery.presentation.extension.safeScrollToTop
 import com.gallery.kakaogallery.presentation.extension.setSoftKeyboardVisible
 import com.gallery.kakaogallery.presentation.extension.showToast
-import com.gallery.kakaogallery.presentation.ui.base.DisposableManageFragment
+import com.gallery.kakaogallery.presentation.ui.base.BindingFragment
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetDialog
 import com.gallery.kakaogallery.presentation.viewmodel.GalleryViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
 @AndroidEntryPoint
-class GalleryFragment : DisposableManageFragment<FragmentGalleryBinding>() {
+class GalleryFragment : BindingFragment<FragmentGalleryBinding>() {
     override val layoutResId: Int
         get() = R.layout.fragment_gallery
     private val viewModel: GalleryViewModel by viewModels()
