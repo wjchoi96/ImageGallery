@@ -22,12 +22,14 @@ import com.gallery.kakaogallery.presentation.extension.setSoftKeyboardVisible
 import com.gallery.kakaogallery.presentation.extension.showToast
 import com.gallery.kakaogallery.presentation.ui.base.BindingFragment
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetDialog
+import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetEventReceiver
 import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
 @AndroidEntryPoint
-class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
+class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
+    ImageManageBottomSheetEventReceiver {
     override val layoutResId: Int
         get() = R.layout.fragment_search_image
 
@@ -205,6 +207,14 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
                 viewModel.saveSelectImage()
             }, {}
         ).show(childFragmentManager)
+    }
+
+    override fun onPositiveEventReceive() {
+        viewModel.saveSelectImage()
+    }
+
+    override fun onNegativeEventReceive() {
+
     }
 
     private fun startSelectMode() {
