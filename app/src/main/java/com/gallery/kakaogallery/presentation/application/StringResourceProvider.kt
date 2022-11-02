@@ -12,6 +12,7 @@ interface StringResourceProvider {
         MenuGallery(R.string.menu_gallery),
 
         Loading(R.string.message_loading),
+        Confirm(R.string.confirm),
 
         NoneQuery(R.string.message_none_query),
         SearchFail(R.string.message_search_query_fail),
