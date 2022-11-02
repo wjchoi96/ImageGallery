@@ -16,12 +16,13 @@ import com.gallery.kakaogallery.presentation.extension.setSoftKeyboardVisible
 import com.gallery.kakaogallery.presentation.extension.showToast
 import com.gallery.kakaogallery.presentation.ui.base.BindingFragment
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetDialog
+import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetEventReceiver
 import com.gallery.kakaogallery.presentation.viewmodel.GalleryViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
 @AndroidEntryPoint
-class GalleryFragment : BindingFragment<FragmentGalleryBinding>() {
+class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBottomSheetEventReceiver {
     override val layoutResId: Int
         get() = R.layout.fragment_gallery
     private val viewModel: GalleryViewModel by viewModels()
@@ -151,6 +152,14 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>() {
                 viewModel.removeSelectImage()
             },{}
         ).show(childFragmentManager)
+    }
+
+    override fun onPositiveEventReceive() {
+        viewModel.removeSelectImage()
+    }
+
+    override fun onNegativeEventReceive() {
+
     }
 
     private fun startSelectMode() {
