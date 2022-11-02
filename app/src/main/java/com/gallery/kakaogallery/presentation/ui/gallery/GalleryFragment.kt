@@ -69,7 +69,9 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
 
     private fun bindRecyclerView() {
         binding.galleryGridLayoutManager = GridLayoutManager(mContext, itemCount)
-        binding.galleryAdapter = galleryAdapter
+        binding.galleryAdapter = galleryAdapter.apply {
+            stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
+        }
         binding.galleryItemDecoration = itemDecoration
     }
 

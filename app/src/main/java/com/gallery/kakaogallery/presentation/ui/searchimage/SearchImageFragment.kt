@@ -119,7 +119,9 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
                     }
                 }
             }
-        binding.searchAdapter = imageSearchAdapter
+        binding.searchAdapter = imageSearchAdapter.apply {
+            stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
+        }
         binding.searchItemDecoration = itemDecoration
         binding.rvSearch.addOnScrollListener(pagingListener)
     }
