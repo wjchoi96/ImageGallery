@@ -2,6 +2,7 @@ package com.gallery.kakaogallery.presentation.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.MaxPageException
 import com.gallery.kakaogallery.domain.usecase.FetchSaveImageUseCase
@@ -11,27 +12,37 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.kotlin.addTo
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class GalleryViewModel @Inject constructor(
+    private val handle: SavedStateHandle,
     private val resourceProvider: StringResourceProvider,
     private val fetchSaveImageUseCase: FetchSaveImageUseCase,
     private val removeSaveImageUseCase: RemoveSaveImageUseCase
 ) : DisposableManageViewModel(), ToolBarViewModel {
+    companion object {
+        private const val KEY_SELECT_IMAGE_MAP = "key_select_image_map"
+        private const val KEY_SAVE_IMAGE_LIST = "key_save_image_list"
+        private const val KEY_SELECT_MODE = "key_select_mode"
+        private const val KEY_HEADER_TITLE = "key_header_title"
+    }
 
     private val fetchImageFailMessage: String =
         resourceProvider.getString(StringResourceProvider.StringResourceId.FetchFailSaveImage)
-    private val selectImageHashMap = mutableMapOf<String, Int>()
+    private val selectImageHashMap: MutableMap<String, Int> = handle[KEY_SELECT_IMAGE_MAP] ?: kotlin.run {
+        mutableMapOf<String, Int>().also { handle[KEY_SELECT_IMAGE_MAP] = it }
+    }
 
-    private val _saveImages = MutableLiveData<List<ImageModel>>(emptyList())
+    private val _saveImages: MutableLiveData<List<ImageModel>> = handle.getLiveData(KEY_SAVE_IMAGE_LIST, emptyList())
     val saveImages: LiveData<List<ImageModel>> = _saveImages
 
-    private val _headerTitle =
-        MutableLiveData(resourceProvider.getString(StringResourceProvider.StringResourceId.MenuGallery))
+    private val _headerTitle: MutableLiveData<String> =
+        handle.getLiveData(KEY_HEADER_TITLE, resourceProvider.getString(StringResourceProvider.StringResourceId.MenuGallery))
     override val headerTitle: LiveData<String> = _headerTitle
 
-    private val _selectMode = MutableLiveData(false)
+    private val _selectMode: MutableLiveData<Boolean> = handle.getLiveData(KEY_SELECT_MODE, false)
     val selectMode: LiveData<Boolean> = _selectMode
 
     private val _dataLoading = MutableLiveData(false)
@@ -44,7 +55,8 @@ class GalleryViewModel @Inject constructor(
     val uiEvent: LiveData<SingleEvent<UiEvent>> = _uiEvent
 
     init {
-        fetchSaveImages()
+        fetchSaveImages() // stream 연결을 위해 무조건 호출
+        Timber.d("save state handle debug => ${selectImageHashMap.size}")
     }
 
     fun removeSelectImage() {

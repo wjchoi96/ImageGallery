@@ -16,12 +16,13 @@ import com.gallery.kakaogallery.presentation.extension.setSoftKeyboardVisible
 import com.gallery.kakaogallery.presentation.extension.showToast
 import com.gallery.kakaogallery.presentation.ui.base.BindingFragment
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetDialog
+import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetEventReceiver
 import com.gallery.kakaogallery.presentation.viewmodel.GalleryViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
 @AndroidEntryPoint
-class GalleryFragment : BindingFragment<FragmentGalleryBinding>() {
+class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBottomSheetEventReceiver {
     override val layoutResId: Int
         get() = R.layout.fragment_gallery
     private val viewModel: GalleryViewModel by viewModels()
@@ -68,7 +69,9 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>() {
 
     private fun bindRecyclerView() {
         binding.galleryGridLayoutManager = GridLayoutManager(mContext, itemCount)
-        binding.galleryAdapter = galleryAdapter
+        binding.galleryAdapter = galleryAdapter.apply {
+            stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
+        }
         binding.galleryItemDecoration = itemDecoration
     }
 
@@ -143,14 +146,19 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>() {
     }
 
     private fun showRemoveDialog(selectCount: Int) {
-        ImageManageBottomSheetDialog.get(
+        ImageManageBottomSheetDialog.newInstance(
             getString(R.string.message_is_remove_select_image, selectCount),
             getString(R.string.remove),
-            getString(R.string.cancel),
-            {
-                viewModel.removeSelectImage()
-            },{}
+            getString(R.string.cancel)
         ).show(childFragmentManager)
+    }
+
+    override fun onPositiveEventReceive() {
+        viewModel.removeSelectImage()
+    }
+
+    override fun onNegativeEventReceive() {
+
     }
 
     private fun startSelectMode() {

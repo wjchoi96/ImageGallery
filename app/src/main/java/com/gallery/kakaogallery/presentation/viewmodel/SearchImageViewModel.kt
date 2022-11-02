@@ -2,6 +2,7 @@ package com.gallery.kakaogallery.presentation.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import com.gallery.kakaogallery.domain.model.ImageListTypeModel
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.MaxPageException
@@ -16,30 +17,50 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchImageViewModel @Inject constructor(
+    private val handle: SavedStateHandle,
     private val resourceProvider: StringResourceProvider,
     private val fetchSearchDataQueryDataUseCase: FetchQueryDataUseCase,
     private val saveSelectImageUseCase: SaveSelectImageUseCase
 ) : DisposableManageViewModel(), ToolBarViewModel {
-    private var page = 1
-    private var lastQuery: String? = null
+    companion object {
+        private const val KEY_SELECT_IMAGE_MAP = "key_select_image_map"
+        private const val KEY_SEARCH_IMAGE_LIST = "key_search_image_list"
+        private const val KEY_SELECT_MODE = "key_select_mode"
+        private const val KEY_HEADER_TITLE = "key_header_title"
+        private const val KEY_LAST_QUERY = "key_last_query"
+        private const val KEY_CURRENT_PAGE = "key_current_page"
+    }
+    private var page: Int= handle[KEY_CURRENT_PAGE] ?: 1
+        set(value) {
+            handle[KEY_CURRENT_PAGE] = value
+            field = value
+        }
+
+    private var lastQuery: String? = handle[KEY_LAST_QUERY]
+        set(value) {
+            handle[KEY_LAST_QUERY] = value
+            field = value
+        }
 
     private val searchFailMessage: String =
         resourceProvider.getString(StringResourceProvider.StringResourceId.SearchFail)
-    private val selectImageUrlMap = mutableMapOf<String, Int>()
+    private val selectImageUrlMap: MutableMap<String, Int> = handle[KEY_SELECT_IMAGE_MAP] ?: kotlin.run {
+        mutableMapOf<String, Int>().also { handle[KEY_SELECT_IMAGE_MAP] = it }
+    }
 
-    // select 해서 저장한 이미지들의 map
-    // 이미지보관함에서 이미지를 지울때, 대응 가능한 이미지들은 대응해주기 위함
-    private val tempSavedImageMap = mutableMapOf<String, Int>()
-
-    private val _searchImages = MutableLiveData<List<ImageListTypeModel>>(emptyList())
+    private val _searchImages: MutableLiveData<List<ImageListTypeModel>> =
+        handle.getLiveData(KEY_SEARCH_IMAGE_LIST, emptyList())
     val searchImages: LiveData<List<ImageListTypeModel>> = _searchImages
 
     private val _searchResultIsEmpty = MutableLiveData(false)
     val searchResultIsEmpty: LiveData<Boolean> = _searchResultIsEmpty
 
-    private val _headerTitle =
-        MutableLiveData(resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage))
+    private val _headerTitle: MutableLiveData<String> =
+        handle.getLiveData(KEY_HEADER_TITLE, resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage))
     override val headerTitle: LiveData<String> = _headerTitle
+
+    private val _selectMode: MutableLiveData<Boolean> = handle.getLiveData(KEY_SELECT_MODE, false)
+    val selectMode: LiveData<Boolean> = _selectMode
 
     private val _dataLoading = MutableLiveData(false)
     val dataLoading: LiveData<Boolean> = _dataLoading
@@ -47,15 +68,14 @@ class SearchImageViewModel @Inject constructor(
     private val _pagingDataLoading = MutableLiveData(false)
     val pagingDataLoading: LiveData<Boolean> = _pagingDataLoading
 
-    private val _selectMode = MutableLiveData(false)
-    val selectMode: LiveData<Boolean> = _selectMode
-
     private val _uiEvent = MutableLiveData<SingleEvent<UiEvent>>()
     val uiEvent: LiveData<SingleEvent<UiEvent>> = _uiEvent
 
 
     init {
-        fetchSearchQuery("")
+        if(_searchImages.value == null || _searchImages.value!!.isEmpty()){
+            fetchSearchQuery(lastQuery ?: "")
+        }
     }
 
     fun saveSelectImage() {
@@ -88,7 +108,6 @@ class SearchImageViewModel @Inject constructor(
     private fun fetchSearchQuery(query: String) {
         lastQuery = query
         page = 1
-        tempSavedImageMap.clear()
         _dataLoading.value = true
         fetchSearchDataQueryDataUseCase(query, page)
             .observeOn(AndroidSchedulers.mainThread())

@@ -22,12 +22,14 @@ import com.gallery.kakaogallery.presentation.extension.setSoftKeyboardVisible
 import com.gallery.kakaogallery.presentation.extension.showToast
 import com.gallery.kakaogallery.presentation.ui.base.BindingFragment
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetDialog
+import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetEventReceiver
 import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
 @AndroidEntryPoint
-class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
+class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
+    ImageManageBottomSheetEventReceiver {
     override val layoutResId: Int
         get() = R.layout.fragment_search_image
 
@@ -117,7 +119,9 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
                     }
                 }
             }
-        binding.searchAdapter = imageSearchAdapter
+        binding.searchAdapter = imageSearchAdapter.apply {
+            stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
+        }
         binding.searchItemDecoration = itemDecoration
         binding.rvSearch.addOnScrollListener(pagingListener)
     }
@@ -197,14 +201,19 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>() {
     }
 
     private fun showSaveDialog(selectCount: Int) {
-        ImageManageBottomSheetDialog.get(
+        ImageManageBottomSheetDialog.newInstance(
             getString(R.string.message_is_save_select_image, selectCount),
             getString(R.string.save),
-            getString(R.string.cancel),
-            {
-                viewModel.saveSelectImage()
-            }, {}
+            getString(R.string.cancel)
         ).show(childFragmentManager)
+    }
+
+    override fun onPositiveEventReceive() {
+        viewModel.saveSelectImage()
+    }
+
+    override fun onNegativeEventReceive() {
+
     }
 
     private fun startSelectMode() {
