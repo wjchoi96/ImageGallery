@@ -144,13 +144,10 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
     }
 
     private fun showRemoveDialog(selectCount: Int) {
-        ImageManageBottomSheetDialog.get(
+        ImageManageBottomSheetDialog.newInstance(
             getString(R.string.message_is_remove_select_image, selectCount),
             getString(R.string.remove),
-            getString(R.string.cancel),
-            {
-                viewModel.removeSelectImage()
-            },{}
+            getString(R.string.cancel)
         ).show(childFragmentManager)
     }
 

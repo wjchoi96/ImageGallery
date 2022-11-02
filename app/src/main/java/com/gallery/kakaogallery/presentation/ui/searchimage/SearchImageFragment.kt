@@ -199,13 +199,10 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
     }
 
     private fun showSaveDialog(selectCount: Int) {
-        ImageManageBottomSheetDialog.get(
+        ImageManageBottomSheetDialog.newInstance(
             getString(R.string.message_is_save_select_image, selectCount),
             getString(R.string.save),
-            getString(R.string.cancel),
-            {
-                viewModel.saveSelectImage()
-            }, {}
+            getString(R.string.cancel)
         ).show(childFragmentManager)
     }
 
