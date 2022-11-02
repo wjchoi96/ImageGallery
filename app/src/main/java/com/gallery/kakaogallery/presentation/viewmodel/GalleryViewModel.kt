@@ -73,6 +73,7 @@ class GalleryViewModel @Inject constructor(
                     else -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail))
                 }
             }) {
+                _dataLoading.value = false
                 it.printStackTrace()
                 showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail) + " $it")
             }.addTo(compositeDisposable)

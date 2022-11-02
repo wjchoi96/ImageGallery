@@ -99,6 +99,7 @@ class SearchImageViewModel @Inject constructor(
                     else -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveFail))
                 }
             }) {
+                _dataLoading.value = false
                 it.printStackTrace()
                 showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveFail) + " $it")
             }.addTo(compositeDisposable)
@@ -117,6 +118,7 @@ class SearchImageViewModel @Inject constructor(
                 if (query.isNotEmpty()) _searchResultIsEmpty.value = it.size <= 1
                 _searchImages.value = it
             }) {
+                _dataLoading.value = false
                 when (it) {
                     is MaxPageException -> showToast(
                         resourceProvider.getString(
@@ -138,6 +140,7 @@ class SearchImageViewModel @Inject constructor(
                 val prevList = _searchImages.value ?: emptyList()
                 _searchImages.value = prevList + it
             }) {
+                _dataLoading.value = false
                 when (it) {
                     is MaxPageException -> showToast(
                         resourceProvider.getString(
