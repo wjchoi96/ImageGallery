@@ -5,7 +5,6 @@ import com.gallery.kakaogallery.data.entity.remote.response.ImageSearchResponse
 import com.gallery.kakaogallery.data.entity.remote.response.VideoSearchResponse
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.repository.ImageRepository
-import com.gallery.kakaogallery.domain.util.GalleryDateConvertUtil
 import com.google.gson.Gson
 import io.mockk.every
 import io.mockk.mockk
