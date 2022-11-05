@@ -84,4 +84,12 @@ class FetchQueryDataUseCaseTest {
         assertThat(actual)
             .isEqualTo(except)
     }
+
+    //behavior test
+    @Test
+    fun `repository의 fetch메소드를 호출한다`() {
+        val (query, page) = "query" to 1
+        useCase(query, page)
+        verify { repository.fetchQueryData(query, page) }
+    }
 }
