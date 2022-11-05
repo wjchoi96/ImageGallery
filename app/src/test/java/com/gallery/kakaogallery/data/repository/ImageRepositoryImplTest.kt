@@ -1,5 +1,6 @@
 package com.gallery.kakaogallery.data.repository
 
+import com.gallery.kakaogallery.data.UnitTestUtil
 import com.gallery.kakaogallery.data.datasource.*
 import com.gallery.kakaogallery.data.entity.remote.response.ImageSearchResponse
 import com.gallery.kakaogallery.data.entity.remote.response.VideoSearchResponse
@@ -37,10 +38,6 @@ class ImageRepositoryImplTest {
         )
     }
 
-    private fun readResponse(fileName: String): String{
-        return File("src/test/java/com/gallery/kakaogallery/data/resources/$fileName").readText()
-    }
-
     //behavior test
     @Test
     fun `fetchQueryData는 ImageDataSource와 VideoDataSource의 fetchQuery메소드를 호출한다`() {
@@ -54,8 +51,8 @@ class ImageRepositoryImplTest {
     @Test
     fun `fetchQueryData는 DataSource하나만 Exception을 발생시키면 정상 동작한다`() {
         val (query, page) = "test" to 0
-        val actualImageSearchResponse = Gson().fromJson(readResponse("image_search_success.json"), ImageSearchResponse::class.java).documents
-        val actualVideoSearchResponse = Gson().fromJson(readResponse("video_search_success.json"), VideoSearchResponse::class.java).documents
+        val actualImageSearchResponse = Gson().fromJson(UnitTestUtil.readResource("image_search_success.json"), ImageSearchResponse::class.java).documents
+        val actualVideoSearchResponse = Gson().fromJson(UnitTestUtil.readResource("video_search_success.json"), VideoSearchResponse::class.java).documents
 
         every { imageSearchDataSource.fetchImageQueryRes(query, page) } returns Single.error(MaxPageException())
         every { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns Single.just(actualVideoSearchResponse)
@@ -89,8 +86,8 @@ class ImageRepositoryImplTest {
     @Test
     fun `fetchQueryData는 결과를 최신순으로 sort하여 리턴한다`() {
         val (query, page) = "test" to 0
-        val actualImageSearchResponse = Gson().fromJson(readResponse("image_search_success.json"), ImageSearchResponse::class.java).documents
-        val actualVideoSearchResponse = Gson().fromJson(readResponse("video_search_success.json"), VideoSearchResponse::class.java).documents
+        val actualImageSearchResponse = Gson().fromJson(UnitTestUtil.readResource("image_search_success.json"), ImageSearchResponse::class.java).documents
+        val actualVideoSearchResponse = Gson().fromJson(UnitTestUtil.readResource("video_search_success.json"), VideoSearchResponse::class.java).documents
         every { imageSearchDataSource.fetchImageQueryRes(query, page) } returns Single.just(actualImageSearchResponse)
         every { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns Single.just(actualVideoSearchResponse)
 
@@ -104,8 +101,8 @@ class ImageRepositoryImplTest {
     @Test
     fun `fetchQueryData는 Response객체를 ImageModel로 가공하여 리턴한다`() {
         val (query, page) = "test" to 0
-        val actualImageSearchResponse = Gson().fromJson(readResponse("image_search_success.json"), ImageSearchResponse::class.java).documents
-        val actualVideoSearchResponse = Gson().fromJson(readResponse("video_search_success.json"), VideoSearchResponse::class.java).documents
+        val actualImageSearchResponse = Gson().fromJson(UnitTestUtil.readResource("image_search_success.json"), ImageSearchResponse::class.java).documents
+        val actualVideoSearchResponse = Gson().fromJson(UnitTestUtil.readResource("video_search_success.json"), VideoSearchResponse::class.java).documents
         every { imageSearchDataSource.fetchImageQueryRes(query, page) } returns Single.just(actualImageSearchResponse)
         every { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns Single.just(actualVideoSearchResponse)
 
@@ -117,8 +114,8 @@ class ImageRepositoryImplTest {
     @Test
     fun `fetchQueryData는 올바른 Item개수를 리턴한다`() {
         val (query, page) = "test" to 0
-        val actualImageSearchResponse = Gson().fromJson(readResponse("image_search_success.json"), ImageSearchResponse::class.java).documents
-        val actualVideoSearchResponse = Gson().fromJson(readResponse("video_search_success.json"), VideoSearchResponse::class.java).documents
+        val actualImageSearchResponse = Gson().fromJson(UnitTestUtil.readResource("image_search_success.json"), ImageSearchResponse::class.java).documents
+        val actualVideoSearchResponse = Gson().fromJson(UnitTestUtil.readResource("video_search_success.json"), VideoSearchResponse::class.java).documents
         every { imageSearchDataSource.fetchImageQueryRes(query, page) } returns Single.just(actualImageSearchResponse)
         every { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns Single.just(actualVideoSearchResponse)
 

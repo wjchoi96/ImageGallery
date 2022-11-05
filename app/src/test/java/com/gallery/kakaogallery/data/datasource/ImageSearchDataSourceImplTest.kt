@@ -1,5 +1,6 @@
 package com.gallery.kakaogallery.data.datasource
 
+import com.gallery.kakaogallery.data.UnitTestUtil
 import com.gallery.kakaogallery.data.constant.SearchConstant
 import com.gallery.kakaogallery.data.entity.remote.request.ImageSearchRequest
 import com.gallery.kakaogallery.data.entity.remote.response.ImageSearchResponse
@@ -45,10 +46,6 @@ class ImageSearchDataSourceImplTest {
         mockWebServer.shutdown()
     }
 
-    private fun readResponse(fileName: String): String{
-        return File("src/test/java/com/gallery/kakaogallery/data/resources/$fileName").readText()
-    }
-
     //state test
     @Test()
     fun `fetchImageQueryRes는 1번 페이지를 검색한다면 페이징 여부를 초기화한다`() {
@@ -56,7 +53,7 @@ class ImageSearchDataSourceImplTest {
             mockRetrofit.create(ImageSearchService::class.java)
         )
         val (query, page) = "test" to 1
-        val actualResponseJson = readResponse("image_search_success_is_end.json")
+        val actualResponseJson = UnitTestUtil.readResource("image_search_success_is_end.json")
         val actualResponse = MockResponse().apply {
             setResponseCode(HttpURLConnection.HTTP_OK)
             setBody(actualResponseJson)
@@ -78,7 +75,7 @@ class ImageSearchDataSourceImplTest {
             mockRetrofit.create(ImageSearchService::class.java)
         )
         val (query, page) = "test" to 1
-        val actualResponseJson = readResponse("image_search_success_is_end.json")
+        val actualResponseJson = UnitTestUtil.readResource("image_search_success_is_end.json")
         val actualResponse = MockResponse().apply {
             setResponseCode(HttpURLConnection.HTTP_OK)
             setBody(actualResponseJson)
@@ -100,7 +97,7 @@ class ImageSearchDataSourceImplTest {
             mockRetrofit.create(ImageSearchService::class.java)
         )
         val (query, page) = "test" to 1
-        val actualResponseJson = readResponse("image_search_success.json")
+        val actualResponseJson = UnitTestUtil.readResource("image_search_success.json")
         val actualResponse = MockResponse().apply {
             setResponseCode(HttpURLConnection.HTTP_FORBIDDEN)
             setBody(actualResponseJson)
@@ -120,7 +117,7 @@ class ImageSearchDataSourceImplTest {
             mockRetrofit.create(ImageSearchService::class.java)
         )
         val (query, page) = "test" to 1
-        val actualResponseJson = readResponse("image_search_fail.json")
+        val actualResponseJson = UnitTestUtil.readResource("image_search_fail.json")
         val actualResponse = MockResponse().apply {
             setResponseCode(HttpURLConnection.HTTP_OK)
             setBody(actualResponseJson)
@@ -138,7 +135,7 @@ class ImageSearchDataSourceImplTest {
             mockRetrofit.create(ImageSearchService::class.java)
         )
         val (query, page) = "test" to 1
-        val actualResponseJson = readResponse("image_search_success.json")
+        val actualResponseJson = UnitTestUtil.readResource("image_search_success.json")
         val actualResponse = MockResponse().apply {
             setResponseCode(HttpURLConnection.HTTP_OK)
             setBody(actualResponseJson)
