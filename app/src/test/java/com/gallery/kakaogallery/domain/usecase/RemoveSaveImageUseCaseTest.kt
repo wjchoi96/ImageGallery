@@ -23,7 +23,7 @@ internal class RemoveSaveImageUseCaseTest {
 
     //state test
     @Test
-    fun `repoistory가 에러를 전달하면 처리할 수 있다`() {
+    fun `useCase는 repoistory가 에러를 전달하면 처리할 수 있다`() {
         val map = mutableMapOf(
             "test1" to 1,
             "test2" to 2
@@ -39,7 +39,7 @@ internal class RemoveSaveImageUseCaseTest {
 
     //state test
     @Test
-    fun `repository가 정상 응답시 true를 전달한다`() {
+    fun `useCase는 repository가 정상 응답시 true를 전달한다`() {
         val map = mutableMapOf(
             "test1" to 1,
             "test2" to 2
@@ -51,7 +51,7 @@ internal class RemoveSaveImageUseCaseTest {
 
     //behavior test
     @Test
-    fun `repository의 removeImages를 호출한다`() {
+    fun `useCase는 repository의 removeImages를 호출한다`() {
         val map = mutableMapOf(
             "test1" to 1,
             "test2" to 2

@@ -27,7 +27,7 @@ internal class FetchQueryDataUseCaseTest {
 
     //state test
     @Test
-    fun `repository가 에러를 전달하면 처리할 수 있다`() {
+    fun `useCase는 repository가 에러를 전달하면 처리할 수 있다`() {
         val (query, page) = "query" to 1
         val unitTestException = Exception("unit test exception")
 
@@ -41,7 +41,7 @@ internal class FetchQueryDataUseCaseTest {
 
     //state test
     @Test
-    fun `query가 비어있다면 Query만를 포함한 리스트를 리턴한다`() {
+    fun `useCase는 query가 비어있다면 Query만를 포함한 리스트를 리턴한다`() {
         val (query, page) = "" to 1
 
         val actual = useCase(query, page).blockingGet()
@@ -52,7 +52,7 @@ internal class FetchQueryDataUseCaseTest {
 
     //state test
     @Test
-    fun `page가 1이면 Query를 첫번째 아이템으로 가지는 ImageListType리스트를 리턴한다`() {
+    fun `useCase는 page가 1이면 Query를 첫번째 아이템으로 가지는 ImageListType리스트를 리턴한다`() {
         val (query, page) = "query" to 1
         val images = listOf(
             ImageModel.Empty,
@@ -75,7 +75,7 @@ internal class FetchQueryDataUseCaseTest {
 
     //state test
     @Test
-    fun `page가 1이 아니라면 Image만을 포함하는 리스트를 리턴한다`() {
+    fun `useCase는 page가 1이 아니라면 Image만을 포함하는 리스트를 리턴한다`() {
         val (query, page) = "query" to 2
         val images = listOf(
             ImageModel.Empty,
@@ -92,7 +92,7 @@ internal class FetchQueryDataUseCaseTest {
 
     //behavior test
     @Test
-    fun `repository의 fetch메소드를 호출한다`() {
+    fun `useCase는 repository의 fetch메소드를 호출한다`() {
         val (query, page) = "query" to 1
         useCase(query, page)
         verify { repository.fetchQueryData(query, page) }

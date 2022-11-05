@@ -24,7 +24,7 @@ internal class FetchSaveImageUseCaseTest {
 
     // state test
     @Test
-    fun `에러 전달시 결과를 Result로 래핑`() {
+    fun `useCase는 reposiory가 에러 전달시 결과를 Result로 래핑`() {
         val unitTestException = Exception("unit test exception")
         every { repository.fetchSaveImages() } returns Observable.error(unitTestException)
 
@@ -41,7 +41,7 @@ internal class FetchSaveImageUseCaseTest {
 
     //state test
     @Test
-    fun `정상 요청시 결과를 Result로 래핑`() {
+    fun `useCase는 repository가 정상 응답시 결과를 Result로 래핑`() {
         val images = listOf(
             ImageModel.Empty,
             ImageModel.Empty.copy(imageUrl = "test123")
@@ -57,7 +57,7 @@ internal class FetchSaveImageUseCaseTest {
 
     //behavior test
     @Test
-    fun `repository의 fetchSaveImages를 호출한다`() {
+    fun `useCase는 repository의 fetchSaveImages를 호출한다`() {
         useCase()
         verify { repository.fetchSaveImages() }
     }
