@@ -1,17 +1,14 @@
 package com.gallery.kakaogallery.domain.usecase
 
-import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.repository.ImageRepository
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.reactivex.rxjava3.core.Completable
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.catchThrowable
 import org.junit.Before
 import org.junit.Test
-import java.lang.Exception
 
 
 /**
@@ -27,6 +24,26 @@ internal class SaveSelectImageUseCaseTest {
     fun setup(){
         repository = mockk(relaxed = true)
         useCase = SaveSelectImageUseCase(repository)
+    }
+
+    @Test
+    //state test
+    fun `useCase는 repository가 에러를 전달하면 처리할 수 있다`() {
+        val unitTestException = Exception("unit test exception")
+        every { repository.saveImages(any()) } returns Completable.error(unitTestException)
+        val actual = catchThrowable { useCase(mutableMapOf(), emptyList()).blockingGet() }
+        assertThat(actual)
+            .isInstanceOf(Exception::class.java)
+            .hasMessageContaining(unitTestException.message)
+    }
+
+    @Test
+    //state test
+    fun `useCase는 repository가 정상 응답시 true를 리턴한다`() {
+        every { repository.saveImages(any()) } returns Completable.complete()
+        val actual = useCase(mutableMapOf(), emptyList()).blockingGet()
+        assertThat(actual)
+            .isTrue
     }
 
     @Test
