@@ -44,8 +44,8 @@ internal class SaveSelectImageUseCaseTest {
     //behavior test
     @Test
     fun `useCase는 repository의 saveImages를 호출한다`() {
-        every { repository.saveImages(emptyList()) } returns Completable.complete()
+        every { repository.saveImages(any()) } returns Completable.complete()
         useCase(mutableMapOf(), emptyList()).blockingGet()
-        verify { repository.saveImages(emptyList()) }
+        verify { repository.saveImages(any()) }
     }
 }
