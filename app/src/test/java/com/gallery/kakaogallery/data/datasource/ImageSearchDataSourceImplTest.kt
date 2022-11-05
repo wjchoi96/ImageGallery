@@ -25,8 +25,8 @@ import java.io.File
 import java.io.IOException
 import java.net.HttpURLConnection
 
-
-class ImageSearchDataSourceImplTest {
+@Suppress("NonAsciiCharacters")
+internal class ImageSearchDataSourceImplTest {
 
     private lateinit var imageSearchDataSource: ImageSearchDataSource
 

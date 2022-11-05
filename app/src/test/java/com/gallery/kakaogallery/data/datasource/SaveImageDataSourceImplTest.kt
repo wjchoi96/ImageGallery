@@ -6,7 +6,8 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Test
 
-class SaveImageDataSourceImplTest {
+@Suppress("NonAsciiCharacters")
+internal class SaveImageDataSourceImplTest {
 
     private lateinit var saveImageDataSource: SaveImageDataSource
 

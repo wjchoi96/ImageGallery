@@ -18,8 +18,8 @@ import org.junit.Before
 import org.junit.Test
 import java.io.File
 
-
-class ImageRepositoryImplTest {
+@Suppress("NonAsciiCharacters")
+internal class ImageRepositoryImplTest {
 
     private lateinit var repository: ImageRepository
     private lateinit var imageSearchDataSource: ImageSearchDataSource
