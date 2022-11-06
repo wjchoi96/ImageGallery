@@ -22,21 +22,21 @@ class GalleryImageItemViewHolder private constructor(
     }
 
     val itemPosition: Int
-        get() = adapterPosition
+        get() = bindingAdapterPosition
 
-    fun bind(item: ImageModel) {
+    fun bind(item: ImageModel, isSave: Boolean) {
         binding.holder = this
         binding.imageItem = item
         bindIsSelect(item)
-        bindIsSave(item)
+        bindIsSave(isSave)
     }
 
     fun bindIsSelect(item: ImageModel) {
         binding.isSelectImage = item.isSelect
     }
 
-    fun bindIsSave(item: ImageModel) {
-        binding.isSaveImage = item.isSaveImage
+    private fun bindIsSave(isSave: Boolean) {
+        binding.isSaveImage = isSave
     }
 
 }

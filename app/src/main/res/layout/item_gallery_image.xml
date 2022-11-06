@@ -2,6 +2,7 @@
 <layout>
     <data>
         <import type="android.view.View"/>
+        <import type="com.gallery.kakaogallery.domain.model.ImageModel.ImageType"/>
 
         <variable
             name="holder"
@@ -69,7 +70,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
                     android:layout_marginTop="5dp"
-                    android:src="@{imageItem.imageType ? @drawable/ic_image : @drawable/ic_video}"
+                    android:src="@{imageItem.imageType == ImageType.Image ? @drawable/ic_image : @drawable/ic_video}"
                     />
             </RelativeLayout>
 
@@ -79,7 +80,7 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:text="@{isSaveImage ? imageItem.saveDateTimeToShow : imageItem.dateTimeToShow}"
+                    android:text="@{imageItem.dateTimeToShow}"
                     android:id="@+id/tv_date_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
