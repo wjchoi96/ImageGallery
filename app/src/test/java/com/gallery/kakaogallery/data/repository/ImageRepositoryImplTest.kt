@@ -6,6 +6,8 @@ import com.gallery.kakaogallery.data.entity.remote.response.ImageSearchResponse
 import com.gallery.kakaogallery.data.entity.remote.response.VideoSearchResponse
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.MaxPageException
+import com.gallery.kakaogallery.domain.model.NetworkConnectionException
+import com.gallery.kakaogallery.domain.model.UnKnownException
 import com.gallery.kakaogallery.domain.repository.ImageRepository
 import com.google.gson.Gson
 import io.mockk.every
@@ -67,6 +69,40 @@ internal class ImageRepositoryImplTest {
         assertThat(repository.fetchQueryData(query, page)
             .blockingGet().size)
             .isEqualTo(actualImageSearchResponse.size)
+    }
+
+    //state test
+    @Test
+    fun `fetchQueryData는 DataSource가 서로 다른 Exception을 발생시키면 MaxPageException이 아닌것을 우선적으로 전달한다`() {
+        val (query, page) = "test" to 0
+        val unitTestException = UnKnownException("unit test exception")
+        every { imageSearchDataSource.fetchImageQueryRes(query, page) } returns Single.error(MaxPageException())
+        every { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns Single.error(unitTestException)
+
+        assertThatThrownBy { repository.fetchQueryData(query, page).blockingGet() }
+            .isInstanceOf(Throwable::class.java)  // blockingGet 에서 RuntimeException 으로 래핑해서 예외를 전달해줌
+            .hasMessageContaining(unitTestException.message)
+
+        every { imageSearchDataSource.fetchImageQueryRes(query, page) } returns Single.error(unitTestException)
+        every { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns Single.error(MaxPageException())
+
+        assertThatThrownBy { repository.fetchQueryData(query, page).blockingGet() }
+            .isInstanceOf(Throwable::class.java)  // blockingGet 에서 RuntimeException 으로 래핑해서 예외를 전달해줌
+            .hasMessageContaining(unitTestException.message)
+    }
+
+    //state test
+    @Test
+    fun `fetchQueryData는 DataSource가 둘다 MaxPageException이 아닌 Exception을 발생시키면 ImageStream의 Exception를 우선적으로 전달한다`() {
+        val (query, page) = "test" to 0
+        val unitTestException1 = UnKnownException("unit test exception image")
+        val unitTestException2 = UnKnownException("unit test exception video")
+        every { imageSearchDataSource.fetchImageQueryRes(query, page) } returns Single.error(unitTestException1)
+        every { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns Single.error(unitTestException2)
+
+        assertThatThrownBy { repository.fetchQueryData(query, page).blockingGet() }
+            .isInstanceOf(Throwable::class.java)  // blockingGet 에서 RuntimeException 으로 래핑해서 예외를 전달해줌
+            .hasMessageContaining(unitTestException1.message)
     }
 
     //state test
