@@ -55,7 +55,7 @@ class SearchImagesAdapter(
 
     private fun getDiffRes(newList: List<ImageListTypeModel>): DiffUtil.DiffResult {
         Timber.d("getDiffRes run at ${Thread.currentThread().name}")
-        val diffCallback = ImageDiffUtilCallback(
+        val diffCallback = SearchImageDiffUtilCallback(
             this.imageList,
             newList,
             Payload.Query,

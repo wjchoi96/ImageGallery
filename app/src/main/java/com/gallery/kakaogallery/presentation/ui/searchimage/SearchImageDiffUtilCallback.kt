@@ -12,7 +12,7 @@ import timber.log.Timber
  * => old/new 두 리스트의 합인 N개 / old가 new로 변환되기 위해 필요한 최소 작업갯수(==edit script) D
  * 최대 사이즈는 2^26(67,108,864)개까지 지원
  */
-class ImageDiffUtilCallback(
+class SearchImageDiffUtilCallback(
     private val oldList: List<ImageListTypeModel>,
     private val newList: List<ImageListTypeModel>,
     private val queryPayload: Any?,
