@@ -42,7 +42,6 @@ class SearchImagesAdapter(
 
     enum class Payload {
         Query,
-        Save,
         Select
     }
 
@@ -60,8 +59,7 @@ class SearchImagesAdapter(
             this.imageList,
             newList,
             Payload.Query,
-            Payload.Select,
-            Payload.Save
+            Payload.Select
         )
         return DiffUtil.calculateDiff(diffCallback)
     }
@@ -103,7 +101,7 @@ class SearchImagesAdapter(
             is SearchQueryViewHolder ->
                 holder.bind((imageList[position] as ImageListTypeModel.Query))
             is GalleryImageItemViewHolder ->
-                holder.bind((imageList[position] as ImageListTypeModel.Image).image)
+                holder.bind((imageList[position] as ImageListTypeModel.Image).image, false)
         }
     }
 
@@ -118,13 +116,6 @@ class SearchImagesAdapter(
         }
         for (payload in payloads) {
             when (payload) {
-                Payload.Save -> {
-                    if (holder is GalleryImageItemViewHolder) {
-                        Timber.d("payload Save : $position => $position")
-                        holder.bindIsSave((imageList[position] as ImageListTypeModel.Image).image)
-                        holder.bindIsSelect((imageList[position] as ImageListTypeModel.Image).image)
-                    }
-                }
                 Payload.Select -> {
                     if (holder is GalleryImageItemViewHolder) {
                         Timber.d("payload Select : $position => $position")
