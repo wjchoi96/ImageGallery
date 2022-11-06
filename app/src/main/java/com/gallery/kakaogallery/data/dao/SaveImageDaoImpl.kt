@@ -1,7 +1,8 @@
 package com.gallery.kakaogallery.data.dao
 
 import com.gallery.kakaogallery.KakaoGallerySharedPreferences
-import com.gallery.kakaogallery.domain.model.ImageModel
+import com.gallery.kakaogallery.data.entity.local.ImageEntity
+import com.gallery.kakaogallery.domain.model.SearchImageModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.reactivex.rxjava3.core.Observable
@@ -14,7 +15,7 @@ import javax.inject.Singleton
 class SaveImageDaoImpl @Inject constructor(
     private val sp: KakaoGallerySharedPreferences
 ) : SaveImageDao {
-    private lateinit var saveImagesSubject: BehaviorSubject<List<ImageModel>>
+    private lateinit var saveImagesSubject: BehaviorSubject<List<ImageEntity>>
 
     init {
         initImageStream()
@@ -23,15 +24,15 @@ class SaveImageDaoImpl @Inject constructor(
     private fun initImageStream() {
         val listJson = sp.savedImageList
         val list = if (listJson.isBlank())
-            emptyList<ImageModel>()
+            emptyList<ImageEntity>()
         else {
-            val typeToken = object : TypeToken<List<ImageModel>>() {}.type
+            val typeToken = object : TypeToken<List<ImageEntity>>() {}.type
             Gson().fromJson(listJson, typeToken)
         }
         saveImagesSubject = BehaviorSubject.createDefault(list)
     }
 
-    override fun fetchSaveImages(): Observable<List<ImageModel>> {
+    override fun fetchSaveImages(): Observable<List<ImageEntity>> {
         Timber.d("fetchSaveImages at Dao run in ${Thread.currentThread().name}")
         return saveImagesSubject // 공유된 하나의 hot stream 에서 데이터를 전달받게끔 설정
     }
@@ -47,15 +48,25 @@ class SaveImageDaoImpl @Inject constructor(
         syncData(list)
     }
 
-    override fun saveImages(image: List<ImageModel>) {
+    override fun saveImages(image: List<SearchImageModel>, saveDateTimeMill: Long) {
         Timber.d("saveImages at Dao run in ${Thread.currentThread().name}")
         val list = (saveImagesSubject.value?.toMutableList() ?: mutableListOf()).apply {
-            addAll(image.toList())
+            addAll(
+                image.toList().map {
+                    ImageEntity(
+                        it.imageUrl,
+                        it.imageThumbUrl,
+                        saveDateTimeMill,
+                        it.dateTimeMill,
+                        it.isImageType
+                    )
+                }
+            )
         }
         syncData(list)
     }
 
-    private fun syncData(list: List<ImageModel>) {
+    private fun syncData(list: List<ImageEntity>) {
         Timber.d("syncData at Dao run in ${Thread.currentThread().name}")
         val jsonStr = Gson().toJson(list)
         Timber.d("syncData save image list data(${list.size}) => \n$jsonStr\n")
