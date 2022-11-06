@@ -36,6 +36,18 @@ android {
         //noinspection DataBindingWithoutKapt
         enabled = true
     }
+
+    packagingOptions {
+        exclude 'META-INF/LICENSE.md'
+        exclude 'META-INF/LICENSE-notice.md'
+    }
+    testOptions {
+        packagingOptions {
+            jniLibs {
+                useLegacyPackaging = true
+            }
+        }
+    }
 }
 
 dependencies {
@@ -82,4 +94,10 @@ dependencies {
     implementation 'com.jakewharton.timber:timber:5.0.1'
 
     implementation "androidx.recyclerview:recyclerview:1.2.1"
+
+    testImplementation "org.assertj:assertj-core:3.20.2"
+    androidTestImplementation "org.assertj:assertj-core:3.20.2"
+    testImplementation "io.mockk:mockk:1.13.2"
+    androidTestImplementation "io.mockk:mockk-android:1.13.2"
+    testImplementation 'com.squareup.okhttp3:mockwebserver:4.7.2'
 }
