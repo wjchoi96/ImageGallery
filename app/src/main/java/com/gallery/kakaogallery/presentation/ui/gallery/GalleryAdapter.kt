@@ -3,10 +3,9 @@ package com.gallery.kakaogallery.presentation.ui.gallery
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.gallery.kakaogallery.domain.model.ImageListTypeModel
+import com.gallery.kakaogallery.domain.model.GalleryImageModel
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.presentation.ui.searchimage.GalleryImageItemViewHolder
-import com.gallery.kakaogallery.presentation.ui.searchimage.ImageDiffUtilCallback
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.Disposable
@@ -18,32 +17,29 @@ class GalleryAdapter(
 ) : RecyclerView.Adapter<GalleryImageItemViewHolder>() {
 
     enum class Payload {
-        Save,
         Select
     }
 
-    private var imageList: List<ImageModel> = emptyList()
+    private var imageList: List<GalleryImageModel> = emptyList()
     val currentItemSize: Int
         get() = imageList.size
 
-    fun setList(list: List<ImageModel>) {
+    fun setList(list: List<GalleryImageModel>) {
         imageList = list
     }
 
-    private fun getDiffRes(newList: List<ImageModel>): DiffUtil.DiffResult {
+    private fun getDiffRes(newList: List<GalleryImageModel>): DiffUtil.DiffResult {
         Timber.d("getDiffRes run at ${Thread.currentThread().name}")
-        val diffCallback = ImageDiffUtilCallback(
-            this.imageList.map { ImageListTypeModel.Image(it) },
-            newList.map { ImageListTypeModel.Image(it) },
-            null,
-            Payload.Select,
-            Payload.Save
+        val diffCallback = GalleryImageDiffUtilCallback(
+            this.imageList,
+            newList,
+            Payload.Select
         )
         return DiffUtil.calculateDiff(diffCallback)
     }
 
     private var adapterDisposable: Disposable? = null
-    fun updateList(list: List<ImageModel>) {
+    fun updateList(list: List<GalleryImageModel>) {
         adapterDisposable?.dispose()
         adapterDisposable = null
 
@@ -73,7 +69,7 @@ class GalleryAdapter(
     }
 
     override fun onBindViewHolder(holder: GalleryImageItemViewHolder, position: Int) {
-        holder.bind(imageList[position])
+        holder.bind(imageList[position], true)
     }
 
     override fun onBindViewHolder(
@@ -87,11 +83,6 @@ class GalleryAdapter(
         }
         for (payload in payloads) {
             when (payload) {
-                Payload.Save -> {
-                    Timber.d("payload Save : $position => $position")
-                    holder.bindIsSave(imageList[position])
-                    holder.bindIsSelect(imageList[position])
-                }
                 Payload.Select -> {
                     Timber.d("payload Select : $position => $position")
                     holder.bindIsSelect(imageList[position])
