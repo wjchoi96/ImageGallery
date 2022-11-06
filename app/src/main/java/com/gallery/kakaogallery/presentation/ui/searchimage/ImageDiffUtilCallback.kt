@@ -16,8 +16,7 @@ class ImageDiffUtilCallback(
     private val oldList: List<ImageListTypeModel>,
     private val newList: List<ImageListTypeModel>,
     private val queryPayload: Any?,
-    private val selectPayload: Any?,
-    private val savePayload: Any?
+    private val selectPayload: Any?
 ) : DiffUtil.Callback() {
     override fun getOldListSize(): Int = oldList.size
 
@@ -46,7 +45,6 @@ class ImageDiffUtilCallback(
             old is ImageListTypeModel.Image && new is ImageListTypeModel.Image -> {
                 when {
                     old.image.isSelect != new.image.isSelect -> selectPayload
-                    old.image.isSaveImage != new.image.isSaveImage -> savePayload
                     else -> super.getChangePayload(oldItemPosition, newItemPosition)
                 }
             }
