@@ -2,6 +2,7 @@ package com.gallery.kakaogallery.domain.usecase
 
 import com.gallery.kakaogallery.domain.model.ImageListTypeModel
 import com.gallery.kakaogallery.domain.model.ImageModel
+import com.gallery.kakaogallery.domain.model.SearchImageModel
 import com.gallery.kakaogallery.domain.repository.ImageRepository
 import com.gallery.kakaogallery.domain.util.GalleryDateConvertUtil
 import io.reactivex.rxjava3.core.Completable
@@ -14,20 +15,17 @@ class SaveSelectImageUseCase(
 ) {
     operator fun invoke(selectImageUrlMap: MutableMap<String, Int>, images: List<ImageListTypeModel>): Single<Boolean>{
         return Completable.defer{
-            val saveImages = mutableListOf<ImageModel>()
+            val saveImages = mutableListOf<SearchImageModel>()
             for(selectIdx in selectImageUrlMap.values){
-                val saveTimeMill = Date().time
                 saveImages.add(
                     (images[selectIdx] as ImageListTypeModel.Image).let {
                         it.copy(image = it.image.copy(
-                            saveTimeMill = saveTimeMill,
-                            saveDateTimeToShow = GalleryDateConvertUtil.convertToPrint(saveTimeMill),
                             isSelect = false
                         ))
                     }.image
                 )
             }
-            imageRepository.saveImages(saveImages)
+            imageRepository.saveImages(saveImages, Date().time)
         }.subscribeOn(Schedulers.computation())
             .toSingle {
                 true
