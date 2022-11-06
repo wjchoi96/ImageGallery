@@ -4,6 +4,7 @@ import com.gallery.kakaogallery.data.datasource.ImageSearchDataSource
 import com.gallery.kakaogallery.data.datasource.SaveImageDataSource
 import com.gallery.kakaogallery.data.datasource.VideoSearchDataSource
 import com.gallery.kakaogallery.domain.model.ImageModel
+import com.gallery.kakaogallery.domain.model.MaxPageException
 import com.gallery.kakaogallery.domain.model.UnKnownException
 import com.gallery.kakaogallery.domain.repository.ImageRepository
 import com.gallery.kakaogallery.domain.util.GalleryDateConvertUtil
@@ -62,8 +63,12 @@ class ImageRepositoryImpl @Inject constructor(
                 .wrapResult()
         ) { t1, t2 ->
             when {
-                t1.isFailure && t2.isFailure -> throw t1.exceptionOrNull() ?: t2.exceptionOrNull()
-                ?: UnKnownException()
+                t1.isFailure && t2.isFailure -> {
+                    throw when {
+                        t1.exceptionOrNull() is MaxPageException -> t2.exceptionOrNull() ?: UnKnownException()
+                        else -> t1.exceptionOrNull() ?: UnKnownException()
+                    }
+                }
                 else -> {
                     Timber.d("Observable.zip run at " + Thread.currentThread().name)
                     (t1.getOrNull() ?: emptyList()) + (t2.getOrNull() ?: emptyList()).run {
