@@ -6,7 +6,7 @@ import org.junit.Test
 @Suppress("NonAsciiCharacters")
 internal class GalleryDateConvertUtilTest {
 
-    private val size = 1000
+    private val size = 10000
     @Test
     fun `convertToMill는 동시성 문제에 안전하다`() {
         val dateTime = "2017-06-21T15:59:30.000+09:00"
@@ -26,6 +26,7 @@ internal class GalleryDateConvertUtilTest {
         }
         assertThat(millList)
             .doesNotContainNull()
+            .containsOnly(1498060770000)
             .hasSize(size)
     }
 
@@ -48,6 +49,7 @@ internal class GalleryDateConvertUtilTest {
         }
         assertThat(strList)
             .doesNotContainNull()
+            .containsOnly("2017.06.21 15:59:30")
             .hasSize(size)
     }
 
@@ -70,6 +72,7 @@ internal class GalleryDateConvertUtilTest {
         }
         assertThat(strList)
             .doesNotContainNull()
+            .containsOnly("2017.06.21 15:59:30")
             .hasSize(size)
     }
 }
