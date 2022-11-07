@@ -1,5 +1,6 @@
 package com.gallery.kakaogallery.domain.usecase
 
+import com.gallery.kakaogallery.domain.model.GalleryImageModel
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.repository.ImageRepository
 import io.mockk.every
@@ -43,8 +44,8 @@ internal class FetchSaveImageUseCaseTest {
     @Test
     fun `useCase는 repository가 정상 응답시 결과를 Result로 래핑`() {
         val images = listOf(
-            ImageModel.Empty,
-            ImageModel.Empty.copy(imageUrl = "test123")
+            GalleryImageModel.Empty,
+            GalleryImageModel.Empty.copy(imageUrl = "test123")
         )
         every { repository.fetchSaveImages() } returns Observable.just(images)
 
