@@ -30,7 +30,7 @@ internal class SaveSelectImageUseCaseTest {
     //state test
     fun `useCase는 repository가 에러를 전달하면 처리할 수 있다`() {
         val unitTestException = Exception("unit test exception")
-        every { repository.saveImages(any()) } returns Completable.error(unitTestException)
+        every { repository.saveImages(any(), any()) } returns Completable.error(unitTestException)
         val actual = catchThrowable { useCase(mutableMapOf(), emptyList()).blockingGet() }
         assertThat(actual)
             .isInstanceOf(Exception::class.java)
@@ -40,7 +40,7 @@ internal class SaveSelectImageUseCaseTest {
     @Test
     //state test
     fun `useCase는 repository가 정상 응답시 true를 리턴한다`() {
-        every { repository.saveImages(any()) } returns Completable.complete()
+        every { repository.saveImages(any(), any()) } returns Completable.complete()
         val actual = useCase(mutableMapOf(), emptyList()).blockingGet()
         assertThat(actual)
             .isTrue
@@ -61,8 +61,8 @@ internal class SaveSelectImageUseCaseTest {
     //behavior test
     @Test
     fun `useCase는 repository의 saveImages를 호출한다`() {
-        every { repository.saveImages(any()) } returns Completable.complete()
+        every { repository.saveImages(any(), any()) } returns Completable.complete()
         useCase(mutableMapOf(), emptyList()).blockingGet()
-        verify { repository.saveImages(any()) }
+        verify { repository.saveImages(any(), any()) }
     }
 }

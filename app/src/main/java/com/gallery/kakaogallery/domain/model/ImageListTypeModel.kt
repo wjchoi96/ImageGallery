@@ -4,7 +4,7 @@ import java.io.Serializable
 
 sealed class ImageListTypeModel : Serializable {
     data class Query(val query: String?): ImageListTypeModel()
-    data class Image(val image: ImageModel): ImageListTypeModel()
+    data class Image(val image: SearchImageModel): ImageListTypeModel()
 
     enum class ViewType(val id: Int) {
         Query(0),

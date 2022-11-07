@@ -2,6 +2,7 @@ package com.gallery.kakaogallery.domain.usecase
 
 import com.gallery.kakaogallery.domain.model.ImageListTypeModel
 import com.gallery.kakaogallery.domain.model.ImageModel
+import com.gallery.kakaogallery.domain.model.SearchImageModel
 import com.gallery.kakaogallery.domain.repository.ImageRepository
 import io.mockk.every
 import io.mockk.mockk
@@ -55,8 +56,8 @@ internal class FetchQueryDataUseCaseTest {
     fun `useCase는 page가 1이면 Query를 첫번째 아이템으로 가지는 ImageListType리스트를 리턴한다`() {
         val (query, page) = "query" to 1
         val images = listOf(
-            ImageModel.Empty,
-            ImageModel.Empty.copy(imageUrl = "123")
+            SearchImageModel.Empty,
+            SearchImageModel.Empty.copy(imageUrl = "123")
         )
 
         every { repository.fetchQueryData(query, page) } returns Single.just(images)
@@ -78,8 +79,8 @@ internal class FetchQueryDataUseCaseTest {
     fun `useCase는 page가 1이 아니라면 Image만을 포함하는 리스트를 리턴한다`() {
         val (query, page) = "query" to 2
         val images = listOf(
-            ImageModel.Empty,
-            ImageModel.Empty.copy(imageUrl = "123")
+            SearchImageModel.Empty,
+            SearchImageModel.Empty.copy(imageUrl = "123")
         )
 
         every { repository.fetchQueryData(query, page) } returns Single.just(images)

@@ -2,6 +2,7 @@ package com.gallery.kakaogallery.data.entity.remote.response
 
 
 import com.gallery.kakaogallery.domain.model.ImageModel
+import com.gallery.kakaogallery.domain.model.SearchImageModel
 import com.google.gson.annotations.SerializedName
 
 data class ImageSearchResponse(
@@ -31,11 +32,12 @@ data class ImageSearchResponse(
         fun toModel(
             dateTimeToShow: String,
             dateTimeMill: Long
-        ): ImageModel = ImageModel(
+        ): SearchImageModel = SearchImageModel(
             dateTimeToShow = dateTimeToShow,
             dateTimeMill = dateTimeMill,
             imageUrl = imageUrl,
-            thumbnailUrl = thumbnailUrl
+            thumbnailUrl = thumbnailUrl,
+            imageType = ImageModel.ImageType.Image
         )
     }
 
