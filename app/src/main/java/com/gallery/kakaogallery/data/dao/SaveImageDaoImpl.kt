@@ -53,12 +53,9 @@ class SaveImageDaoImpl @Inject constructor(
         val list = (saveImagesSubject.value?.toMutableList() ?: mutableListOf()).apply {
             addAll(
                 image.toList().map {
-                    ImageEntity(
-                        it.imageUrl,
-                        it.imageThumbUrl,
-                        saveDateTimeMill,
-                        it.dateTimeMill,
-                        it.isImageType
+                    ImageEntity.from(
+                        it,
+                        saveDateTimeMill
                     )
                 }
             )
