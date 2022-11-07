@@ -2,23 +2,25 @@ package com.gallery.kakaogallery.data.repository
 
 import com.gallery.kakaogallery.data.UnitTestUtil
 import com.gallery.kakaogallery.data.datasource.*
+import com.gallery.kakaogallery.data.entity.local.ImageEntity
 import com.gallery.kakaogallery.data.entity.remote.response.ImageSearchResponse
 import com.gallery.kakaogallery.data.entity.remote.response.VideoSearchResponse
+import com.gallery.kakaogallery.domain.model.GalleryImageModel
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.MaxPageException
-import com.gallery.kakaogallery.domain.model.NetworkConnectionException
 import com.gallery.kakaogallery.domain.model.UnKnownException
 import com.gallery.kakaogallery.domain.repository.ImageRepository
 import com.google.gson.Gson
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.Before
 import org.junit.Test
-import java.io.File
+import java.util.*
 
 @Suppress("NonAsciiCharacters")
 internal class ImageRepositoryImplTest {
@@ -129,7 +131,7 @@ internal class ImageRepositoryImplTest {
 
         val actual = repository.fetchQueryData(query, page).blockingGet()
         assertThat(actual).isSortedAccordingTo { i1, i2 ->
-            ((i1.dateTimeMill ?: 0L) - (i2.dateTimeMill ?: 0L)).toInt()
+            ((i1.dateTimeMill) - (i2.dateTimeMill)).toInt()
         }
     }
 
@@ -160,6 +162,19 @@ internal class ImageRepositoryImplTest {
         assertThat(actual.size).isEqualTo(expect)
     }
 
+    //state test
+    @Test
+    fun `fetchSaveImages는 ImageEntity를 GalleryImageModel로 가공한다`() {
+        val saveImages = listOf(
+            ImageEntity.Empty.copy(imageUrl = "1"),
+            ImageEntity.Empty.copy(imageUrl = "2")
+        )
+        every { saveImageDataSource.fetchSaveImages() } returns Observable.just(saveImages)
+        val actual = repository.fetchSaveImages().blockingFirst().first()
+        assertThat(actual)
+            .isInstanceOf(GalleryImageModel::class.java)
+    }
+
     //behavior test
     @Test
     fun `fetchSaveImages는 SaveImageDataSource의 fetch메소드를 호출한다`() {
@@ -170,8 +185,9 @@ internal class ImageRepositoryImplTest {
     //behavior test
     @Test
     fun `saveImages는 SaveImageDataSource의 saveImages를 호출한다`() {
-        repository.saveImages(emptyList())
-        verify { saveImageDataSource.saveImages(emptyList()) }
+        val saveMill = Date().time
+        repository.saveImages(emptyList(), saveMill)
+        verify { saveImageDataSource.saveImages(emptyList(), saveMill) }
     }
 
     //behavior test
