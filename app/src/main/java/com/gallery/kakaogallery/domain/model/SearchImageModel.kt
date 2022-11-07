@@ -8,7 +8,7 @@ data class SearchImageModel(
     override val imageUrl: String,
     override val thumbnailUrl: String?,
     override val imageType: ImageType,
-    override var isSelect: Boolean = false
+    override val isSelect: Boolean = false
 ) : ImageModel(), Serializable {
     companion object {
         val Empty: SearchImageModel
