@@ -10,7 +10,7 @@ abstract class ImageModel {
     abstract val imageUrl: String
     protected abstract val thumbnailUrl: String?
     abstract val imageType: ImageType
-    open var isSelect: Boolean = false
+    abstract val isSelect: Boolean
 
     abstract val hash: String
     abstract val isImageType: Boolean
