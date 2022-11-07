@@ -1,10 +1,13 @@
 package com.gallery.kakaogallery.data.datasource
 
 import com.gallery.kakaogallery.data.dao.SaveImageDao
+import com.gallery.kakaogallery.data.entity.local.ImageEntity
 import com.gallery.kakaogallery.domain.model.ImageModel
+import com.gallery.kakaogallery.domain.model.SearchImageModel
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Test
+import java.util.*
 
 @Suppress("NonAsciiCharacters")
 internal class SaveImageDataSourceImplTest {
@@ -36,11 +39,12 @@ internal class SaveImageDataSourceImplTest {
     @Test
     fun `saveImages는 SaveImageDao의 saveImages를 호출한다`() {
         val saveImageDao: SaveImageDao = mockk(relaxed = true)
-        val list = emptyList<ImageModel>()
+        val saveMill = Date().time
+        val searchImages = emptyList<SearchImageModel>()
         saveImageDataSource = SaveImageDataSourceImpl(saveImageDao)
-        saveImageDataSource.saveImages(list).blockingAwait()
+        saveImageDataSource.saveImages(searchImages, saveMill).blockingAwait()
 
-        verify { saveImageDao.saveImages(list) }
+        verify { saveImageDao.saveImages(searchImages, saveMill) }
     }
 
 }
