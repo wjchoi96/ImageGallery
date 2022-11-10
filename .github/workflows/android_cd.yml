@@ -2,9 +2,9 @@ name: Android CD
 
 on:
   push:
-    branches: [ "main", "dev" ]
+    branches: [ main, dev ]
   pull_request:
-    branches: [ "main", "dev" ]
+    branches: [ main, dev ]
 
 jobs:
   test:
@@ -111,6 +111,10 @@ jobs:
         groups: android-developer
         file: app/build/outputs/apk/release/app-release-unsigned-signed.apk
         
+  alert:
+    runs-on: ubuntu-latest     
+    needs: [test, build, release]
+    steps:
     - name: action-slack
       uses: 8398a7/action-slack@v3.14.0
       with:
