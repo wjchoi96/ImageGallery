@@ -24,8 +24,6 @@ jobs:
       run: chmod +x gradlew
       
     - name: Access GOOGLE_SERVICES_JSON
-      env:
-        APOD_API_KEY: ${{ secrets.MAPS_API_KEY }}
       run: echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > ./app/google-services.json
       
     - name: Build with Gradle
