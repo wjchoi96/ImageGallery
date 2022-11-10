@@ -5,6 +5,9 @@ plugins {
     id 'dagger.hilt.android.plugin'
 }
 
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
 android {
     compileSdk 33
 
@@ -18,12 +21,26 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        release {
+            storeFile file(properties.get("signed_store_file") ?: "empty")
+            storePassword properties.get("signed_store_password") ?: "empty"
+            keyAlias properties.get("signed_store_alias") ?: "empty"
+            keyPassword properties.get("signed_key_password") ?: "empty"
+        }
+    }
+
     buildTypes {
+        debug{
+            signingConfig signingConfigs.release
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
