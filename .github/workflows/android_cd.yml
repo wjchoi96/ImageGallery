@@ -28,12 +28,22 @@ jobs:
       
     - name: Build with Gradle
       run: ./gradlew build
+      
+    - name: Sign APK
+      id: sign_apk
+      uses: r0adkll/sign-android-release@v1
+      with:
+        releaseDirectory: app/build/outputs/apk/release
+        signingKeyBase64: ${{ secrets.KEY_BASE_64_RELEASE }}
+        alias: ${{ secrets.KEY_ALIAS }}
+        keyStorePassword: ${{ secrets.KEY_PASSWORD }}
+        keyPassword: ${{ secrets.KEY_PASSWORD }}
 
     - name: Firebase App Distribution
       uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
       with:
         appId: ${{secrets.FIREBASE_APP_ID}}
         serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
-        groups: Android Developer
-        file: app/build/outputs/apk/release/app-release-unsigned.apk
+        groups: android-developer
+        file: app/build/outputs/apk/release/app-release-unsigned-signed.apk
 
