@@ -3,6 +3,8 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'dagger.hilt.android.plugin'
+    id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
 }
 
 Properties properties = new Properties()
@@ -112,6 +114,11 @@ dependencies {
     implementation 'com.jakewharton.timber:timber:5.0.1'
 
     implementation "androidx.recyclerview:recyclerview:1.2.1"
+
+    //firebase
+    implementation platform('com.google.firebase:firebase-bom:31.0.2')
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
 
     testImplementation "org.assertj:assertj-core:3.20.2"
     androidTestImplementation "org.assertj:assertj-core:3.20.2"
