@@ -36,9 +36,6 @@ jobs:
     - name: Gradle Build
       run: ./gradlew build
       
-    - name: Gradel Release Build
-      run: ./gradlew assembleRelease
-      
   test:
     runs-on: ubuntu-latest
     steps:
