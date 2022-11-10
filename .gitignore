@@ -86,3 +86,4 @@ lint/tmp/
 # lint/reports/
 app/lint-baseline.xml
 *.jks
+app/google-services.json
