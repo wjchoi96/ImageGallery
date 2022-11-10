@@ -3,6 +3,8 @@ name: Android CD
 on:
   pull_request:
     branches: [main]
+  push: 
+    branches: [dev]
 
 jobs:
   test:
@@ -119,6 +121,7 @@ jobs:
         status: ${{ job.status }}
         author_name: KakaoGallery CD Release # default: 8398a7@action-slack
         fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+        releaseNotesFile: release_note.md
         custom_payload: |
           {
             attachments: [{
