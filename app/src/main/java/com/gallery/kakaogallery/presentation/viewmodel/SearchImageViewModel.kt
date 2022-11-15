@@ -116,7 +116,21 @@ class SearchImageViewModel @Inject constructor(
                 _dataLoading.value = false
                 page++
                 if (query.isNotEmpty()) _searchResultIsEmpty.value = it.size <= 1
-                _searchImages.value = it
+                when (selectImageUrlMap.isEmpty()) {
+                    true -> _searchImages.value = it
+                    else -> {
+                        _searchImages.value = it.map { item ->
+                            when {
+                                item is ImageListTypeModel.Image &&
+                                        selectImageUrlMap.containsKey(item.image.imageUrl) ->
+                                    item.copy(image = item.image.copy(isSelect = true))
+                                else -> item
+                            }
+                        }
+                        selectImageUrlMap.entries.removeIf { entry -> entry.value >= it.size }
+                        setHeaderTitleUseSelectMap()
+                    }
+                }
             }) {
                 _dataLoading.value = false
                 when (it) {
@@ -231,13 +245,19 @@ class SearchImageViewModel @Inject constructor(
     fun searchQueryEvent(query: String) {
         Timber.d("search query : $query")
         _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
-        if (query.isBlank()) {
-            showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneQuery))
-            return
-        }
-        if (dataLoading.value == true) {
-            showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.Loading))
-            return
+        when {
+            query.isBlank() -> {
+                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneQuery))
+                return
+            }
+            dataLoading.value == true -> {
+                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.Loading))
+                return
+            }
+            query != lastQuery && selectImageUrlMap.isNotEmpty() -> {
+                selectImageUrlMap.clear()
+                setHeaderTitleUseSelectMap()
+            }
         }
         fetchSearchQuery(query)
     }
