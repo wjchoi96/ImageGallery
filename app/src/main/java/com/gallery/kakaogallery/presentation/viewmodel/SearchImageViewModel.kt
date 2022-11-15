@@ -140,7 +140,7 @@ class SearchImageViewModel @Inject constructor(
                 val prevList = _searchImages.value ?: emptyList()
                 _searchImages.value = prevList + it
             }) {
-                _dataLoading.value = false
+                _pagingDataLoading.value = false
                 when (it) {
                     is MaxPageException -> showToast(
                         resourceProvider.getString(
