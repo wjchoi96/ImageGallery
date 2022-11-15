@@ -39,7 +39,7 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
 
     private val imageSearchAdapter: SearchImagesAdapter by lazy {
         SearchImagesAdapter(
-            viewModel::searchQuery,
+            viewModel::searchQueryEvent,
             searchEditorActionListener,
             viewModel::touchImageEvent
         )
@@ -52,7 +52,7 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
         override fun onEditorAction(v: TextView?, actionId: Int, event: KeyEvent?): Boolean {
             when (actionId) {
                 EditorInfo.IME_ACTION_SEARCH -> {
-                    viewModel.searchQuery(v?.text.toString())
+                    viewModel.searchQueryEvent(v?.text.toString())
                     return true
                 }
             }
