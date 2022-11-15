@@ -226,7 +226,7 @@ class SearchImageViewModel @Inject constructor(
         }
     }
 
-    fun searchQuery(query: String) {
+    fun searchQueryEvent(query: String) {
         Timber.d("search query : $query")
         _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
         if (query.isBlank()) {
