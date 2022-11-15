@@ -167,17 +167,22 @@ class SearchImageViewModel @Inject constructor(
 
     fun clickSelectModeEvent() {
         when (_selectMode.value) {
-            true -> {
-                unSelectAllImage()
-                _headerTitle.value =
-                    resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage)
-            }
+            true -> unSelectAllImage()
+            else -> {}
+        }
+        setHeaderTitleUseSelectMap()
+        _selectMode.value = !(_selectMode.value ?: false)
+    }
+
+    private fun setHeaderTitleUseSelectMap() {
+        when (selectImageUrlMap.isEmpty()) {
+            true -> _headerTitle.value =
+                resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage)
             else -> _headerTitle.value = resourceProvider.getString(
                 StringResourceProvider.StringResourceId.SelectState,
                 selectImageUrlMap.size
             )
         }
-        _selectMode.value = !(_selectMode.value ?: false)
     }
 
     private fun unSelectAllImage() {
@@ -206,10 +211,7 @@ class SearchImageViewModel @Inject constructor(
                 else -> selectImageUrlMap.remove(image.imageUrl)
             }
             _searchImages.value = images
-            _headerTitle.value = resourceProvider.getString(
-                StringResourceProvider.StringResourceId.SelectState,
-                selectImageUrlMap.size
-            )
+            setHeaderTitleUseSelectMap()
         } catch (e: Exception) {
             e.printStackTrace()
             showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SelectFail))
