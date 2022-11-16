@@ -95,7 +95,7 @@ class ImageRepositoryImpl @Inject constructor(
             .map {
                 it.map {  data ->
                     data.toModel(
-                        dateTimeToShow = GalleryDateConvertUtil.convertToPrint(data.saveDateTimeMill) ?: "",
+                        dateTimeToShow = GalleryDateConvertUtil.convertToPrint(data.saveDateTimeMill),
                     )
                 }
             }
