@@ -38,13 +38,8 @@ object GalleryDateConvertUtil {
         }
     }
 
-    fun convertToPrint(mill: Long): String? {
-        return try {
-            viewFormatter.format(Date(mill))
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
+    fun convertToPrint(mill: Long): String {
+        return viewFormatter.format(Date(mill))
     }
 
 }
