@@ -162,13 +162,18 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
     private val pagingListener = object : RecyclerView.OnScrollListener() {
         override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
             super.onScrollStateChanged(recyclerView, newState)
-            if (!recyclerView.canScrollVertically(1)) { // direction 은 Vertically 기준으로 -1이 위쪽, 1이 아래쪽이다
-                Timber.d("vertical end")
-                if (imageSearchAdapter.currentItemSize != 0) {
-                    viewModel.fetchNextPage()
+            // direction 은 Vertically 기준으로 -1이 위쪽, 1이 아래쪽
+            when {
+                !recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE -> {
+                    recyclerView.adapter?.itemCount?.let {
+                        if(it != 0){
+                            viewModel.fetchNextPage()
+                        }
+                    }
                 }
             }
         }
+
     }
 
     private fun observeData() {
