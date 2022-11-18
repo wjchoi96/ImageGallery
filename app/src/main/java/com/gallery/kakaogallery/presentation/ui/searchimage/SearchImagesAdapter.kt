@@ -46,8 +46,6 @@ class SearchImagesAdapter(
     }
 
     private var imageList: List<ImageListTypeModel> = emptyList()
-    val currentItemSize: Int
-        get() = imageList.size
 
     private fun setList(list: List<ImageListTypeModel>) {
         imageList = list
@@ -73,7 +71,6 @@ class SearchImagesAdapter(
             .subscribe {
                 Timber.d("getDiffRes subscribe run at ${Thread.currentThread().name}")
                 setList(newList) // must call main thread
-                Timber.d("diff debug updateList post : setList[" + this.currentItemSize + "], newList[" + newList.size + "]")
                 it.dispatchUpdatesTo(this)
             }
     }
