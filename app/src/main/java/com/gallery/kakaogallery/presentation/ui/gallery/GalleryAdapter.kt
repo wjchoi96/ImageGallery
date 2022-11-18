@@ -21,8 +21,6 @@ class GalleryAdapter(
     }
 
     private var imageList: List<GalleryImageModel> = emptyList()
-    val currentItemSize: Int
-        get() = imageList.size
 
     fun setList(list: List<GalleryImageModel>) {
         imageList = list
@@ -52,7 +50,6 @@ class GalleryAdapter(
             .subscribe {
                 Timber.d("getDiffRes subscribe run at ${Thread.currentThread().name}")
                 this.setList(newList) // must call main thread
-                Timber.d("diff debug updateList post : setList[" + this.currentItemSize + "], newList[" + newList.size + "]")
                 it.dispatchUpdatesTo(this)
             }
     }
