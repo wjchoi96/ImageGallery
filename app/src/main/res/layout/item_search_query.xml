@@ -2,14 +2,15 @@
 <layout xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
-            name="viewModel"
-            type="com.gallery.kakaogallery.view.searchimages.SearchImageViewModel" />
-        <variable
             name="holder"
-            type="com.gallery.kakaogallery.view.searchimages.SearchImagesAdapter.SearchQueryViewHolder"
+            type="com.gallery.kakaogallery.presentation.ui.searchimage.SearchQueryViewHolder"
+            />
+        <variable
+            name="lastQuery"
+            type="String"
             />
     </data>
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -17,6 +18,10 @@
         android:paddingVertical="5dp"
         >
         <EditText
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             android:textSize="16sp"
             android:textColor="#101010"
             android:gravity="center_vertical"
@@ -25,24 +30,26 @@
             android:maxLines="1"
             android:layout_centerVertical="true"
             android:paddingVertical="10dp"
-            android:background="@drawable/background_search_query"
-            android:id="@+id/etQuery"
-            android:layout_width="match_parent"
+            android:background="@drawable/bg_search_query"
+            android:id="@+id/et_query"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:paddingEnd="45dp"
             android:paddingStart="5dp"
-            app:onEditorActionListener="@{viewModel}"
+            android:text="@{lastQuery}"
+            app:onEditorActionListener="@{holder.queryEditorActionListener}"
             />
 
         <ImageView
+            app:layout_constraintTop_toTopOf="@id/et_query"
+            app:layout_constraintEnd_toEndOf="@id/et_query"
+            app:layout_constraintBottom_toBottomOf="@id/et_query"
             android:padding="5dp"
-            android:id="@+id/btnIvSearch"
+            android:id="@+id/iv_btn_search"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:src="@drawable/btn_search"
-            android:onClick="@{()->viewModel.searchQuery(holder.query)}"
+            android:src="@drawable/bg_btn_search"
+            android:onClick="@{()->holder.searchQueryListener.invoke(holder.recentQuery)}"
             />
-    </RelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

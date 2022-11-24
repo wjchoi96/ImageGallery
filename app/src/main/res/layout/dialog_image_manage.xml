@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <import type="android.view.View"/>
+
+        <variable
+            name="viewModel"
+            type="com.gallery.kakaogallery.presentation.viewmodel.ImageManageBottomSheetViewModel" />
+    </data>
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_white_round_corner"
+        android:id="@+id/background"
+        android:paddingVertical="30dp"
+        android:paddingHorizontal="20dp"
+        >
+        <TextView
+            tools:text="content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/btn_positive"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@{viewModel.content}"
+            android:id="@+id/tv_content"
+            android:paddingTop="10dp"
+            android:paddingBottom="20dp"
+            android:textSize="15sp"
+            android:textColor="#303030"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+
+        <androidx.appcompat.widget.AppCompatButton
+            tools:text="negative"
+            tools:visibility="visible"
+            app:layout_constraintTop_toTopOf="@id/btn_positive"
+            app:layout_constraintEnd_toStartOf="@id/btn_positive"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:text="@{viewModel.negativeBtnText}"
+            android:visibility="@{viewModel.negativeBtnVisible ? View.VISIBLE : View.GONE, default=gone}"
+            android:onClick="@{() -> viewModel.negativeEvent()}"
+            android:textSize="14sp"
+            android:layout_marginEnd="10dp"
+            android:textColor="#3d3d3d"
+            android:id="@+id/btn_negative"
+            android:background="@drawable/bg_btn_dialog_negative"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            />
+
+        <androidx.appcompat.widget.AppCompatButton
+            tools:text="positive"
+            tools:visibility="visible"
+            app:layout_constraintTop_toBottomOf="@id/tv_content"
+            app:layout_constraintStart_toEndOf="@id/btn_negative"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@{viewModel.positiveBtnText}"
+            android:visibility="@{viewModel.positiveBtnVisible ? View.VISIBLE : View.GONE, default=gone}"
+            android:onClick="@{() -> viewModel.positiveEvent()}"
+            android:textSize="14sp"
+            android:layout_marginStart="10dp"
+            android:id="@+id/btn_positive"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/bg_btn_dialog_positive"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

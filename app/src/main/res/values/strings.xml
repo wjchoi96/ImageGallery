@@ -2,9 +2,33 @@
     <string name="app_name">KakaoGallery</string>
     <string name="kakao_rest_api_key">3a3dd42d52886fff4f6270ba737a8708</string>
 
-    <string name="menu_search_image">이미지 검색</string>
-    <string name="menu_save_image">내 보관함</string>
+    <string name="save">저장</string>
+    <string name="remove">삭제</string>
+    <string name="confirm">확인</string>
+    <string name="cancel">취소</string>
+    <string name="select">선택</string>
 
-    <string name="notify_none_search_image">검색 결과가 없습니다</string>
-    <string name="notify_none_save_image">저장된 이미지가 없습니다</string>
+    <string name="menu_search_image">이미지 검색</string>
+    <string name="menu_gallery">내 보관함</string>
+
+    <string name="message_loading">로딩중</string>
+
+    <string name="message_none_query">검색어를 입력해주세요</string>
+    <string name="message_none_search_query_result">검색 결과가 없습니다</string>
+    <string name="message_search_query_fail">검색을 실패하였습니다</string>
+    <string name="message_last_page">마지막 페이지입니다</string>
+
+    <string name="message_none_select_image">선택된 이미지가 없습니다</string>
+    <string name="message_select_fail">선택할 수 없습니다</string>
+    <string name="message_select_state">%1d장 선택중</string>
+    <string name="message_is_save_select_image">%1d장을 저장하시겠습니까?</string>
+
+    <string name="message_remove_success">삭제 성공</string>
+    <string name="message_remove_fail">삭제 실패</string>
+    <string name="message_is_remove_select_image">%1d장을 삭제하시겠습니까?</string>
+
+    <string name="message_save_success">저장 성공</string>
+    <string name="message_save_fail">저장 실패</string>
+    <string name="message_none_save_image">저장된 이미지가 없습니다</string>
+    <string name="message_fetch_save_image_fail">저장된 이미지를 불러올수 없습니다</string>
 </resources>

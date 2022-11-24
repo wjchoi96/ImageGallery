@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <import type="android.view.View"/>
+        <import type="com.gallery.kakaogallery.domain.model.ImageModel.ImageType"/>
+
+        <variable
+            name="holder"
+            type="com.gallery.kakaogallery.presentation.ui.searchimage.GalleryImageItemViewHolder" />
+        <variable
+            name="imageItem"
+            type="com.gallery.kakaogallery.domain.model.ImageModel" />
+        <variable
+            name="isSelectImage"
+            type="Boolean" />
+        <variable
+            name="isSaveImage"
+            type="Boolean" />
+    </data>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/background"
+        android:padding="1dp"
+        android:background="@{isSelectImage ? @drawable/bg_select_image : @drawable/bg_unselect_image}"
+        android:onClick="@{() -> holder.imageItemSelectListener.invoke(imageItem, holder.itemPosition)}">
+
+        <androidx.cardview.widget.CardView
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:id="@+id/cv_image"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="5dp"
+            app:cardElevation="0dp">
+
+            <ImageView
+                tools:src="@drawable/bg_image_placeholder"
+                android:id="@+id/iv_image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:scaleType="centerCrop"
+                android:src="@drawable/bg_image_placeholder"
+                app:loadUrl="@{imageItem.imageThumbUrl}" />
+        </androidx.cardview.widget.CardView>
+
+        <ImageView
+            tools:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="@id/cv_image"
+            app:layout_constraintEnd_toEndOf="@id/cv_image"
+            android:id="@+id/iv_star"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/cv_image"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="5dp"
+            android:src="@drawable/ic_star"
+            android:visibility="@{isSaveImage ? View.VISIBLE : View.GONE}"
+            />
+
+        <ImageView
+            tools:src="@drawable/ic_image"
+            app:layout_constraintTop_toTopOf="@id/cv_image"
+            app:layout_constraintStart_toStartOf="@id/cv_image"
+            android:id="@+id/iv_tag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="5dp"
+            android:src="@{imageItem.imageType == ImageType.Image ? @drawable/ic_image : @drawable/ic_video}"
+            />
+
+        <TextView
+            tools:text="2022-06-08 23:00:00"
+            app:layout_constraintTop_toBottomOf="@id/cv_image"
+            app:layout_constraintStart_toStartOf="@id/cv_image"
+            app:layout_constraintEnd_toEndOf="@id/cv_image"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:text="@{imageItem.dateTimeToShow}"
+            android:id="@+id/tv_date_time"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

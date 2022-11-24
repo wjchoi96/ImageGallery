@@ -1,0 +1,81 @@
+<layout xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View"/>
+
+        <variable
+            name="galleryAdapter"
+            type="com.gallery.kakaogallery.presentation.ui.gallery.GalleryAdapter" />
+
+        <variable
+            name="galleryGridLayoutManager"
+            type="androidx.recyclerview.widget.GridLayoutManager" />
+
+        <variable
+            name="galleryItemDecoration"
+            type="androidx.recyclerview.widget.RecyclerView.ItemDecoration" />
+
+        <variable
+            name="viewModel"
+            type="com.gallery.kakaogallery.presentation.viewmodel.GalleryViewModel" />
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/background"
+        >
+
+        <include
+            android:id="@+id/layout_toolbar"
+            layout="@layout/item_toolbar_header"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            app:onRefreshListener="@{() -> viewModel.refreshGalleryEvent()}"
+            app:refreshing="@{viewModel.refreshLoading}"
+            android:id="@+id/layout_swipe_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layout_toolbar">
+
+            <androidx.recyclerview.widget.RecyclerView
+                app:itemDecoration="@{galleryItemDecoration}"
+                app:layoutManager="@{galleryGridLayoutManager}"
+                android:adapter="@{galleryAdapter}"
+                android:id="@+id/rv_gallery"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <TextView
+            android:id="@+id/tv_none_notify"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/message_none_save_image"
+            android:textColor="@color/brown_5d5235"
+            android:textSize="17sp"
+            android:visibility="@{viewModel.saveImages.size() == 0 ? View.VISIBLE : View.GONE, default=gone}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ProgressBar
+            android:id="@+id/progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminateTint="@color/gold_aa9763"
+            android:visibility="@{viewModel.dataLoading ? View.VISIBLE : View.GONE, default=gone}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

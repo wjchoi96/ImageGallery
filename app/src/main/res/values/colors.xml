@@ -5,14 +5,14 @@
     <color name="purple_700">#FF3700B3</color>
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="black_000000">#FF000000</color>
+    <color name="white_ffffff">#FFFFFFFF</color>
 
-    <color name="mainColor">#aa9763</color>
-    <color name="mainClickColor">#4E452C</color>
-    <color name="mainTextColor">#5d5235</color>
-    <color name="mainTextClickColor">#2B2618</color>
-    <color name ="mainDisEnableColor">#b7babd</color>
+    <color name="gold_aa9763">#aa9763</color>
+    <color name="brown_4e452c">#4e452c</color>
+    <color name="brown_5d5235">#5d5235</color>
+    <color name="brown_2b2618">#2b2618</color>
+    <color name="gray_b7babd">#b7babd</color>
 
-    <color name="splash_background">#F1EB52</color> <!-- 202020 -->
+    <color name="yellow_f1eb52">#f1eb52</color> <!-- 202020 -->
 </resources>
