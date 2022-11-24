@@ -1,5 +1,6 @@
 package com.gallery.kakaogallery.presentation.ui.root
 
+import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.os.Bundle
 import android.view.View
@@ -65,12 +66,18 @@ class RootActivity : BindingActivity<ActivityRootBinding>() {
             }
         )
         splashScreen.setOnExitAnimationListener { splashView ->
-            ObjectAnimator.ofFloat(
-                splashView.iconView,
-                View.TRANSLATION_X,
-                splashView.view.width.toFloat()
-            ).apply {
-                duration = splashViewModel.splashDuration
+            AnimatorSet().apply {
+                playSequentially(
+                    listOf(
+                        ObjectAnimator.ofFloat(splashView.iconView, View.ROTATION, 0f, -10f).setDuration(50),
+                        ObjectAnimator.ofFloat(splashView.iconView, View.ROTATION, -10f, 10f).setDuration(50),
+                        ObjectAnimator.ofFloat(splashView.iconView, View.ROTATION, 10f, -10f).setDuration(50),
+                        ObjectAnimator.ofFloat(splashView.iconView, View.ROTATION, -10f, 0f).setDuration(50),
+                        ObjectAnimator.ofFloat(splashView.iconView, View.ROTATION, 0f, -10f).setDuration(50),
+                        ObjectAnimator.ofFloat(splashView.iconView, View.ROTATION, 0f, 0f).setDuration(50),
+                        ObjectAnimator.ofFloat(splashView.iconView, View.ALPHA, 0.0f).setDuration(500)
+                    )
+                )
                 doOnEnd {
                     splashView.remove()
                 }
