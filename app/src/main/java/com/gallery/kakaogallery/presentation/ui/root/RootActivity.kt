@@ -28,7 +28,7 @@ class RootActivity : BindingActivity<ActivityRootBinding>() {
     override val layoutResId: Int
         get() = R.layout.activity_root
     private val viewModel: RootViewModel by viewModels()
-    private val splashViewMode: SplashViewModel by viewModels()
+    private val splashViewModel: SplashViewModel by viewModels()
 
     private val menuResIdList = listOf(
         R.id.bottom_menu_search_image,
@@ -55,7 +55,7 @@ class RootActivity : BindingActivity<ActivityRootBinding>() {
         binding.root.viewTreeObserver.addOnPreDrawListener(
             object : ViewTreeObserver.OnPreDrawListener {
                 override fun onPreDraw(): Boolean {
-                    return if (splashViewMode.isReady) {
+                    return if (splashViewModel.isReady) {
                         binding.root.viewTreeObserver.removeOnPreDrawListener(this)
                         true
                     } else {
@@ -70,7 +70,7 @@ class RootActivity : BindingActivity<ActivityRootBinding>() {
                 View.TRANSLATION_X,
                 splashView.view.width.toFloat()
             ).apply {
-                duration = splashViewMode.splashDuration
+                duration = splashViewModel.splashDuration
                 doOnEnd {
                     splashView.remove()
                 }
