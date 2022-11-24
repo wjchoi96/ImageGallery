@@ -6,11 +6,12 @@ import androidx.lifecycle.ViewModel
 
 class SplashViewModel : ViewModel() {
 
-    val splashDuration: Long = 1000
+    private val splashDuration: Long = 500
     var isReady = false
         private set
 
     init {
         Handler(Looper.getMainLooper()).postDelayed({ isReady = true }, splashDuration)
     }
+
 }
