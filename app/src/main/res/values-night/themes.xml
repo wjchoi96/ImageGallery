@@ -14,11 +14,6 @@
         <!-- Customize your theme here. -->
     </style>
 
-    <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar" >
-        <item name="android:windowBackground">@drawable/bg_splash_view</item>
-        <item name="android:windowFullscreen">true</item>
-    </style>
-
     <!-- Bottom Sheet Radius -->
     <style name="CustomBottomSheetDialog" parent="@style/ThemeOverlay.MaterialComponents.BottomSheetDialog">
         <item name="bottomSheetStyle">@style/CustomBottomSheet</item>
@@ -34,5 +29,12 @@
         <item name="cornerSizeTopLeft">15dp</item>
         <item name="cornerSizeBottomRight">0dp</item>
         <item name="cornerSizeBottomLeft">0dp</item>
+    </style>
+
+    <style name="Theme.KakaoGallery.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/yellow_f1eb52</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_app_logo</item>
+        <item name="windowSplashScreenAnimationDuration">1000</item>
+        <item name="postSplashScreenTheme">@style/Theme.KakaoGallery</item>
     </style>
 </resources>

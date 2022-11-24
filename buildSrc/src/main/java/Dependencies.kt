@@ -37,6 +37,7 @@ object Dependencies {
         const val constraintLayout = "2.1.4"
         const val swipeRefreshLayout = "1.1.0"
         const val recyclerView = "1.2.1"
+        const val splashScreen = "1.0.0"
 
         //Ktx
         const val ktx = "1.9.0"
@@ -94,9 +95,10 @@ object Dependencies {
             private const val constraintLayout = "androidx.constraintlayout:constraintlayout:${Dependencies.Version.constraintLayout}"
             private const val swipeRefreshLayout = "androidx.swiperefreshlayout:swiperefreshlayout:${Dependencies.Version.swipeRefreshLayout}"
             private const val recyclerView = "androidx.recyclerview:recyclerview:${Dependencies.Version.recyclerView}"
+            private const val splashScreen = "androidx.core:core-splashscreen:${Dependencies.Version.splashScreen}"
 
             override val implementations = listOf(
-                appCompat, material, constraintLayout, swipeRefreshLayout, recyclerView
+                appCompat, material, constraintLayout, swipeRefreshLayout, recyclerView, splashScreen
             )
         }
 
