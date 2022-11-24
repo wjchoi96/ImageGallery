@@ -14,19 +14,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.KakaoGallery">
         <activity
-            android:exported="true"
-            android:theme="@style/SplashTheme"
-            android:name=".presentation.ui.splash.SplashActivity">
+            android:name=".presentation.ui.root.RootActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name=".presentation.ui.root.RootActivity"
-            android:exported="false"/>
     </application>
 
 </manifest>
