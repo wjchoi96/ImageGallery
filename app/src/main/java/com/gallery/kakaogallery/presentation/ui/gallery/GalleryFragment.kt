@@ -129,10 +129,6 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
         }
 
         viewModel.saveImages.observe(viewLifecycleOwner) {
-            Timber.d("savedImageListObservable subscribe thread - " + Thread.currentThread().name)
-            for ((idx, i) in it.withIndex()) {
-                Timber.d("[" + idx + "] : " + i.toMinString())
-            }
             galleryAdapter.updateList(it)
         }
 

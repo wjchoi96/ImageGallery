@@ -1,12 +1,12 @@
 package com.gallery.kakaogallery.presentation.ui.gallery
 
 import androidx.recyclerview.widget.DiffUtil
-import com.gallery.kakaogallery.domain.model.GalleryImageModel
+import com.gallery.kakaogallery.domain.model.GalleryImageListTypeModel
 import timber.log.Timber
 
 class GalleryImageDiffUtilCallback(
-    private val oldList: List<GalleryImageModel>,
-    private val newList: List<GalleryImageModel>,
+    private val oldList: List<GalleryImageListTypeModel>,
+    private val newList: List<GalleryImageListTypeModel>,
     private val selectPayload: Any?
 ) : DiffUtil.Callback() {
     override fun getOldListSize(): Int = oldList.size
@@ -26,7 +26,12 @@ class GalleryImageDiffUtilCallback(
         val new = newList[newItemPosition]
         Timber.d("getChangePayload called")
         return when {
-            old.isSelect != new.isSelect -> selectPayload
+            old is GalleryImageListTypeModel.Image && new is GalleryImageListTypeModel.Image -> {
+                when {
+                    old.image.isSelect != new.image.isSelect -> selectPayload
+                    else -> super.getChangePayload(oldItemPosition, newItemPosition)
+                }
+            }
             else -> super.getChangePayload(oldItemPosition, newItemPosition)
         }
     }

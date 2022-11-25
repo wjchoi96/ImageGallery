@@ -79,6 +79,8 @@ dependencies {
 
     implementation(Dependencies.Libraries.Timber)
 
+    implementation(Dependencies.Libraries.SkeletonUi)
+
     testImplementation(Dependencies.Libraries.Test)
 
     androidTestImplementation(Dependencies.Libraries.AndroidTest)

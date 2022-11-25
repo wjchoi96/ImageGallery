@@ -5,6 +5,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.Single
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.catchThrowable
 import org.junit.Before
@@ -47,6 +48,19 @@ internal class RemoveSaveImageUseCaseTest {
         every { repository.removeImages(map.values.toList()) } returns Completable.complete()
         val actual = useCase(map).blockingGet()
         assertThat(actual).isTrue
+    }
+
+    //state test
+    @Test
+    fun `useCase는 Single타입을 리턴한다`() {
+        val map = mutableMapOf(
+            "test1" to 1,
+            "test2" to 2
+        )
+        every { repository.removeImages(map.values.toList()) } returns Completable.complete()
+        val actual = useCase(map)
+        assertThat(actual)
+            .isInstanceOf(Single::class.java)
     }
 
     //behavior test

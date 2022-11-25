@@ -3,7 +3,7 @@ package com.gallery.kakaogallery.presentation.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
-import com.gallery.kakaogallery.domain.model.ImageListTypeModel
+import com.gallery.kakaogallery.domain.model.SearchImageListTypeModel
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.MaxPageException
 import com.gallery.kakaogallery.domain.usecase.FetchQueryDataUseCase
@@ -48,9 +48,9 @@ class SearchImageViewModel @Inject constructor(
         mutableMapOf<String, Int>().also { handle[KEY_SELECT_IMAGE_MAP] = it }
     }
 
-    private val _searchImages: MutableLiveData<List<ImageListTypeModel>> =
+    private val _searchImages: MutableLiveData<List<SearchImageListTypeModel>> =
         handle.getLiveData(KEY_SEARCH_IMAGE_LIST, emptyList())
-    val searchImages: LiveData<List<ImageListTypeModel>> = _searchImages
+    val searchImages: LiveData<List<SearchImageListTypeModel>> = _searchImages
 
     private val _searchResultIsEmpty = MutableLiveData(false)
     val searchResultIsEmpty: LiveData<Boolean> = _searchResultIsEmpty
@@ -112,35 +112,38 @@ class SearchImageViewModel @Inject constructor(
         _dataLoading.value = true
         fetchSearchDataQueryDataUseCase(query, page)
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
+            .subscribe { res ->
+                Timber.d("search query subscribe => $res")
                 _dataLoading.value = false
-                page++
-                if (query.isNotEmpty()) _searchResultIsEmpty.value = it.size <= 1
-                when (selectImageUrlMap.isEmpty()) {
-                    true -> _searchImages.value = it
-                    else -> {
-                        _searchImages.value = it.map { item ->
-                            when {
-                                item is ImageListTypeModel.Image &&
-                                        selectImageUrlMap.containsKey(item.image.imageUrl) ->
-                                    item.copy(image = item.image.copy(isSelect = true))
-                                else -> item
+                res.onSuccess {
+                    page++
+                    if (query.isNotEmpty()) _searchResultIsEmpty.value = it.size <= 1
+                    when (selectImageUrlMap.isEmpty()) {
+                        true -> _searchImages.value = it
+                        else -> {
+                            _searchImages.value = it.map { item ->
+                                when {
+                                    item is SearchImageListTypeModel.Image &&
+                                            selectImageUrlMap.containsKey(item.image.imageUrl) ->
+                                        item.copy(image = item.image.copy(isSelect = true))
+                                    else -> item
+                                }
                             }
+                            selectImageUrlMap.entries.removeIf { entry -> entry.value >= it.size }
+                            setHeaderTitleUseSelectMap()
                         }
-                        selectImageUrlMap.entries.removeIf { entry -> entry.value >= it.size }
-                        setHeaderTitleUseSelectMap()
+                    }
+                }.onFailure {
+                    when (it) {
+                        is MaxPageException -> showToast(
+                            resourceProvider.getString(
+                                StringResourceProvider.StringResourceId.LastPage
+                            )
+                        )
+                        else -> showToast("$searchFailMessage\n${it.message}")
                     }
                 }
-            }) {
-                _dataLoading.value = false
-                when (it) {
-                    is MaxPageException -> showToast(
-                        resourceProvider.getString(
-                            StringResourceProvider.StringResourceId.LastPage
-                        )
-                    )
-                    else -> showToast("$searchFailMessage\n${it.message}")
-                }
+
             }.let { compositeDisposable.add(it) }
     }
 
@@ -148,20 +151,21 @@ class SearchImageViewModel @Inject constructor(
         _pagingDataLoading.value = true
         fetchSearchDataQueryDataUseCase(query, searchPage)
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
+            .subscribe{ res ->
                 _pagingDataLoading.value = false
-                page = searchPage + 1
-                val prevList = _searchImages.value ?: emptyList()
-                _searchImages.value = prevList + it
-            }) {
-                _pagingDataLoading.value = false
-                when (it) {
-                    is MaxPageException -> showToast(
-                        resourceProvider.getString(
-                            StringResourceProvider.StringResourceId.LastPage
+                res.onSuccess {
+                    page = searchPage + 1
+                    val prevList = _searchImages.value ?: emptyList()
+                    _searchImages.value = prevList + it
+                }.onFailure {
+                    when (it) {
+                        is MaxPageException -> showToast(
+                            resourceProvider.getString(
+                                StringResourceProvider.StringResourceId.LastPage
+                            )
                         )
-                    )
-                    else -> showToast("$searchFailMessage\n${it.message}")
+                        else -> showToast("$searchFailMessage\n${it.message}")
+                    }
                 }
             }.let { compositeDisposable.add(it) }
     }
@@ -203,7 +207,7 @@ class SearchImageViewModel @Inject constructor(
         val images = searchImages.value?.toMutableList() ?: return
         try {
             for (idx in selectImageUrlMap.values) {
-                images[idx] = (images[idx] as ImageListTypeModel.Image).let {
+                images[idx] = (images[idx] as SearchImageListTypeModel.Image).let {
                     it.copy(image = it.image.copy(isSelect = false))
                 }
             }
@@ -217,7 +221,7 @@ class SearchImageViewModel @Inject constructor(
     private fun setSelectImage(image: ImageModel, idx: Int, select: Boolean) {
         val images = searchImages.value?.toMutableList() ?: return
         try {
-            images[idx] = (images[idx] as ImageListTypeModel.Image).let {
+            images[idx] = (images[idx] as SearchImageListTypeModel.Image).let {
                 it.copy(image = it.image.copy(isSelect = select))
             }
             when (select) {

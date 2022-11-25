@@ -5,6 +5,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.Single
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.catchThrowable
 import org.junit.Before
@@ -56,6 +57,16 @@ internal class SaveSelectImageUseCaseTest {
         assertThat(actual)
             .isInstanceOf(Exception::class.java)
 
+    }
+
+    //state test
+    @Test
+    fun `useCase는 Single타입을 리턴한다`() {
+        every { repository.saveImages(any(), any()) } returns Completable.complete()
+        val actual = useCase(mutableMapOf(), emptyList())
+
+        assertThat(actual)
+            .isInstanceOf(Single::class.java)
     }
 
     //behavior test

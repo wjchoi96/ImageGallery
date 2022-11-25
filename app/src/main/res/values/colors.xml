@@ -13,6 +13,7 @@
     <color name="brown_5d5235">#5d5235</color>
     <color name="brown_2b2618">#2b2618</color>
     <color name="gray_b7babd">#b7babd</color>
+    <color name="gray_ffaaaaaa">#ffaaaaaa</color>
 
     <color name="yellow_f1eb52">#f1eb52</color> <!-- 202020 -->
 </resources>

@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.databinding.ItemSearchQueryBinding
-import com.gallery.kakaogallery.domain.model.ImageListTypeModel
+import com.gallery.kakaogallery.domain.model.SearchImageListTypeModel
 import timber.log.Timber
 
 
@@ -32,13 +32,13 @@ class SearchQueryViewHolder private constructor(
             return binding.etQuery.text.toString()
         }
 
-    fun bind(query: ImageListTypeModel.Query) {
+    fun bind(query: SearchImageListTypeModel.Query) {
         binding.holder = this
         bindQuery(query)
 //        binding.executePendingBindings()
     }
 
-    fun bindQuery(query: ImageListTypeModel.Query){
+    fun bindQuery(query: SearchImageListTypeModel.Query){
         binding.lastQuery = query.query
     }
 }

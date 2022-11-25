@@ -63,6 +63,9 @@ object Dependencies {
         //Timber
         const val timber = "5.0.1"
 
+        //android-Shimmer
+        const val shimmer = "0.5.0"
+
         //Firebase
         const val firebase = "31.0.2"
         const val googleServiceClassPath = "4.3.14"
@@ -166,6 +169,12 @@ object Dependencies {
             private const val timber = "com.jakewharton.timber:timber:${Dependencies.Version.timber}"
 
             override val implementations = listOf(timber)
+        }
+
+        object SkeletonUi : ImplementationItem {
+            private const val shimmer = "com.facebook.shimmer:shimmer:${Dependencies.Version.shimmer}"
+
+            override val implementations = listOf(shimmer)
         }
 
         object Firebase : ClassPathItem {

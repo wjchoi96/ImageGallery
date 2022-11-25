@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.FragmentSearchImageBinding
-import com.gallery.kakaogallery.domain.model.ImageListTypeModel
+import com.gallery.kakaogallery.domain.model.SearchImageListTypeModel
 import com.gallery.kakaogallery.presentation.extension.safeScrollToTop
 import com.gallery.kakaogallery.presentation.extension.setSoftKeyboardVisible
 import com.gallery.kakaogallery.presentation.extension.showToast
@@ -112,7 +112,7 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
             GridLayoutManager(mContext, itemCount, GridLayoutManager.VERTICAL, false).apply {
                 spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
                     override fun getSpanSize(position: Int): Int {
-                        return if (imageSearchAdapter.getItemViewType(position) == ImageListTypeModel.ViewType.Query.id)
+                        return if (imageSearchAdapter.getItemViewType(position) == SearchImageListTypeModel.ViewType.Query.id)
                             this@SearchImageFragment.itemCount
                         else
                             1
