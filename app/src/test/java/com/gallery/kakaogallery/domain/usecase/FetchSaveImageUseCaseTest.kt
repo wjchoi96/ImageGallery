@@ -1,5 +1,6 @@
 package com.gallery.kakaogallery.domain.usecase
 
+import com.gallery.kakaogallery.domain.model.GalleryImageListTypeModel
 import com.gallery.kakaogallery.domain.model.GalleryImageModel
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.repository.ImageRepository
@@ -23,16 +24,54 @@ internal class FetchSaveImageUseCaseTest {
         useCase = FetchSaveImageUseCase(repository)
     }
 
+    //state test
+    @Test
+    fun `useCase는 skeletonData를 먼저 emit하고 saveImageData를 emit한다`() {
+        every { repository.fetchSaveImages() } returns Observable.just(emptyList())
+
+        val skeletonSize = 1
+        val actualObservable = useCase(skeletonSize)
+        val expectSkeletonData = Result.success(MutableList(skeletonSize) { GalleryImageListTypeModel.Skeleton })
+
+        assertThat(actualObservable.blockingFirst())
+            .isEqualTo(expectSkeletonData)
+
+        assertThat(actualObservable.blockingLast())
+            .isEqualTo(Result.success(emptyList<GalleryImageListTypeModel>()))
+    }
+
+    //state test
+    @Test
+    fun `useCase는 repository의 fetchSaveImage의 결과를 GalleryImageListTypeModel로 변환한다`() {
+        every { repository.fetchSaveImages() } returns Observable.just(listOf(GalleryImageModel.Empty))
+        val actual = useCase().blockingLast().getOrNull()?.first()
+
+        assertThat(actual)
+            .isNotNull
+            .isInstanceOf(GalleryImageListTypeModel::class.java)
+            .isInstanceOf(GalleryImageListTypeModel.Image::class.java)
+    }
+
     // state test
     @Test
-    fun `useCase는 reposiory가 에러 전달시 결과를 Result로 래핑`() {
+    fun `useCase는 reposiory가 에러 전달시 결과를 Result로 래핑한다`() {
         val unitTestException = Exception("unit test exception")
         every { repository.fetchSaveImages() } returns Observable.error(unitTestException)
 
-        val actual = useCase().blockingFirst()
+        val actual = useCase().blockingLast()
         val expect = Result.failure<List<ImageModel>>(unitTestException)
         assertThat(actual)
             .isEqualTo(expect)
+            .isInstanceOf(Result::class.java)
+    }
+
+    //state test
+    @Test
+    fun `useCase는 repository가 전달한 에러를 Result로 래핑하여 전달한다`() {
+        val unitTestException = Exception("unit test exception")
+        every { repository.fetchSaveImages() } returns Observable.error(unitTestException)
+
+        val actual = useCase().blockingLast()
 
         assertThat(actual.exceptionOrNull())
             .isNotNull
@@ -42,18 +81,29 @@ internal class FetchSaveImageUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 repository가 정상 응답시 결과를 Result로 래핑`() {
+    fun `useCase는 repository가 정상 응답시 결과를 Result로 래핑한다`() {
         val images = listOf(
             GalleryImageModel.Empty,
             GalleryImageModel.Empty.copy(imageUrl = "test123")
         )
         every { repository.fetchSaveImages() } returns Observable.just(images)
 
-        val actual = useCase().blockingFirst()
-        val expect = Result.success(images)
+        val actual = useCase().blockingLast()
+        val expect = Result.success(images.map { GalleryImageListTypeModel.Image(it) })
 
         assertThat(actual)
             .isEqualTo(expect)
+            .isInstanceOf(Result::class.java)
+    }
+
+    //state test
+    @Test
+    fun `useCase는 Observable타입을 리턴한다`() {
+        every { repository.fetchSaveImages() } returns Observable.just(emptyList())
+        val actual = useCase()
+
+        assertThat(actual)
+            .isInstanceOf(Observable::class.java)
     }
 
     //behavior test
