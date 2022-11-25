@@ -3,7 +3,7 @@ package com.gallery.kakaogallery.presentation.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
-import com.gallery.kakaogallery.domain.model.GalleryImageModel
+import com.gallery.kakaogallery.domain.model.GalleryImageListTypeModel
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.MaxPageException
 import com.gallery.kakaogallery.domain.usecase.FetchSaveImageUseCase
@@ -36,8 +36,8 @@ class GalleryViewModel @Inject constructor(
         mutableMapOf<String, Int>().also { handle[KEY_SELECT_IMAGE_MAP] = it }
     }
 
-    private val _saveImages: MutableLiveData<List<GalleryImageModel>> = handle.getLiveData(KEY_SAVE_IMAGE_LIST, emptyList())
-    val saveImages: LiveData<List<GalleryImageModel>> = _saveImages
+    private val _saveImages: MutableLiveData<List<GalleryImageListTypeModel>> = handle.getLiveData(KEY_SAVE_IMAGE_LIST, emptyList())
+    val saveImages: LiveData<List<GalleryImageListTypeModel>> = _saveImages
 
     private val _headerTitle: MutableLiveData<String> =
         handle.getLiveData(KEY_HEADER_TITLE, resourceProvider.getString(StringResourceProvider.StringResourceId.MenuGallery))
@@ -148,7 +148,9 @@ class GalleryViewModel @Inject constructor(
         val images = saveImages.value?.toMutableList() ?: return
         try {
             for (idx in selectImageHashMap.values) {
-                images[idx] = images[idx].copy(isSelect = false)
+                images[idx] = (images[idx] as GalleryImageListTypeModel.Image).let {
+                    it.copy(image = it.image.copy(isSelect = false))
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -160,7 +162,9 @@ class GalleryViewModel @Inject constructor(
     private fun setSelectImage(image: ImageModel, idx: Int, select: Boolean) {
         val images = saveImages.value?.toMutableList() ?: return
         try {
-            images[idx] = images[idx].copy(isSelect = select)
+            images[idx] = (images[idx] as GalleryImageListTypeModel.Image).let {
+                it.copy(image = it.image.copy(isSelect = select))
+            }
             when (select) {
                 true -> selectImageHashMap[image.hash] = idx
                 else -> selectImageHashMap.remove(image.hash)
