@@ -3,7 +3,7 @@ package com.gallery.kakaogallery.presentation.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
-import com.gallery.kakaogallery.domain.model.ImageListTypeModel
+import com.gallery.kakaogallery.domain.model.SearchImageListTypeModel
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.MaxPageException
 import com.gallery.kakaogallery.domain.usecase.FetchQueryDataUseCase
@@ -48,9 +48,9 @@ class SearchImageViewModel @Inject constructor(
         mutableMapOf<String, Int>().also { handle[KEY_SELECT_IMAGE_MAP] = it }
     }
 
-    private val _searchImages: MutableLiveData<List<ImageListTypeModel>> =
+    private val _searchImages: MutableLiveData<List<SearchImageListTypeModel>> =
         handle.getLiveData(KEY_SEARCH_IMAGE_LIST, emptyList())
-    val searchImages: LiveData<List<ImageListTypeModel>> = _searchImages
+    val searchImages: LiveData<List<SearchImageListTypeModel>> = _searchImages
 
     private val _searchResultIsEmpty = MutableLiveData(false)
     val searchResultIsEmpty: LiveData<Boolean> = _searchResultIsEmpty
@@ -203,7 +203,7 @@ class SearchImageViewModel @Inject constructor(
         val images = searchImages.value?.toMutableList() ?: return
         try {
             for (idx in selectImageUrlMap.values) {
-                images[idx] = (images[idx] as ImageListTypeModel.Image).let {
+                images[idx] = (images[idx] as SearchImageListTypeModel.Image).let {
                     it.copy(image = it.image.copy(isSelect = false))
                 }
             }
@@ -217,7 +217,7 @@ class SearchImageViewModel @Inject constructor(
     private fun setSelectImage(image: ImageModel, idx: Int, select: Boolean) {
         val images = searchImages.value?.toMutableList() ?: return
         try {
-            images[idx] = (images[idx] as ImageListTypeModel.Image).let {
+            images[idx] = (images[idx] as SearchImageListTypeModel.Image).let {
                 it.copy(image = it.image.copy(isSelect = select))
             }
             when (select) {

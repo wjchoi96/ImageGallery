@@ -1,7 +1,7 @@
 package com.gallery.kakaogallery.presentation.ui.searchimage
 
 import androidx.recyclerview.widget.DiffUtil
-import com.gallery.kakaogallery.domain.model.ImageListTypeModel
+import com.gallery.kakaogallery.domain.model.SearchImageListTypeModel
 import timber.log.Timber
 
 /**
@@ -13,8 +13,8 @@ import timber.log.Timber
  * 최대 사이즈는 2^26(67,108,864)개까지 지원
  */
 class SearchImageDiffUtilCallback(
-    private val oldList: List<ImageListTypeModel>,
-    private val newList: List<ImageListTypeModel>,
+    private val oldList: List<SearchImageListTypeModel>,
+    private val newList: List<SearchImageListTypeModel>,
     private val queryPayload: Any?,
     private val selectPayload: Any?
 ) : DiffUtil.Callback() {
@@ -35,14 +35,14 @@ class SearchImageDiffUtilCallback(
         val new = newList[newItemPosition]
         Timber.d("getChangePayload called")
         return when {
-            old is ImageListTypeModel.Query && new is ImageListTypeModel.Query -> {
+            old is SearchImageListTypeModel.Query && new is SearchImageListTypeModel.Query -> {
                 if (old.query != new.query) {
                     queryPayload
                 } else {
                     super.getChangePayload(oldItemPosition, newItemPosition)
                 }
             }
-            old is ImageListTypeModel.Image && new is ImageListTypeModel.Image -> {
+            old is SearchImageListTypeModel.Image && new is SearchImageListTypeModel.Image -> {
                 when {
                     old.image.isSelect != new.image.isSelect -> selectPayload
                     else -> super.getChangePayload(oldItemPosition, newItemPosition)

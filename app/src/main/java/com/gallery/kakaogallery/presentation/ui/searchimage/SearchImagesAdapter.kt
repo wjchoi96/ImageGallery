@@ -4,7 +4,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.gallery.kakaogallery.domain.model.ImageListTypeModel
+import com.gallery.kakaogallery.domain.model.SearchImageListTypeModel
 import com.gallery.kakaogallery.domain.model.ImageModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
@@ -45,13 +45,13 @@ class SearchImagesAdapter(
         Select
     }
 
-    private var imageList: List<ImageListTypeModel> = emptyList()
+    private var imageList: List<SearchImageListTypeModel> = emptyList()
 
-    private fun setList(list: List<ImageListTypeModel>) {
+    private fun setList(list: List<SearchImageListTypeModel>) {
         imageList = list
     }
 
-    private fun getDiffRes(newList: List<ImageListTypeModel>): DiffUtil.DiffResult {
+    private fun getDiffRes(newList: List<SearchImageListTypeModel>): DiffUtil.DiffResult {
         Timber.d("getDiffRes run at ${Thread.currentThread().name}")
         val diffCallback = SearchImageDiffUtilCallback(
             this.imageList,
@@ -62,7 +62,7 @@ class SearchImagesAdapter(
         return DiffUtil.calculateDiff(diffCallback)
     }
 
-    fun updateList(list: List<ImageListTypeModel>) {
+    fun updateList(list: List<SearchImageListTypeModel>) {
         val newList = list.toList()
         Observable.fromCallable{
             getDiffRes(newList)
@@ -96,9 +96,9 @@ class SearchImagesAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
             is SearchQueryViewHolder ->
-                holder.bind((imageList[position] as ImageListTypeModel.Query))
+                holder.bind((imageList[position] as SearchImageListTypeModel.Query))
             is GalleryImageItemViewHolder ->
-                holder.bind((imageList[position] as ImageListTypeModel.Image).image, false)
+                holder.bind((imageList[position] as SearchImageListTypeModel.Image).image, false)
         }
     }
 
@@ -116,12 +116,12 @@ class SearchImagesAdapter(
                 Payload.Select -> {
                     if (holder is GalleryImageItemViewHolder) {
                         Timber.d("payload Select : $position => $position")
-                        holder.bindIsSelect((imageList[position] as ImageListTypeModel.Image).image)
+                        holder.bindIsSelect((imageList[position] as SearchImageListTypeModel.Image).image)
                     }
                 }
                 Payload.Query -> {
                     if (holder is SearchQueryViewHolder) {
-                        holder.bindQuery((imageList[position] as ImageListTypeModel.Query))
+                        holder.bindQuery((imageList[position] as SearchImageListTypeModel.Query))
                     }
                 }
             }

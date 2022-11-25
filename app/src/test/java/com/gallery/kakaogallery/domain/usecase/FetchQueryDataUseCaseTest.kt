@@ -1,7 +1,6 @@
 package com.gallery.kakaogallery.domain.usecase
 
-import com.gallery.kakaogallery.domain.model.ImageListTypeModel
-import com.gallery.kakaogallery.domain.model.ImageModel
+import com.gallery.kakaogallery.domain.model.SearchImageListTypeModel
 import com.gallery.kakaogallery.domain.model.SearchImageModel
 import com.gallery.kakaogallery.domain.repository.ImageRepository
 import io.mockk.every
@@ -46,7 +45,7 @@ internal class FetchQueryDataUseCaseTest {
         val (query, page) = "" to 1
 
         val actual = useCase(query, page).blockingGet()
-        val except = listOf<ImageListTypeModel>(ImageListTypeModel.Query(query))
+        val except = listOf<SearchImageListTypeModel>(SearchImageListTypeModel.Query(query))
         assertThat(actual)
             .isEqualTo(except)
     }
@@ -63,9 +62,9 @@ internal class FetchQueryDataUseCaseTest {
         every { repository.fetchQueryData(query, page) } returns Single.just(images)
         val actual = useCase(query, page).blockingGet()
         val except = listOf(
-            ImageListTypeModel.Query(query),
-            ImageListTypeModel.Image(images[0]),
-            ImageListTypeModel.Image(images[1])
+            SearchImageListTypeModel.Query(query),
+            SearchImageListTypeModel.Image(images[0]),
+            SearchImageListTypeModel.Image(images[1])
         )
         assertThat(actual.first())
             .isEqualTo(except.first())
@@ -85,7 +84,7 @@ internal class FetchQueryDataUseCaseTest {
 
         every { repository.fetchQueryData(query, page) } returns Single.just(images)
         val actual = useCase(query, page).blockingGet()
-        val except = images.map { ImageListTypeModel.Image(it) }
+        val except = images.map { SearchImageListTypeModel.Image(it) }
 
         assertThat(actual)
             .isEqualTo(except)
