@@ -18,11 +18,11 @@
 
 ## Development Environment
 - kotlin
-- Android Studio Bumblebee | 2021.1.1 Patch 2
+- Android Studio Dolphin | 2021.3.1 Patch 1
 
 ## Application Version
-- minSdkVersion : 23
-- targetSdkVersion : 31
+- minSdkVersion : 24
+- targetSdkVersion : 33
 
 ## APIs
 ### Rx
