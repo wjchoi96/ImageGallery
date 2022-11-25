@@ -3,7 +3,7 @@ package com.gallery.kakaogallery.presentation.ui.gallery
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.gallery.kakaogallery.domain.model.GalleryImageModel
+import com.gallery.kakaogallery.domain.model.GalleryImageListTypeModel
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.presentation.ui.searchimage.GalleryImageItemViewHolder
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -14,19 +14,19 @@ import timber.log.Timber
 
 class GalleryAdapter(
     private val imageItemSelectListener: (ImageModel, Int) -> Unit
-) : RecyclerView.Adapter<GalleryImageItemViewHolder>() {
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     enum class Payload {
         Select
     }
 
-    private var imageList: List<GalleryImageModel> = emptyList()
+    private var imageList: List<GalleryImageListTypeModel> = emptyList()
 
-    fun setList(list: List<GalleryImageModel>) {
+    private fun setList(list: List<GalleryImageListTypeModel>) {
         imageList = list
     }
 
-    private fun getDiffRes(newList: List<GalleryImageModel>): DiffUtil.DiffResult {
+    private fun getDiffRes(newList: List<GalleryImageListTypeModel>): DiffUtil.DiffResult {
         Timber.d("getDiffRes run at ${Thread.currentThread().name}")
         val diffCallback = GalleryImageDiffUtilCallback(
             this.imageList,
@@ -37,7 +37,7 @@ class GalleryAdapter(
     }
 
     private var adapterDisposable: Disposable? = null
-    fun updateList(list: List<GalleryImageModel>) {
+    fun updateList(list: List<GalleryImageListTypeModel>) {
         adapterDisposable?.dispose()
         adapterDisposable = null
 
@@ -54,23 +54,37 @@ class GalleryAdapter(
             }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GalleryImageItemViewHolder {
-        return GalleryImageItemViewHolder.from(
-            parent,
-            imageItemSelectListener
-        )
+    override fun getItemViewType(position: Int): Int {
+        return when (imageList[position]) {
+            is GalleryImageListTypeModel.Skeleton -> GalleryImageListTypeModel.ViewType.Skeleton.id
+            else -> GalleryImageListTypeModel.ViewType.Image.id
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType){
+            GalleryImageListTypeModel.ViewType.Skeleton.id -> GallerySkeletonViewHolder.from(parent)
+            else -> GalleryImageItemViewHolder.from(
+                parent,
+                imageItemSelectListener
+            )
+        }
     }
 
     override fun getItemCount(): Int {
         return imageList.size
     }
 
-    override fun onBindViewHolder(holder: GalleryImageItemViewHolder, position: Int) {
-        holder.bind(imageList[position], true)
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (holder) {
+            is GalleryImageItemViewHolder ->
+                holder.bind((imageList[position] as GalleryImageListTypeModel.Image).image, true)
+        }
+
     }
 
     override fun onBindViewHolder(
-        holder: GalleryImageItemViewHolder,
+        holder: RecyclerView.ViewHolder,
         position: Int,
         payloads: MutableList<Any>
     ) {
@@ -81,8 +95,12 @@ class GalleryAdapter(
         for (payload in payloads) {
             when (payload) {
                 Payload.Select -> {
-                    Timber.d("payload Select : $position => $position")
-                    holder.bindIsSelect(imageList[position])
+                    when (holder) {
+                        is GalleryImageItemViewHolder -> {
+                            Timber.d("payload Select : $position => $position")
+                            holder.bindIsSelect((imageList[position] as GalleryImageListTypeModel.Image).image)
+                        }
+                    }
                 }
             }
         }
