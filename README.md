@@ -12,8 +12,9 @@
 | [main](https://github.com/wjchoi96/KakaoGallery/tree/main) | 배포용 |
 | [dev](https://github.com/wjchoi96/KakaoGallery/tree/dev) | 개발용 |
 
-## Docs
+## Reference
  - [프로젝트 관리](https://full-growth-4d2.notion.site/KakaoGallery-e1de93d4a6cb452989253006bc06e59d)
+ - [App Release Link](https://appdistribution.firebase.google.com/pub/i/e608755ba7c9f066)
 
 ## Development Environment
 - kotlin
