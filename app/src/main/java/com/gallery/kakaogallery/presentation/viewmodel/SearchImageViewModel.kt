@@ -112,35 +112,38 @@ class SearchImageViewModel @Inject constructor(
         _dataLoading.value = true
         fetchSearchDataQueryDataUseCase(query, page)
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
+            .subscribe { res ->
+                Timber.d("search query subscribe => $res")
                 _dataLoading.value = false
-                page++
-                if (query.isNotEmpty()) _searchResultIsEmpty.value = it.size <= 1
-                when (selectImageUrlMap.isEmpty()) {
-                    true -> _searchImages.value = it
-                    else -> {
-                        _searchImages.value = it.map { item ->
-                            when {
-                                item is ImageListTypeModel.Image &&
-                                        selectImageUrlMap.containsKey(item.image.imageUrl) ->
-                                    item.copy(image = item.image.copy(isSelect = true))
-                                else -> item
+                res.onSuccess {
+                    page++
+                    if (query.isNotEmpty()) _searchResultIsEmpty.value = it.size <= 1
+                    when (selectImageUrlMap.isEmpty()) {
+                        true -> _searchImages.value = it
+                        else -> {
+                            _searchImages.value = it.map { item ->
+                                when {
+                                    item is SearchImageListTypeModel.Image &&
+                                            selectImageUrlMap.containsKey(item.image.imageUrl) ->
+                                        item.copy(image = item.image.copy(isSelect = true))
+                                    else -> item
+                                }
                             }
+                            selectImageUrlMap.entries.removeIf { entry -> entry.value >= it.size }
+                            setHeaderTitleUseSelectMap()
                         }
-                        selectImageUrlMap.entries.removeIf { entry -> entry.value >= it.size }
-                        setHeaderTitleUseSelectMap()
+                    }
+                }.onFailure {
+                    when (it) {
+                        is MaxPageException -> showToast(
+                            resourceProvider.getString(
+                                StringResourceProvider.StringResourceId.LastPage
+                            )
+                        )
+                        else -> showToast("$searchFailMessage\n${it.message}")
                     }
                 }
-            }) {
-                _dataLoading.value = false
-                when (it) {
-                    is MaxPageException -> showToast(
-                        resourceProvider.getString(
-                            StringResourceProvider.StringResourceId.LastPage
-                        )
-                    )
-                    else -> showToast("$searchFailMessage\n${it.message}")
-                }
+
             }.let { compositeDisposable.add(it) }
     }
 
@@ -148,20 +151,21 @@ class SearchImageViewModel @Inject constructor(
         _pagingDataLoading.value = true
         fetchSearchDataQueryDataUseCase(query, searchPage)
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
+            .subscribe{ res ->
                 _pagingDataLoading.value = false
-                page = searchPage + 1
-                val prevList = _searchImages.value ?: emptyList()
-                _searchImages.value = prevList + it
-            }) {
-                _pagingDataLoading.value = false
-                when (it) {
-                    is MaxPageException -> showToast(
-                        resourceProvider.getString(
-                            StringResourceProvider.StringResourceId.LastPage
+                res.onSuccess {
+                    page = searchPage + 1
+                    val prevList = _searchImages.value ?: emptyList()
+                    _searchImages.value = prevList + it
+                }.onFailure {
+                    when (it) {
+                        is MaxPageException -> showToast(
+                            resourceProvider.getString(
+                                StringResourceProvider.StringResourceId.LastPage
+                            )
                         )
-                    )
-                    else -> showToast("$searchFailMessage\n${it.message}")
+                        else -> showToast("$searchFailMessage\n${it.message}")
+                    }
                 }
             }.let { compositeDisposable.add(it) }
     }
