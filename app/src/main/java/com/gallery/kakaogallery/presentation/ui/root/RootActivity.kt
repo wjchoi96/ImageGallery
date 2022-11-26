@@ -47,7 +47,10 @@ class RootActivity : BindingActivity<ActivityRootBinding>() {
     private fun initSplashScreen(): SplashScreen? {
         return when (splashNeedShow) {
             true -> installSplashScreen()
-            else -> null
+            else -> {
+                setTheme(R.style.Theme_KakaoGallery)
+                null
+            }
         }
     }
 
