@@ -3,15 +3,16 @@ package com.gallery.kakaogallery.presentation.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
-import com.gallery.kakaogallery.domain.model.SearchImageListTypeModel
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.MaxPageException
+import com.gallery.kakaogallery.domain.model.SearchImageListTypeModel
 import com.gallery.kakaogallery.domain.usecase.FetchQueryDataUseCase
 import com.gallery.kakaogallery.domain.usecase.SaveSelectImageUseCase
 import com.gallery.kakaogallery.presentation.application.StringResourceProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.kotlin.addTo
+import io.reactivex.rxjava3.subjects.PublishSubject
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -71,10 +72,63 @@ class SearchImageViewModel @Inject constructor(
     private val _uiEvent = MutableLiveData<SingleEvent<UiEvent>>()
     val uiEvent: LiveData<SingleEvent<UiEvent>> = _uiEvent
 
+    private val _uiAction: PublishSubject<UiAction> = PublishSubject.create()
+
 
     init {
+        bindAction()
         if(_searchImages.value == null || _searchImages.value!!.isEmpty()){
             fetchSearchQuery(lastQuery ?: "")
+        }
+    }
+
+    private fun bindAction(){
+        _uiAction
+            .filter { it is UiAction.Search }
+            .flatMap {
+                (it as UiAction.Search).let { searchAction ->
+                    lastQuery = searchAction.query
+                    page = 1
+                    _dataLoading.value = true
+                    fetchSearchDataQueryDataUseCase(searchAction.query, 1)
+                }
+            }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                Timber.d("search query subscribe => $it")
+                processSearchResult(it)
+            }.addTo(compositeDisposable)
+    }
+
+    private fun processSearchResult(res: Result<List<SearchImageListTypeModel>>){
+        _dataLoading.value = false
+        res.onSuccess {
+            page++
+            if (lastQuery?.isNotEmpty() == true) _searchResultIsEmpty.value = it.size <= 1
+            when (selectImageUrlMap.isEmpty()) {
+                true -> _searchImages.value = it
+                else -> {
+                    _searchImages.value = it.map { item ->
+                        when {
+                            item is SearchImageListTypeModel.Image &&
+                                    selectImageUrlMap.containsKey(item.image.imageUrl) ->
+                                item.copy(image = item.image.copy(isSelect = true))
+                            else -> item
+                        }
+                    }
+                    selectImageUrlMap.entries.removeIf { entry -> entry.value >= it.size }
+                    setHeaderTitleUseSelectMap()
+                }
+            }
+        }.onFailure {
+            when (it) {
+                is MaxPageException -> showToast(
+                    resourceProvider.getString(
+                        StringResourceProvider.StringResourceId.LastPage
+                    )
+                )
+                else -> showToast("$searchFailMessage\n${it.message}")
+            }
         }
     }
 
@@ -107,44 +161,7 @@ class SearchImageViewModel @Inject constructor(
 
     // query 를 비워서 보내면 에러뜬다
     private fun fetchSearchQuery(query: String) {
-        lastQuery = query
-        page = 1
-        _dataLoading.value = true
-        fetchSearchDataQueryDataUseCase(query, page)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { res ->
-                Timber.d("search query subscribe => $res")
-                _dataLoading.value = false
-                res.onSuccess {
-                    page++
-                    if (query.isNotEmpty()) _searchResultIsEmpty.value = it.size <= 1
-                    when (selectImageUrlMap.isEmpty()) {
-                        true -> _searchImages.value = it
-                        else -> {
-                            _searchImages.value = it.map { item ->
-                                when {
-                                    item is SearchImageListTypeModel.Image &&
-                                            selectImageUrlMap.containsKey(item.image.imageUrl) ->
-                                        item.copy(image = item.image.copy(isSelect = true))
-                                    else -> item
-                                }
-                            }
-                            selectImageUrlMap.entries.removeIf { entry -> entry.value >= it.size }
-                            setHeaderTitleUseSelectMap()
-                        }
-                    }
-                }.onFailure {
-                    when (it) {
-                        is MaxPageException -> showToast(
-                            resourceProvider.getString(
-                                StringResourceProvider.StringResourceId.LastPage
-                            )
-                        )
-                        else -> showToast("$searchFailMessage\n${it.message}")
-                    }
-                }
-
-            }.let { compositeDisposable.add(it) }
+        _uiAction.onNext(UiAction.Search(query))
     }
 
     private fun fetchNextSearchQuery(query: String, searchPage: Int) {
@@ -278,6 +295,10 @@ class SearchImageViewModel @Inject constructor(
 
     private fun showToast(message: String) {
         _uiEvent.value = SingleEvent(UiEvent.ShowToast(message))
+    }
+
+    sealed class UiAction {
+        data class Search(val query: String): UiAction()
     }
 
     sealed class UiEvent {
