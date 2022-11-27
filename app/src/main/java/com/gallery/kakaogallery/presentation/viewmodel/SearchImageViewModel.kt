@@ -11,6 +11,7 @@ import com.gallery.kakaogallery.domain.usecase.SaveSelectImageUseCase
 import com.gallery.kakaogallery.presentation.application.StringResourceProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.subjects.PublishSubject
@@ -79,7 +80,7 @@ class SearchImageViewModel @Inject constructor(
     init {
         bindAction()
         if(_searchImages.value == null || _searchImages.value!!.isEmpty()){
-            fetchSearchQuery(lastQuery ?: "")
+            _uiAction.onNext(UiAction.Search(lastQuery ?: ""))
         }
     }
 
@@ -87,11 +88,25 @@ class SearchImageViewModel @Inject constructor(
         _uiAction
             .filter { it is UiAction.Search }
             .flatMap {
-                (it as UiAction.Search).let { searchAction ->
-                    lastQuery = searchAction.query
-                    page = 1
-                    _dataLoading.value = true
-                    fetchSearchDataQueryDataUseCase(searchAction.query, 1)
+                with(it as UiAction.Search) {
+                    _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
+                    when (dataLoading.value) {
+                        true -> {
+                            Observable.just(
+                                Result.failure(Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.Loading)))
+                            )
+                        }
+                        else -> {
+                            if(query != lastQuery && selectImageUrlMap.isNotEmpty()) {
+                                selectImageUrlMap.clear()
+                                setHeaderTitleUseSelectMap()
+                            }
+                            lastQuery = it.query
+                            page = 1
+                            _dataLoading.value = true
+                            fetchSearchDataQueryDataUseCase(it.query, 1)
+                        }
+                    }
                 }
             }
             .observeOn(AndroidSchedulers.mainThread())
@@ -104,8 +119,8 @@ class SearchImageViewModel @Inject constructor(
             .filter { it is UiAction.SaveSelectImage }
             .flatMapSingle {
                 _dataLoading.value = true
-                (it as UiAction.SaveSelectImage).let { saveAction ->
-                    when (saveAction.selectImageMap.isEmpty() || it.images == null) {
+                with(it as UiAction.SaveSelectImage) {
+                    when (it.selectImageMap.isEmpty() || it.images == null) {
                         true ->
                             Single.error(Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)))
                         else -> saveSelectImageUseCase(
@@ -188,10 +203,6 @@ class SearchImageViewModel @Inject constructor(
             selectImageUrlMap,
             searchImages.value
         ))
-    }
-
-    private fun fetchSearchQuery(query: String) {
-        _uiAction.onNext(UiAction.Search(query))
     }
 
     private fun fetchNextSearchQuery(query: String, searchPage: Int) {
@@ -289,23 +300,7 @@ class SearchImageViewModel @Inject constructor(
     }
 
     fun searchQueryEvent(query: String) {
-        Timber.d("search query : $query")
-        _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
-        when {
-            query.isBlank() -> {
-                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneQuery))
-                return
-            }
-            dataLoading.value == true -> {
-                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.Loading))
-                return
-            }
-            query != lastQuery && selectImageUrlMap.isNotEmpty() -> {
-                selectImageUrlMap.clear()
-                setHeaderTitleUseSelectMap()
-            }
-        }
-        fetchSearchQuery(query)
+        _uiAction.onNext(UiAction.Search(query))
     }
 
     fun fetchNextPage() {
