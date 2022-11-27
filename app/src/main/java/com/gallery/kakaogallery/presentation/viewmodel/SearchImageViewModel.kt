@@ -240,29 +240,6 @@ class SearchImageViewModel @Inject constructor(
         ))
     }
 
-    private fun fetchNextSearchQuery(query: String, searchPage: Int) {
-        _pagingDataLoading.value = true
-        fetchSearchDataQueryDataUseCase(query, searchPage)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe{ res ->
-                _pagingDataLoading.value = false
-                res.onSuccess {
-                    currentPage = searchPage + 1
-                    val prevList = _searchImages.value ?: emptyList()
-                    _searchImages.value = prevList + it
-                }.onFailure {
-                    when (it) {
-                        is MaxPageException -> showToast(
-                            resourceProvider.getString(
-                                StringResourceProvider.StringResourceId.LastPage
-                            )
-                        )
-                        else -> showToast("$searchFailMessage\n${it.message}")
-                    }
-                }
-            }.let { compositeDisposable.add(it) }
-    }
-
     fun backgroundTouchEvent() {
         _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
     }
