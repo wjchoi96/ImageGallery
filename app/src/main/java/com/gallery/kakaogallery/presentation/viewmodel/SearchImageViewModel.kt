@@ -33,7 +33,7 @@ class SearchImageViewModel @Inject constructor(
         private const val KEY_LAST_QUERY = "key_last_query"
         private const val KEY_CURRENT_PAGE = "key_current_page"
     }
-    private var page: Int= handle[KEY_CURRENT_PAGE] ?: 1
+    private var currentPage: Int= handle[KEY_CURRENT_PAGE] ?: 1
         set(value) {
             handle[KEY_CURRENT_PAGE] = value
             field = value
@@ -102,7 +102,7 @@ class SearchImageViewModel @Inject constructor(
                                 setHeaderTitleUseSelectMap()
                             }
                             lastQuery = it.query
-                            page = 1
+                            currentPage = 1
                             _dataLoading.value = true
                             fetchSearchDataQueryDataUseCase(it.query, 1)
                         }
@@ -170,7 +170,6 @@ class SearchImageViewModel @Inject constructor(
     private fun processSearchResult(res: Result<List<SearchImageListTypeModel>>){
         _dataLoading.value = false
         res.onSuccess {
-            page++
             if (lastQuery?.isNotEmpty() == true) _searchResultIsEmpty.value = it.size <= 1
             when (selectImageUrlMap.isEmpty()) {
                 true -> _searchImages.value = it
@@ -202,7 +201,7 @@ class SearchImageViewModel @Inject constructor(
     private fun processPagingResult(res: Result<List<SearchImageListTypeModel>>) {
         _pagingDataLoading.value = false
         res.onSuccess {
-            page++
+            currentPage++
             val prevList = _searchImages.value ?: emptyList()
             _searchImages.value = prevList + it
         }.onFailure {
@@ -248,7 +247,7 @@ class SearchImageViewModel @Inject constructor(
             .subscribe{ res ->
                 _pagingDataLoading.value = false
                 res.onSuccess {
-                    page = searchPage + 1
+                    currentPage = searchPage + 1
                     val prevList = _searchImages.value ?: emptyList()
                     _searchImages.value = prevList + it
                 }.onFailure {
@@ -340,14 +339,7 @@ class SearchImageViewModel @Inject constructor(
     }
 
     fun fetchNextPage() {
-        _uiAction.onNext(UiAction.Paging(lastQuery, page))
-//        if (lastQuery.isNullOrBlank()) {
-//            return
-//        }
-//        if (pagingDataLoading.value == true) {
-//            return
-//        }
-//        fetchNextSearchQuery(lastQuery!!, page)
+        _uiAction.onNext(UiAction.Paging(lastQuery, currentPage + 1))
     }
 
     private fun showToast(message: String) {
