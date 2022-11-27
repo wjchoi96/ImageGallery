@@ -153,18 +153,6 @@ class SearchImageViewModel @Inject constructor(
             }){
                 processSaveImageException(it)
             }.addTo(compositeDisposable)
-
-        _uiAction
-            .filter { it is UiAction.ClickSaveAction }
-            .subscribe {
-                with (it as UiAction.ClickSaveAction) {
-                    when (it.selectImageCount) {
-                        0 -> _uiEvent.value =
-                            SingleEvent(UiEvent.ShowToast(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)))
-                        else -> _uiEvent.value = SingleEvent(UiEvent.PresentSaveDialog(selectImageUrlMap.size))
-                    }
-                }
-            }.addTo(compositeDisposable)
     }
 
     private fun processSearchResult(res: Result<List<SearchImageListTypeModel>>){
@@ -245,7 +233,11 @@ class SearchImageViewModel @Inject constructor(
     }
 
     fun clickSaveEvent() {
-        _uiAction.onNext(UiAction.ClickSaveAction(selectImageUrlMap.size))
+        when (selectImageUrlMap.size) {
+            0 -> _uiEvent.value =
+                SingleEvent(UiEvent.ShowToast(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)))
+            else -> _uiEvent.value = SingleEvent(UiEvent.PresentSaveDialog(selectImageUrlMap.size))
+        }
     }
 
     fun clickSelectModeEvent() {
@@ -326,7 +318,6 @@ class SearchImageViewModel @Inject constructor(
     sealed class UiAction {
         data class Search(val query: String) : UiAction()
         data class Paging(val query: String?, val page: Int) : UiAction()
-        data class ClickSaveAction(val selectImageCount: Int) : UiAction()
         data class SaveSelectImage(
             val selectImageMap: MutableMap<String, Int>,
             val images: List<SearchImageListTypeModel>?
