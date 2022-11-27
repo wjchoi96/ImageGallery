@@ -88,7 +88,7 @@ class SearchImageViewModel @Inject constructor(
         _uiAction
             .filter { it is UiAction.Search }
             .flatMap {
-                with(it as UiAction.Search) {
+                with (it as UiAction.Search) {
                     _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
                     when (dataLoading.value) {
                         true -> {
@@ -116,10 +116,28 @@ class SearchImageViewModel @Inject constructor(
             }.addTo(compositeDisposable)
 
         _uiAction
+            .filter { it is UiAction.Paging }
+            .flatMap {
+                with (it as UiAction.Paging) {
+                    when {
+                        it.query.isNullOrBlank() -> Observable.empty()
+                        pagingDataLoading.value == true -> Observable.empty()
+                        else -> {
+                            _pagingDataLoading.value = true
+                            fetchSearchDataQueryDataUseCase(it.query, it.page)
+                        }
+                    }
+                }
+            }.observeOn(AndroidSchedulers.mainThread())
+            .subscribe{ res ->
+                processPagingResult(res)
+            }.addTo(compositeDisposable)
+
+        _uiAction
             .filter { it is UiAction.SaveSelectImage }
             .flatMapSingle {
                 _dataLoading.value = true
-                with(it as UiAction.SaveSelectImage) {
+                with (it as UiAction.SaveSelectImage) {
                     when (it.selectImageMap.isEmpty() || it.images == null) {
                         true ->
                             Single.error(Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)))
@@ -139,14 +157,14 @@ class SearchImageViewModel @Inject constructor(
         _uiAction
             .filter { it is UiAction.ClickSaveAction }
             .subscribe {
-                with(it as UiAction.ClickSaveAction) {
+                with (it as UiAction.ClickSaveAction) {
                     when (it.selectImageCount) {
                         0 -> _uiEvent.value =
                             SingleEvent(UiEvent.ShowToast(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)))
                         else -> _uiEvent.value = SingleEvent(UiEvent.PresentSaveDialog(selectImageUrlMap.size))
                     }
                 }
-            }
+            }.addTo(compositeDisposable)
     }
 
     private fun processSearchResult(res: Result<List<SearchImageListTypeModel>>){
@@ -169,6 +187,24 @@ class SearchImageViewModel @Inject constructor(
                     setHeaderTitleUseSelectMap()
                 }
             }
+        }.onFailure {
+            when (it) {
+                is MaxPageException -> showToast(
+                    resourceProvider.getString(
+                        StringResourceProvider.StringResourceId.LastPage
+                    )
+                )
+                else -> showToast("$searchFailMessage\n${it.message}")
+            }
+        }
+    }
+
+    private fun processPagingResult(res: Result<List<SearchImageListTypeModel>>) {
+        _pagingDataLoading.value = false
+        res.onSuccess {
+            page++
+            val prevList = _searchImages.value ?: emptyList()
+            _searchImages.value = prevList + it
         }.onFailure {
             when (it) {
                 is MaxPageException -> showToast(
@@ -304,13 +340,14 @@ class SearchImageViewModel @Inject constructor(
     }
 
     fun fetchNextPage() {
-        if (lastQuery.isNullOrBlank()) {
-            return
-        }
-        if (pagingDataLoading.value == true) {
-            return
-        }
-        fetchNextSearchQuery(lastQuery!!, page)
+        _uiAction.onNext(UiAction.Paging(lastQuery, page))
+//        if (lastQuery.isNullOrBlank()) {
+//            return
+//        }
+//        if (pagingDataLoading.value == true) {
+//            return
+//        }
+//        fetchNextSearchQuery(lastQuery!!, page)
     }
 
     private fun showToast(message: String) {
@@ -319,6 +356,7 @@ class SearchImageViewModel @Inject constructor(
 
     sealed class UiAction {
         data class Search(val query: String) : UiAction()
+        data class Paging(val query: String?, val page: Int) : UiAction()
         data class ClickSaveAction(val selectImageCount: Int) : UiAction()
         data class SaveSelectImage(
             val selectImageMap: MutableMap<String, Int>,
