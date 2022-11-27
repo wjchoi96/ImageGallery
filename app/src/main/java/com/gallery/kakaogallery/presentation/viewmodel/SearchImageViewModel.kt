@@ -11,6 +11,7 @@ import com.gallery.kakaogallery.domain.usecase.SaveSelectImageUseCase
 import com.gallery.kakaogallery.presentation.application.StringResourceProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.subjects.PublishSubject
 import timber.log.Timber
@@ -98,6 +99,27 @@ class SearchImageViewModel @Inject constructor(
                 Timber.d("search query subscribe => $it")
                 processSearchResult(it)
             }.addTo(compositeDisposable)
+
+        _uiAction
+            .filter { it is UiAction.SaveSelectImage }
+            .flatMapSingle {
+                _dataLoading.value = true
+                (it as UiAction.SaveSelectImage).let { saveAction ->
+                    when (saveAction.selectImageMap.isEmpty() || it.images == null) {
+                        true ->
+                            Single.error(Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)))
+                        else -> saveSelectImageUseCase(
+                            it.selectImageMap,
+                            it.images
+                        )
+                    }
+                }
+            }.observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
+                processSaveImageResult(it)
+            }){
+                processSaveImageException(it)
+            }.addTo(compositeDisposable)
     }
 
     private fun processSearchResult(res: Result<List<SearchImageListTypeModel>>){
@@ -132,34 +154,30 @@ class SearchImageViewModel @Inject constructor(
         }
     }
 
-    fun saveSelectImage() {
-        if (selectImageUrlMap.isEmpty()) {
-            showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage))
-            return
+    private fun processSaveImageResult(res: Boolean) {
+        _dataLoading.value = false
+        when (res) {
+            true -> {
+                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveSuccess))
+                clickSelectModeEvent()
+            }
+            else -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveFail))
         }
-        _dataLoading.value = true
-        val images = searchImages.value ?: return
-        saveSelectImageUseCase(
-            selectImageUrlMap,
-            images
-        ).observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                _dataLoading.value = false
-                when (it) {
-                    true -> {
-                        showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveSuccess))
-                        clickSelectModeEvent()
-                    }
-                    else -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveFail))
-                }
-            }) {
-                _dataLoading.value = false
-                it.printStackTrace()
-                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveFail) + " $it")
-            }.addTo(compositeDisposable)
     }
 
-    // query 를 비워서 보내면 에러뜬다
+    private fun processSaveImageException(throwable: Throwable) {
+        _dataLoading.value = false
+        throwable.printStackTrace()
+        showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveFail) + " $throwable")
+    }
+
+    fun saveSelectImage() {
+        _uiAction.onNext(UiAction.SaveSelectImage(
+            selectImageUrlMap,
+            searchImages.value
+        ))
+    }
+
     private fun fetchSearchQuery(query: String) {
         _uiAction.onNext(UiAction.Search(query))
     }
@@ -299,6 +317,10 @@ class SearchImageViewModel @Inject constructor(
 
     sealed class UiAction {
         data class Search(val query: String): UiAction()
+        data class SaveSelectImage(
+            val selectImageMap: MutableMap<String, Int>,
+            val images: List<SearchImageListTypeModel>?
+        ) : UiAction()
     }
 
     sealed class UiEvent {
