@@ -74,18 +74,18 @@ class SearchImageViewModel @Inject constructor(
     private val _uiEvent = MutableLiveData<SingleEvent<UiEvent>>()
     val uiEvent: LiveData<SingleEvent<UiEvent>> = _uiEvent
 
-    private val _uiAction: PublishSubject<UiAction> = PublishSubject.create()
+    private val uiAction: PublishSubject<UiAction> = PublishSubject.create()
 
 
     init {
         bindAction()
         if(_searchImages.value == null || _searchImages.value!!.isEmpty()){
-            _uiAction.onNext(UiAction.Search(lastQuery ?: ""))
+            uiAction.onNext(UiAction.Search(lastQuery ?: ""))
         }
     }
 
     private fun bindAction(){
-        _uiAction
+        uiAction
             .filter { it is UiAction.Search }
             .flatMap {
                 with (it as UiAction.Search) {
@@ -115,7 +115,7 @@ class SearchImageViewModel @Inject constructor(
                 processSearchResult(it)
             }.addTo(compositeDisposable)
 
-        _uiAction
+        uiAction
             .filter { it is UiAction.Paging }
             .flatMap {
                 with (it as UiAction.Paging) {
@@ -133,7 +133,7 @@ class SearchImageViewModel @Inject constructor(
                 processPagingResult(res)
             }.addTo(compositeDisposable)
 
-        _uiAction
+        uiAction
             .filter { it is UiAction.SaveSelectImage }
             .flatMapSingle {
                 _dataLoading.value = true
@@ -222,7 +222,7 @@ class SearchImageViewModel @Inject constructor(
     }
 
     fun saveSelectImage() {
-        _uiAction.onNext(UiAction.SaveSelectImage(
+        uiAction.onNext(UiAction.SaveSelectImage(
             selectImageUrlMap,
             searchImages.value
         ))
@@ -304,11 +304,11 @@ class SearchImageViewModel @Inject constructor(
     }
 
     fun searchQueryEvent(query: String) {
-        _uiAction.onNext(UiAction.Search(query))
+        uiAction.onNext(UiAction.Search(query))
     }
 
     fun fetchNextPage() {
-        _uiAction.onNext(UiAction.Paging(lastQuery, currentPage + 1))
+        uiAction.onNext(UiAction.Paging(lastQuery, currentPage + 1))
     }
 
     private fun showToast(message: String) {
