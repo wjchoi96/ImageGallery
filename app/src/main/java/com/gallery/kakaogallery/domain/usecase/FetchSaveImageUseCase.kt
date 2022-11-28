@@ -19,10 +19,14 @@ class FetchSaveImageUseCase(
                 }
                 Result.success(list)
             }
-            .onErrorReturn {
+            .onErrorResumeNext {
                 it.printStackTrace()
                 println("error debug at useCase => $it")
-                Result.failure(it)
+                Observable.create { emitter ->
+                    emitter.onNext(Result.success(emptyList()))
+                    emitter.onNext(Result.failure(it))
+                    emitter.onComplete()
+                }
             }
             .delay(500L, TimeUnit.MILLISECONDS)
             .startWithItem(

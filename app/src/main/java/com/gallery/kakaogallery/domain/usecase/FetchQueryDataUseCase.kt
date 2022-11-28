@@ -30,10 +30,14 @@ class FetchQueryDataUseCase(
                         }
                     )
                 }
-                .onErrorReturn {
+                .onErrorResumeNext {
                     it.printStackTrace()
                     println("error debug at useCase => $it")
-                    Result.failure(it)
+                    Observable.create { emitter ->
+                        emitter.onNext(Result.success(listOf(SearchImageListTypeModel.Query(query))))
+                        emitter.onNext(Result.failure(it))
+                        emitter.onComplete()
+                    }
                 }
 
             return when (page) {
