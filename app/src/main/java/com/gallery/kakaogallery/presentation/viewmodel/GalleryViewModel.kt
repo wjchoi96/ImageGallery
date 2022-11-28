@@ -11,9 +11,8 @@ import com.gallery.kakaogallery.domain.usecase.RemoveSaveImageUseCase
 import com.gallery.kakaogallery.presentation.application.StringResourceProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.kotlin.addTo
-import timber.log.Timber
+import io.reactivex.rxjava3.subjects.PublishSubject
 import javax.inject.Inject
 
 @HiltViewModel
@@ -52,9 +51,40 @@ class GalleryViewModel @Inject constructor(
     private val _uiEvent = MutableLiveData<SingleEvent<UiEvent>>()
     val uiEvent: LiveData<SingleEvent<UiEvent>> = _uiEvent
 
+    private val uiAction: PublishSubject<UiAction> = PublishSubject.create()
+
     init {
-        fetchSaveImages() // stream 연결을 위해 무조건 호출
-        Timber.d("save state handle debug => ${selectImageHashMap.size}")
+        bindAction()
+        uiAction.onNext(UiAction.FetchSaveImages)
+    }
+
+    private fun bindAction() {
+        uiAction
+            .filter { it is UiAction.FetchSaveImages }
+            .flatMap {
+                _dataLoading.value = true
+                fetchSaveImageUseCase()
+            }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                processFetchSaveImages(it)
+            }.addTo(compositeDisposable)
+    }
+
+    private fun processFetchSaveImages(res: Result<List<GalleryImageListTypeModel>>){
+        _dataLoading.value = false
+        res.onSuccess {
+            _saveImages.value = it
+        }.onFailure {
+            when (it) {
+                is MaxPageException -> showToast(
+                    resourceProvider.getString(
+                        StringResourceProvider.StringResourceId.LastPage
+                    )
+                )
+                else -> showToast("$fetchImageFailMessage\n${it.message}")
+            }
+        }
     }
 
     fun removeSelectImage() {
@@ -148,6 +178,10 @@ class GalleryViewModel @Inject constructor(
 
     private fun showToast(message: String) {
         _uiEvent.value = SingleEvent(UiEvent.ShowToast(message))
+    }
+
+    sealed class UiAction {
+        object FetchSaveImages : UiAction()
     }
 
     sealed class UiEvent {
