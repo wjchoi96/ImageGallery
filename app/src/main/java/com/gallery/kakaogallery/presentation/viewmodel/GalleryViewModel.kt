@@ -11,9 +11,9 @@ import com.gallery.kakaogallery.domain.usecase.RemoveSaveImageUseCase
 import com.gallery.kakaogallery.presentation.application.StringResourceProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.kotlin.addTo
-import timber.log.Timber
+import io.reactivex.rxjava3.subjects.PublishSubject
 import javax.inject.Inject
 
 @HiltViewModel
@@ -49,66 +49,79 @@ class GalleryViewModel @Inject constructor(
     private val _dataLoading = MutableLiveData(false)
     val dataLoading: LiveData<Boolean> = _dataLoading
 
-    private val _refreshLoading = MutableLiveData(false)
-    val refreshLoading: LiveData<Boolean> = _refreshLoading
-
     private val _uiEvent = MutableLiveData<SingleEvent<UiEvent>>()
     val uiEvent: LiveData<SingleEvent<UiEvent>> = _uiEvent
 
+    private val uiAction: PublishSubject<UiAction> = PublishSubject.create()
+
     init {
-        fetchSaveImages() // stream 연결을 위해 무조건 호출
-        Timber.d("save state handle debug => ${selectImageHashMap.size}")
+        bindAction()
+        uiAction.onNext(UiAction.FetchSaveImages)
+    }
+
+    private fun bindAction() {
+        uiAction
+            .filter { it is UiAction.FetchSaveImages }
+            .flatMap {
+                _dataLoading.value = true
+                fetchSaveImageUseCase()
+            }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                processFetchSaveImages(it)
+            }.addTo(compositeDisposable)
+
+        uiAction
+            .filter { it is UiAction.RemoveSelectImage }
+            .flatMapSingle {
+                _dataLoading.value = true
+                with(it as UiAction.RemoveSelectImage) {
+                    removeSaveImageUseCase(it.selectImageMap)
+                }
+            }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
+                processRemoveSelectImage(it)
+            }) {
+                processRemoveSelectImageException(it)
+            }.addTo(compositeDisposable)
+    }
+
+    private fun processFetchSaveImages(res: Result<List<GalleryImageListTypeModel>>){
+        _dataLoading.value = false
+        res.onSuccess {
+            _saveImages.value = it
+        }.onFailure {
+            when (it) {
+                is MaxPageException -> showToast(
+                    resourceProvider.getString(
+                        StringResourceProvider.StringResourceId.LastPage
+                    )
+                )
+                else -> showToast("$fetchImageFailMessage\n${it.message}")
+            }
+        }
+    }
+
+    private fun processRemoveSelectImage(res: Boolean) {
+        _dataLoading.value = false
+        when (res) {
+            true -> {
+                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveSuccess))
+                clickSelectModeEvent() // 삭제라면 선택모드 였을테니, toggle 해주면 선택모드가 해제됨
+            }
+            else -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail))
+        }
+    }
+
+    private fun processRemoveSelectImageException(throwable: Throwable){
+        _dataLoading.value = false
+        throwable.printStackTrace()
+        showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail) + " $throwable")
     }
 
     fun removeSelectImage() {
-        _dataLoading.value = true
-        removeSaveImageUseCase(selectImageHashMap)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                _dataLoading.value = false
-                when (it) {
-                    true -> {
-                        showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveSuccess))
-                        clickSelectModeEvent() // 삭제라면 선택모드 였을테니, toggle 해주면 선택모드가 해제됨
-                    }
-                    else -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail))
-                }
-            }) {
-                _dataLoading.value = false
-                it.printStackTrace()
-                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail) + " $it")
-            }.addTo(compositeDisposable)
-    }
-
-    private var saveImageDisposable: Disposable? = null
-    private fun fetchSaveImages(isRefresh: Boolean = false) {
-        saveImageDisposable?.dispose()
-        saveImageDisposable = null
-
-        _dataLoading.value = true
-        saveImageDisposable = fetchSaveImageUseCase()
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { res ->
-                _dataLoading.value = false
-                if (isRefresh) _refreshLoading.value = false
-                res.onSuccess {
-                    _saveImages.value = it
-                }.onFailure {
-                    when (it) {
-                        is MaxPageException -> showToast(
-                            resourceProvider.getString(
-                                StringResourceProvider.StringResourceId.LastPage
-                            )
-                        )
-                        else -> showToast("$fetchImageFailMessage\n${it.message}")
-                    }
-                }
-            }.addTo(compositeDisposable)
-    }
-
-    fun refreshGalleryEvent() {
-        _refreshLoading.value = true
-        fetchSaveImages(isRefresh = true)
+        uiAction.onNext(UiAction.RemoveSelectImage(selectImageHashMap))
     }
 
     fun clickRemoveEvent() {
@@ -182,6 +195,11 @@ class GalleryViewModel @Inject constructor(
 
     private fun showToast(message: String) {
         _uiEvent.value = SingleEvent(UiEvent.ShowToast(message))
+    }
+
+    sealed class UiAction {
+        object FetchSaveImages : UiAction()
+        data class RemoveSelectImage(val selectImageMap: MutableMap<String, Int>) : UiAction()
     }
 
     sealed class UiEvent {
