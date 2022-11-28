@@ -49,9 +49,6 @@ class GalleryViewModel @Inject constructor(
     private val _dataLoading = MutableLiveData(false)
     val dataLoading: LiveData<Boolean> = _dataLoading
 
-    private val _refreshLoading = MutableLiveData(false)
-    val refreshLoading: LiveData<Boolean> = _refreshLoading
-
     private val _uiEvent = MutableLiveData<SingleEvent<UiEvent>>()
     val uiEvent: LiveData<SingleEvent<UiEvent>> = _uiEvent
 
@@ -78,37 +75,6 @@ class GalleryViewModel @Inject constructor(
                 it.printStackTrace()
                 showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail) + " $it")
             }.addTo(compositeDisposable)
-    }
-
-    private var saveImageDisposable: Disposable? = null
-    private fun fetchSaveImages(isRefresh: Boolean = false) {
-        saveImageDisposable?.dispose()
-        saveImageDisposable = null
-
-        _dataLoading.value = true
-        saveImageDisposable = fetchSaveImageUseCase()
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { res ->
-                _dataLoading.value = false
-                if (isRefresh) _refreshLoading.value = false
-                res.onSuccess {
-                    _saveImages.value = it
-                }.onFailure {
-                    when (it) {
-                        is MaxPageException -> showToast(
-                            resourceProvider.getString(
-                                StringResourceProvider.StringResourceId.LastPage
-                            )
-                        )
-                        else -> showToast("$fetchImageFailMessage\n${it.message}")
-                    }
-                }
-            }.addTo(compositeDisposable)
-    }
-
-    fun refreshGalleryEvent() {
-        _refreshLoading.value = true
-        fetchSaveImages(isRefresh = true)
     }
 
     fun clickRemoveEvent() {
