@@ -11,6 +11,7 @@ import com.gallery.kakaogallery.domain.usecase.RemoveSaveImageUseCase
 import com.gallery.kakaogallery.presentation.application.StringResourceProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.subjects.PublishSubject
 import javax.inject.Inject
@@ -69,6 +70,21 @@ class GalleryViewModel @Inject constructor(
             .subscribe {
                 processFetchSaveImages(it)
             }.addTo(compositeDisposable)
+
+        uiAction
+            .filter { it is UiAction.RemoveSelectImage }
+            .flatMapSingle {
+                _dataLoading.value = true
+                with(it as UiAction.RemoveSelectImage) {
+                    removeSaveImageUseCase(it.selectImageMap)
+                }
+            }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
+                processRemoveSelectImage(it)
+            }) {
+                processRemoveSelectImageException(it)
+            }.addTo(compositeDisposable)
     }
 
     private fun processFetchSaveImages(res: Result<List<GalleryImageListTypeModel>>){
@@ -87,24 +103,25 @@ class GalleryViewModel @Inject constructor(
         }
     }
 
+    private fun processRemoveSelectImage(res: Boolean) {
+        _dataLoading.value = false
+        when (res) {
+            true -> {
+                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveSuccess))
+                clickSelectModeEvent() // 삭제라면 선택모드 였을테니, toggle 해주면 선택모드가 해제됨
+            }
+            else -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail))
+        }
+    }
+
+    private fun processRemoveSelectImageException(throwable: Throwable){
+        _dataLoading.value = false
+        throwable.printStackTrace()
+        showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail) + " $throwable")
+    }
+
     fun removeSelectImage() {
-        _dataLoading.value = true
-        removeSaveImageUseCase(selectImageHashMap)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                _dataLoading.value = false
-                when (it) {
-                    true -> {
-                        showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveSuccess))
-                        clickSelectModeEvent() // 삭제라면 선택모드 였을테니, toggle 해주면 선택모드가 해제됨
-                    }
-                    else -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail))
-                }
-            }) {
-                _dataLoading.value = false
-                it.printStackTrace()
-                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail) + " $it")
-            }.addTo(compositeDisposable)
+        uiAction.onNext(UiAction.RemoveSelectImage(selectImageHashMap))
     }
 
     fun clickRemoveEvent() {
@@ -182,6 +199,7 @@ class GalleryViewModel @Inject constructor(
 
     sealed class UiAction {
         object FetchSaveImages : UiAction()
+        data class RemoveSelectImage(val selectImageMap: MutableMap<String, Int>) : UiAction()
     }
 
     sealed class UiEvent {
