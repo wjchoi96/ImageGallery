@@ -30,30 +30,35 @@ class FetchQueryDataUseCase(
                         }
                     )
                 }
-                .onErrorResumeNext {
-                    it.printStackTrace()
-                    println("error debug at useCase => $it")
-                    Observable.create { emitter ->
-                        emitter.onNext(Result.success(listOf(SearchImageListTypeModel.Query(query))))
-                        emitter.onNext(Result.failure(it))
-                        emitter.onComplete()
-                    }
-                }
 
             return when (page) {
                 1 -> fetchQueryStream
-                        .delay(500L, TimeUnit.MILLISECONDS) // skeleton ui 를 잘 보여주기 위한 delay
-                        .startWithItem(
-                            Result.success(
-                                MutableList(skeletonSize + 1) { i ->
-                                    when (i) {
-                                        0 -> SearchImageListTypeModel.Query(query)
-                                        else -> SearchImageListTypeModel.Skeleton
-                                    }
+                    .delay(500L, TimeUnit.MILLISECONDS) // skeleton ui 를 잘 보여주기 위한 delay
+                    .startWithItem (
+                        Result.success(
+                            MutableList(skeletonSize + 1) { i ->
+                                when (i) {
+                                    0 -> SearchImageListTypeModel.Query(query)
+                                    else -> SearchImageListTypeModel.Skeleton
                                 }
-                            )
+                            }
                         )
+                    )
+                    .onErrorResumeNext {
+                        it.printStackTrace()
+                        println("error debug at useCase => $it")
+                        Observable.create { emitter ->
+                            emitter.onNext(Result.success(listOf(SearchImageListTypeModel.Query(query))))
+                            emitter.onNext(Result.failure(it))
+                            emitter.onComplete()
+                        }
+                    }
                 else -> fetchQueryStream
+                    .onErrorReturn {
+                        it.printStackTrace()
+                        println("error debug at useCase => $it")
+                        Result.failure(it)
+                    }
             }
         }
     }
