@@ -103,6 +103,20 @@ internal class FetchQueryDataUseCaseTest {
 
     //state test
     @Test
+    fun `useCase는 page가 1이 아닐때 repository가 에러를 전달하면 Result로 래핑된 에러만을 전달한다`() {
+        val unitTestException = Exception("unit test exception")
+        every { repository.fetchQueryData(any(), any()) } returns Single.error(unitTestException)
+
+        val actual = useCase("query", 2).blockingFirst()
+
+        assertThat(actual.exceptionOrNull())
+            .isNotNull
+            .isInstanceOf(Exception::class.java)
+            .hasMessageContaining(unitTestException.message)
+    }
+
+    //state test
+    @Test
     fun `useCase는 repository의 fetchQueryData 결과를 SearchImageListTypeModel로 변환한다`() {
         every { repository.fetchQueryData(any(), any()) } returns Single.just(listOf(SearchImageModel.Empty))
         val actual = useCase("query", 1).blockingLast().getOrNull()
@@ -120,7 +134,7 @@ internal class FetchQueryDataUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 repository가 정상 응답시 결과를 결과를 Result로 래핑한다`() {
+    fun `useCase는 repository가 정상 응답시 결과를 Result로 래핑한다`() {
         every { repository.fetchQueryData(any(), any()) } returns Single.just(emptyList())
 
         val actual = useCase("query", 1).blockingLast()
@@ -131,7 +145,7 @@ internal class FetchQueryDataUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 reposiory가 에러 전달시 결과를 Result로 래핑한다`() {
+    fun `useCase는 reposiory가 에러 전달시 Result로 래핑한다`() {
         val unitTestException = Exception("unit test exception")
         every { repository.fetchQueryData(any(), any()) } returns Single.error(unitTestException)
 
@@ -144,7 +158,29 @@ internal class FetchQueryDataUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 repository가 전달한 에러를 Result로 래핑하여 전달한다`() {
+    fun `useCase는 page가 1일때 repository가 에러를 전달하면 SekeltonData를 제거할 List를 먼저 전달한다`() {
+        val unitTestException = Exception("unit test exception")
+        val (query, page) = "query" to 1
+        every { repository.fetchQueryData(any(), any()) } returns Single.error(unitTestException)
+
+        val actual = useCase(query, page).blockingIterable().run {
+            this.iterator().run {
+                next() // Skeleton Data
+                next() // List
+            }
+        }
+        val expect = listOf(
+            SearchImageListTypeModel.Query(query)
+        )
+
+        assertThat(actual.getOrNull())
+            .isNotNull
+            .isEqualTo(expect)
+    }
+
+    //state test
+    @Test
+    fun `useCase는 page가 1일때 repository가 에러를 전달하면 Result로 래핑하여 SekeltonData를 제거할 List 다음에 전달한다`() {
         val unitTestException = Exception("unit test exception")
         every { repository.fetchQueryData(any(), any()) } returns Single.error(unitTestException)
 
