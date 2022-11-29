@@ -26,7 +26,24 @@ internal class FetchSaveImageUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 skeletonData를 먼저 emit하고 saveImageData를 emit한다`() {
+    fun `useCase는 결과와 상관없이 skeletonData를 먼저 emit한다`() {
+        every { repository.fetchSaveImages() } returns Observable.just(emptyList())
+
+        val skeletonSize = 1
+        val expectSkeletonData = Result.success(MutableList(skeletonSize) { GalleryImageListTypeModel.Skeleton })
+
+        assertThat(useCase(skeletonSize).blockingFirst())
+            .isEqualTo(expectSkeletonData)
+
+        every { repository.fetchSaveImages() } returns Observable.error(Throwable("test"))
+
+        assertThat(useCase(skeletonSize).blockingFirst())
+            .isEqualTo(expectSkeletonData)
+    }
+
+    //state test
+    @Test
+    fun `useCase는 정상 응답시 skeletonData를 먼저 emit하고 saveImageData를 emit한다`() {
         every { repository.fetchSaveImages() } returns Observable.just(emptyList())
 
         val skeletonSize = 1
@@ -67,16 +84,24 @@ internal class FetchSaveImageUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 repository가 전달한 에러를 Result로 래핑하여 전달한다`() {
+    fun `useCase는 repository가 에러 전달 시 skeletonData, skeletonData를 제거할 List, 에러 순서대로 emit한다`() {
         val unitTestException = Exception("unit test exception")
+        val skeletonSize = 1
         every { repository.fetchSaveImages() } returns Observable.error(unitTestException)
 
-        val actual = useCase().blockingLast()
+        val actualIterator = useCase(skeletonSize).blockingIterable().iterator()
+        val expectIterator = listOf<Result<List<GalleryImageListTypeModel>>>(
+            Result.success(listOf(GalleryImageListTypeModel.Skeleton)),
+            Result.success(emptyList()),
+            Result.failure(unitTestException),
+        ).iterator()
 
-        assertThat(actual.exceptionOrNull())
-            .isNotNull
-            .isInstanceOf(Exception::class.java)
-            .hasMessageContaining(unitTestException.message)
+        assertThat(actualIterator.next())
+            .isEqualTo(expectIterator.next())
+        assertThat(actualIterator.next())
+            .isEqualTo(expectIterator.next())
+        assertThat(actualIterator.next())
+            .isEqualTo(expectIterator.next())
     }
 
     //state test
