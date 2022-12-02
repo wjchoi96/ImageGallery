@@ -19,11 +19,13 @@ import com.gallery.kakaogallery.databinding.FragmentSearchImageBinding
 import com.gallery.kakaogallery.domain.model.SearchImageListTypeModel
 import com.gallery.kakaogallery.presentation.extension.safeScrollToTop
 import com.gallery.kakaogallery.presentation.extension.setSoftKeyboardVisible
+import com.gallery.kakaogallery.presentation.extension.showSnackBar
 import com.gallery.kakaogallery.presentation.extension.showToast
 import com.gallery.kakaogallery.presentation.ui.base.BindingFragment
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetDialog
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetEventReceiver
 import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
@@ -182,6 +184,18 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
                 when (it) {
                     is SearchImageViewModel.UiEvent.ShowToast ->
                         mContext?.showToast(it.message)
+                    is SearchImageViewModel.UiEvent.ShowSnackBar -> {
+                        when (it.action) {
+                            null -> binding.background.showSnackBar(it.message)
+                            else -> binding.background.showSnackBar(
+                                it.message,
+                                it.action.first to View.OnClickListener { _ ->
+                                    it.action.second.invoke()
+                                },
+                                Snackbar.LENGTH_INDEFINITE
+                            )
+                        }
+                    }
                     is SearchImageViewModel.UiEvent.KeyboardVisibleEvent ->
                         mContext?.setSoftKeyboardVisible(binding.background, it.visible)
                     is SearchImageViewModel.UiEvent.PresentSaveDialog ->
