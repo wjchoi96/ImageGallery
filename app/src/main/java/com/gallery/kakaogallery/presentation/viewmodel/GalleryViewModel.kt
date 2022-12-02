@@ -11,7 +11,6 @@ import com.gallery.kakaogallery.domain.usecase.RemoveSaveImageUseCase
 import com.gallery.kakaogallery.presentation.application.StringResourceProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.subjects.PublishSubject
 import javax.inject.Inject
@@ -197,6 +196,10 @@ class GalleryViewModel @Inject constructor(
         _uiEvent.value = SingleEvent(UiEvent.ShowToast(message))
     }
 
+    private fun showSnackBar(message: String, action: Pair<String, () -> Unit>?) {
+        _uiEvent.value = SingleEvent(GalleryViewModel.UiEvent.ShowSnackBar(message, action))
+    }
+
     sealed class UiAction {
         object FetchSaveImages : UiAction()
         data class RemoveSelectImage(val selectImageMap: MutableMap<String, Int>) : UiAction()
@@ -204,6 +207,7 @@ class GalleryViewModel @Inject constructor(
 
     sealed class UiEvent {
         data class ShowToast(val message: String) : UiEvent()
+        data class ShowSnackBar(val message: String, val action: (Pair<String, ()->Unit>)?) : UiEvent()
         data class PresentRemoveDialog(val selectCount: Int) : UiEvent()
         data class KeyboardVisibleEvent(val visible: Boolean) : UiEvent()
     }
