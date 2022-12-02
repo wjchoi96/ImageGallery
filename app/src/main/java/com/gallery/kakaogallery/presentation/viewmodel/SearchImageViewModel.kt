@@ -315,6 +315,10 @@ class SearchImageViewModel @Inject constructor(
         _uiEvent.value = SingleEvent(UiEvent.ShowToast(message))
     }
 
+    private fun showSnackBar(message: String, action: Pair<String, () -> Unit>?) {
+        _uiEvent.value = SingleEvent(UiEvent.ShowSnackBar(message, action))
+    }
+
     sealed class UiAction {
         data class Search(val query: String) : UiAction()
         data class Paging(val query: String?, val page: Int) : UiAction()
@@ -326,6 +330,7 @@ class SearchImageViewModel @Inject constructor(
 
     sealed class UiEvent {
         data class ShowToast(val message: String) : UiEvent()
+        data class ShowSnackBar(val message: String, val action: (Pair<String, ()->Unit>)?) : UiEvent()
         data class PresentSaveDialog(val selectCount: Int) : UiEvent()
         data class KeyboardVisibleEvent(val visible: Boolean) : UiEvent()
     }
