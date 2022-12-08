@@ -317,7 +317,8 @@ class SearchImageViewModel @Inject constructor(
         when (selectMode.value) {
             true ->
                 setSelectImage(image, idx, !selectImageUrlMap.containsKey(image.imageUrl))
-            else -> {}
+            else ->
+                _uiEvent.value = SingleEvent(UiEvent.NavigateImageDetail(image.imageUrl, idx))
         }
     }
 
@@ -356,5 +357,6 @@ class SearchImageViewModel @Inject constructor(
         data class PresentSaveDialog(val selectCount: Int) : UiEvent()
         data class KeyboardVisibleEvent(val visible: Boolean) : UiEvent()
         data class ScrollToTop(val smoothScroll: Boolean) : UiEvent()
+        data class NavigateImageDetail(val imageUrl: String, val position: Int) : UiEvent()
     }
 }
