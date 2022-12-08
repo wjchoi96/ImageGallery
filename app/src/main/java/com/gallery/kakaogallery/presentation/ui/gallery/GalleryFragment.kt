@@ -19,7 +19,6 @@ import com.gallery.kakaogallery.presentation.ui.base.BindingFragment
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetDialog
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetEventReceiver
 import com.gallery.kakaogallery.presentation.viewmodel.GalleryViewModel
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
@@ -130,8 +129,7 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
                                 it.message,
                                 it.action.first to View.OnClickListener { _ ->
                                     it.action.second.invoke()
-                                },
-                                Snackbar.LENGTH_INDEFINITE
+                                }
                             )
                         }
                     }
