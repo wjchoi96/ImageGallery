@@ -5,7 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import com.gallery.kakaogallery.domain.model.GalleryImageListTypeModel
 import com.gallery.kakaogallery.domain.model.ImageModel
-import com.gallery.kakaogallery.domain.model.MaxPageException
 import com.gallery.kakaogallery.domain.usecase.FetchSaveImageUseCase
 import com.gallery.kakaogallery.domain.usecase.RemoveSaveImageUseCase
 import com.gallery.kakaogallery.presentation.application.StringResourceProvider
@@ -13,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.subjects.PublishSubject
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,10 +27,16 @@ class GalleryViewModel @Inject constructor(
         private const val KEY_SAVE_IMAGE_LIST = "key_save_image_list"
         private const val KEY_SELECT_MODE = "key_select_mode"
         private const val KEY_HEADER_TITLE = "key_header_title"
+        private const val KEY_NOTIFY_GROUP_VISIBLE = "key_notify_text_visible"
+        private const val KEY_NOTIFY_TEXT = "key_notify_text"
+        private const val KEY_NOTIFY_BTN = "key_notify_btn"
     }
 
     private val fetchImageFailMessage: String =
         resourceProvider.getString(StringResourceProvider.StringResourceId.FetchFailSaveImage)
+    private val emptyNotifyBtn = resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage)
+    private val retryNotifyBtn = resourceProvider.getString(StringResourceProvider.StringResourceId.Retry)
+
     private val selectImageHashMap: MutableMap<String, Int> = handle[KEY_SELECT_IMAGE_MAP] ?: kotlin.run {
         mutableMapOf<String, Int>().also { handle[KEY_SELECT_IMAGE_MAP] = it }
     }
@@ -50,6 +56,15 @@ class GalleryViewModel @Inject constructor(
 
     private val _refreshLoading = MutableLiveData(false)
     val refreshLoading: LiveData<Boolean> = _refreshLoading
+
+    private val _notifyGroupVisible: MutableLiveData<Boolean> = handle.getLiveData(KEY_NOTIFY_GROUP_VISIBLE, false)
+    val notifyGroupVisible: LiveData<Boolean> = _notifyGroupVisible
+
+    private val _notifyText: MutableLiveData<String> = handle.getLiveData(KEY_NOTIFY_TEXT, "")
+    val notifyText: LiveData<String> = _notifyText
+
+    private val _notifyBtn: MutableLiveData<String> = handle.getLiveData(KEY_NOTIFY_BTN, "")
+    val notifyBtn: LiveData<String> = _notifyBtn
 
     private val _uiEvent = MutableLiveData<SingleEvent<UiEvent>>()
     val uiEvent: LiveData<SingleEvent<UiEvent>> = _uiEvent
@@ -100,15 +115,23 @@ class GalleryViewModel @Inject constructor(
         _dataLoading.value = false
         _refreshLoading.value = false
         res.onSuccess {
+            setNotifyGroup(
+                it.isEmpty(),
+                resourceProvider.getString(StringResourceProvider.StringResourceId.EmptySaveImage),
+                emptyNotifyBtn
+            )
             _saveImages.value = it
         }.onFailure {
-            when (it) {
-                is MaxPageException -> showToast(
+            "$fetchImageFailMessage\n${it.message}".let { msg ->
+                showSnackBar(
+                    msg,
                     resourceProvider.getString(
-                        StringResourceProvider.StringResourceId.LastPage
-                    )
+                        StringResourceProvider.StringResourceId.Retry
+                    ) to {
+                        refreshGalleryEvent()
+                    }
                 )
-                else -> showToast("$fetchImageFailMessage\n${it.message}")
+                setNotifyGroup(true, msg, retryNotifyBtn)
             }
         }
     }
@@ -128,6 +151,13 @@ class GalleryViewModel @Inject constructor(
         _dataLoading.value = false
         throwable.printStackTrace()
         showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail) + " $throwable")
+    }
+
+    fun clickNotifyEvent() {
+        when(notifyBtn.value) {
+            emptyNotifyBtn -> _uiEvent.value = SingleEvent(UiEvent.NavigateSearchView)
+            retryNotifyBtn -> refreshGalleryEvent()
+        }
     }
 
     fun refreshGalleryEvent() {
@@ -216,6 +246,12 @@ class GalleryViewModel @Inject constructor(
         _uiEvent.value = SingleEvent(GalleryViewModel.UiEvent.ShowSnackBar(message, action))
     }
 
+    private fun setNotifyGroup(visible: Boolean, message: String, btn: String) {
+        _notifyGroupVisible.value = visible
+        _notifyText.value = message
+        _notifyBtn.value = btn
+    }
+
     sealed class UiAction {
         object FetchSaveImages : UiAction()
         object Refresh : UiAction()
@@ -227,5 +263,6 @@ class GalleryViewModel @Inject constructor(
         data class ShowSnackBar(val message: String, val action: (Pair<String, ()->Unit>)?) : UiEvent()
         data class PresentRemoveDialog(val selectCount: Int) : UiEvent()
         data class KeyboardVisibleEvent(val visible: Boolean) : UiEvent()
+        object NavigateSearchView : UiEvent()
     }
 }
