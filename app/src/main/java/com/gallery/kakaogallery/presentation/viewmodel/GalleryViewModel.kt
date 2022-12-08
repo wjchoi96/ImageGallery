@@ -48,6 +48,9 @@ class GalleryViewModel @Inject constructor(
     private val _dataLoading = MutableLiveData(false)
     val dataLoading: LiveData<Boolean> = _dataLoading
 
+    private val _refreshLoading = MutableLiveData(false)
+    val refreshLoading: LiveData<Boolean> = _refreshLoading
+
     private val _uiEvent = MutableLiveData<SingleEvent<UiEvent>>()
     val uiEvent: LiveData<SingleEvent<UiEvent>> = _uiEvent
 
@@ -59,12 +62,20 @@ class GalleryViewModel @Inject constructor(
     }
 
     private fun bindAction() {
+        uiAction.filter { action -> action is UiAction.Refresh }
+            .subscribe {
+                _refreshLoading.value = true
+            }
+
         uiAction
             .filter { it is UiAction.FetchSaveImages }
             .flatMap {
                 _dataLoading.value = true
                 fetchSaveImageUseCase()
+                    .takeUntil(uiAction.filter { action -> action is UiAction.Refresh })
+                    .doFinally { Timber.d("dispose debug => dispose fetchSaveImageUseCase Stream") }
             }
+            .doOnNext { Timber.d("dispose debug => emit data from fetchAction") }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 processFetchSaveImages(it)
@@ -88,6 +99,7 @@ class GalleryViewModel @Inject constructor(
 
     private fun processFetchSaveImages(res: Result<List<GalleryImageListTypeModel>>){
         _dataLoading.value = false
+        _refreshLoading.value = false
         res.onSuccess {
             _saveImages.value = it
         }.onFailure {
@@ -117,6 +129,11 @@ class GalleryViewModel @Inject constructor(
         _dataLoading.value = false
         throwable.printStackTrace()
         showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail) + " $throwable")
+    }
+
+    fun refreshGalleryEvent() {
+        uiAction.onNext(UiAction.Refresh)
+        uiAction.onNext(UiAction.FetchSaveImages)
     }
 
     fun removeSelectImage() {
@@ -202,6 +219,7 @@ class GalleryViewModel @Inject constructor(
 
     sealed class UiAction {
         object FetchSaveImages : UiAction()
+        object Refresh : UiAction()
         data class RemoveSelectImage(val selectImageMap: MutableMap<String, Int>) : UiAction()
     }
 

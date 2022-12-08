@@ -50,6 +50,7 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
     private fun initView() {
         bindView()
         initHeader()
+        setSwipeRefreshLayout()
     }
 
     private fun bindView(){
@@ -67,6 +68,16 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
             }
         }
     }
+
+    private fun setSwipeRefreshLayout() {
+        binding.layoutSwipeRefresh.setColorSchemeResources(
+            android.R.color.holo_blue_bright,
+            android.R.color.holo_green_light,
+            android.R.color.holo_orange_light,
+            android.R.color.holo_red_light
+        )
+    }
+
 
     private fun bindRecyclerView() {
         binding.galleryGridLayoutManager = GridLayoutManager(mContext, itemCount)
