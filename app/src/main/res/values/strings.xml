@@ -7,6 +7,7 @@
     <string name="confirm">확인</string>
     <string name="cancel">취소</string>
     <string name="select">선택</string>
+    <string name="retry">재시도</string>
 
     <string name="menu_search_image">이미지 검색</string>
     <string name="menu_gallery">내 보관함</string>
@@ -29,6 +30,6 @@
 
     <string name="message_save_success">저장 성공</string>
     <string name="message_save_fail">저장 실패</string>
-    <string name="message_none_save_image">저장된 이미지가 없습니다</string>
+    <string name="message_empty_save_image">저장된 이미지가 없습니다</string>
     <string name="message_fetch_save_image_fail">저장된 이미지를 불러올수 없습니다</string>
 </resources>
