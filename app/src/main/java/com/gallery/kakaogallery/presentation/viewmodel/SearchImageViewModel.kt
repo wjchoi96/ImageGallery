@@ -32,6 +32,7 @@ class SearchImageViewModel @Inject constructor(
         private const val KEY_HEADER_TITLE = "key_header_title"
         private const val KEY_LAST_QUERY = "key_last_query"
         private const val KEY_CURRENT_PAGE = "key_current_page"
+        private const val KEY_NOTIFY_TEXT = "key_notify_text"
     }
     private var currentPage: Int= handle[KEY_CURRENT_PAGE] ?: 1
         set(value) {
@@ -71,6 +72,9 @@ class SearchImageViewModel @Inject constructor(
     private val _pagingDataLoading = MutableLiveData(false)
     val pagingDataLoading: LiveData<Boolean> = _pagingDataLoading
 
+    private val _notifyText: MutableLiveData<String> = handle.getLiveData(KEY_NOTIFY_TEXT, "")
+    val notifyText: LiveData<String> = _notifyText
+
     private val _uiEvent = MutableLiveData<SingleEvent<UiEvent>>()
     val uiEvent: LiveData<SingleEvent<UiEvent>> = _uiEvent
 
@@ -87,25 +91,24 @@ class SearchImageViewModel @Inject constructor(
     private fun bindAction(){
         uiAction
             .filter { it is UiAction.Search }
+            .cast(UiAction.Search::class.java)
             .flatMap {
-                with (it as UiAction.Search) {
-                    _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
-                    when (dataLoading.value) {
-                        true -> {
-                            Observable.just(
-                                Result.failure(Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.Loading)))
-                            )
+                _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
+                when (dataLoading.value) {
+                    true -> {
+                        Observable.just(
+                            Result.failure(Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.Loading)))
+                        )
+                    }
+                    else -> {
+                        if(it.query != lastQuery && selectImageUrlMap.isNotEmpty()) {
+                            selectImageUrlMap.clear()
+                            setHeaderTitleUseSelectMap()
                         }
-                        else -> {
-                            if(query != lastQuery && selectImageUrlMap.isNotEmpty()) {
-                                selectImageUrlMap.clear()
-                                setHeaderTitleUseSelectMap()
-                            }
-                            lastQuery = it.query
-                            currentPage = 1
-                            _dataLoading.value = true
-                            fetchSearchDataQueryDataUseCase(it.query, 1)
-                        }
+                        lastQuery = it.query
+                        currentPage = 1
+                        _dataLoading.value = true
+                        fetchSearchDataQueryDataUseCase(it.query, 1)
                     }
                 }
             }
@@ -117,15 +120,14 @@ class SearchImageViewModel @Inject constructor(
 
         uiAction
             .filter { it is UiAction.Paging }
+            .cast(UiAction.Paging::class.java)
             .flatMap {
-                with (it as UiAction.Paging) {
-                    when {
-                        it.query.isNullOrBlank() -> Observable.empty()
-                        pagingDataLoading.value == true -> Observable.empty()
-                        else -> {
-                            _pagingDataLoading.value = true
-                            fetchSearchDataQueryDataUseCase(it.query, it.page)
-                        }
+                when {
+                    it.query.isNullOrBlank() -> Observable.empty()
+                    pagingDataLoading.value == true -> Observable.empty()
+                    else -> {
+                        _pagingDataLoading.value = true
+                        fetchSearchDataQueryDataUseCase(it.query, it.page)
                     }
                 }
             }.observeOn(AndroidSchedulers.mainThread())
@@ -135,17 +137,16 @@ class SearchImageViewModel @Inject constructor(
 
         uiAction
             .filter { it is UiAction.SaveSelectImage }
+            .cast(UiAction.SaveSelectImage::class.java)
             .flatMapSingle {
                 _dataLoading.value = true
-                with (it as UiAction.SaveSelectImage) {
-                    when (it.selectImageMap.isEmpty() || it.images == null) {
-                        true ->
-                            Single.error(Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)))
-                        else -> saveSelectImageUseCase(
-                            it.selectImageMap,
-                            it.images
-                        )
-                    }
+                when (it.selectImageMap.isEmpty() || it.images == null) {
+                    true ->
+                        Single.error(Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)))
+                    else -> saveSelectImageUseCase(
+                        it.selectImageMap,
+                        it.images
+                    )
                 }
             }.observeOn(AndroidSchedulers.mainThread())
             .subscribe({
@@ -160,7 +161,10 @@ class SearchImageViewModel @Inject constructor(
         res.onSuccess {
             if (lastQuery?.isNotEmpty() == true) _searchResultIsEmpty.value = it.size <= 1
             when (selectImageUrlMap.isEmpty()) {
-                true -> _searchImages.value = it
+                true -> {
+                    _notifyText.value = resourceProvider.getString(StringResourceProvider.StringResourceId.EmptySearchResult)
+                    _searchImages.value = it
+                }
                 else -> {
                     _searchImages.value = it.map { item ->
                         when {
@@ -176,12 +180,26 @@ class SearchImageViewModel @Inject constructor(
             }
         }.onFailure {
             when (it) {
-                is MaxPageException -> showToast(
+                is MaxPageException -> showSnackBar(
                     resourceProvider.getString(
                         StringResourceProvider.StringResourceId.LastPage
-                    )
+                    ), null
                 )
-                else -> showToast("$searchFailMessage\n${it.message}")
+                else -> {
+                    "$searchFailMessage\n${it.message}".let { msg ->
+                        showSnackBar(
+                            msg,
+                            resourceProvider.getString(
+                                StringResourceProvider.StringResourceId.Retry
+                            ) to {
+                                lastQuery?.let { query ->
+                                    uiAction.onNext(UiAction.Search(query))
+                                }
+                            }
+                        )
+                        _notifyText.value = msg
+                    }
+                }
             }
         }
     }
@@ -194,12 +212,12 @@ class SearchImageViewModel @Inject constructor(
             _searchImages.value = prevList + it
         }.onFailure {
             when (it) {
-                is MaxPageException -> showToast(
+                is MaxPageException -> showSnackBar(
                     resourceProvider.getString(
                         StringResourceProvider.StringResourceId.LastPage
-                    )
+                    ), null
                 )
-                else -> showToast("$searchFailMessage\n${it.message}")
+                else -> showSnackBar("$searchFailMessage\n${it.message}", null)
             }
         }
     }
@@ -315,6 +333,10 @@ class SearchImageViewModel @Inject constructor(
         _uiEvent.value = SingleEvent(UiEvent.ShowToast(message))
     }
 
+    private fun showSnackBar(message: String, action: Pair<String, () -> Unit>?) {
+        _uiEvent.value = SingleEvent(UiEvent.ShowSnackBar(message, action))
+    }
+
     sealed class UiAction {
         data class Search(val query: String) : UiAction()
         data class Paging(val query: String?, val page: Int) : UiAction()
@@ -326,6 +348,7 @@ class SearchImageViewModel @Inject constructor(
 
     sealed class UiEvent {
         data class ShowToast(val message: String) : UiEvent()
+        data class ShowSnackBar(val message: String, val action: (Pair<String, ()->Unit>)?) : UiEvent()
         data class PresentSaveDialog(val selectCount: Int) : UiEvent()
         data class KeyboardVisibleEvent(val visible: Boolean) : UiEvent()
     }

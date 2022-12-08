@@ -22,7 +22,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 
 @AndroidEntryPoint
-class RootActivity : BindingActivity<ActivityRootBinding>() {
+class RootActivity : BindingActivity<ActivityRootBinding>(), BottomMenuRoot {
     companion object {
         private var splashNeedShow = true
     }
@@ -122,5 +122,9 @@ class RootActivity : BindingActivity<ActivityRootBinding>() {
             }
         }
         transaction.commitAllowingStateLoss() // commit 과 차이점?
+    }
+
+    override fun navigateSearchTab() {
+        binding.bnvRoot.selectedItemId = menuResIdList.findLast { it == R.id.bottom_menu_search_image } ?: return
     }
 }

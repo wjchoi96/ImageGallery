@@ -13,10 +13,12 @@ import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.FragmentGalleryBinding
 import com.gallery.kakaogallery.presentation.extension.safeScrollToTop
 import com.gallery.kakaogallery.presentation.extension.setSoftKeyboardVisible
+import com.gallery.kakaogallery.presentation.extension.showSnackBar
 import com.gallery.kakaogallery.presentation.extension.showToast
 import com.gallery.kakaogallery.presentation.ui.base.BindingFragment
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetDialog
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetEventReceiver
+import com.gallery.kakaogallery.presentation.ui.root.BottomMenuRoot
 import com.gallery.kakaogallery.presentation.viewmodel.GalleryViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -48,6 +50,7 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
     private fun initView() {
         bindView()
         initHeader()
+        setSwipeRefreshLayout()
     }
 
     private fun bindView(){
@@ -66,8 +69,18 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
         }
     }
 
+    private fun setSwipeRefreshLayout() {
+        binding.layoutSwipeRefresh.setColorSchemeResources(
+            android.R.color.holo_blue_bright,
+            android.R.color.holo_green_light,
+            android.R.color.holo_orange_light,
+            android.R.color.holo_red_light
+        )
+    }
+
+
     private fun bindRecyclerView() {
-        binding.galleryGridLayoutManager = GridLayoutManager(mContext, itemCount)
+        binding.galleryGridLayoutManager = GridLayoutManager(context, itemCount)
         binding.galleryAdapter = galleryAdapter.apply {
             stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
         }
@@ -109,11 +122,24 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
             event.getContentIfNotHandled()?.let {
                 when (it) {
                     is GalleryViewModel.UiEvent.ShowToast ->
-                        mContext?.showToast(it.message)
+                        context?.showToast(it.message)
+                    is GalleryViewModel.UiEvent.ShowSnackBar -> {
+                        when (it.action) {
+                            null -> binding.background.showSnackBar(it.message)
+                            else -> binding.background.showSnackBar(
+                                it.message,
+                                it.action.first to View.OnClickListener { _ ->
+                                    it.action.second.invoke()
+                                }
+                            )
+                        }
+                    }
                     is GalleryViewModel.UiEvent.KeyboardVisibleEvent ->
-                        mContext?.setSoftKeyboardVisible(binding.background, it.visible)
+                        context?.setSoftKeyboardVisible(binding.background, it.visible)
                     is GalleryViewModel.UiEvent.PresentRemoveDialog ->
                         showRemoveDialog(it.selectCount)
+                    is GalleryViewModel.UiEvent.NavigateSearchView ->
+                        (requireActivity() as? BottomMenuRoot)?.navigateSearchTab()
                 }
             }
         }
