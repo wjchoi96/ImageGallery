@@ -187,6 +187,16 @@ class SearchImageViewModel @Inject constructor(
                 )
                 else -> {
                     "$searchFailMessage\n${it.message}".let { msg ->
+                        showSnackBar(
+                            msg,
+                            resourceProvider.getString(
+                                StringResourceProvider.StringResourceId.Retry
+                            ) to {
+                                lastQuery?.let { query ->
+                                    uiAction.onNext(UiAction.Search(query))
+                                }
+                            }
+                        )
                         _notifyText.value = msg
                     }
                 }
