@@ -14,6 +14,7 @@
 
 ## Reference
  - [프로젝트 관리](https://full-growth-4d2.notion.site/KakaoGallery-e1de93d4a6cb452989253006bc06e59d)
+ - [트러블 슈팅 및 문서화 모음](https://full-growth-4d2.notion.site/KakaoGallery-32461f6f8e964c85a847805cb6fb7015)
  - [App Release Link](https://appdistribution.firebase.google.com/pub/i/e608755ba7c9f066)
 
 ## Development Environment
