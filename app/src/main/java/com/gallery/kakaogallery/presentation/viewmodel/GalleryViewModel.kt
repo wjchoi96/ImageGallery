@@ -178,6 +178,10 @@ class GalleryViewModel @Inject constructor(
         _uiEvent.value = SingleEvent(UiEvent.PresentRemoveDialog(selectImageHashMap.size))
     }
 
+    fun touchToolBarEvent() {
+        _uiEvent.value = SingleEvent(UiEvent.ScrollToTop((saveImages.value?.size ?: 0) <= 80))
+    }
+
     fun clickSelectModeEvent() {
         when (_selectMode.value) {
             true -> {
@@ -264,5 +268,6 @@ class GalleryViewModel @Inject constructor(
         data class PresentRemoveDialog(val selectCount: Int) : UiEvent()
         data class KeyboardVisibleEvent(val visible: Boolean) : UiEvent()
         object NavigateSearchView : UiEvent()
+        data class ScrollToTop(val smoothScroll: Boolean) : UiEvent()
     }
 }

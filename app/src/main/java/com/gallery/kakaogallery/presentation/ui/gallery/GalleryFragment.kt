@@ -64,7 +64,7 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
             it.tvBtnRight.isVisible = false
             it.tvBtnLeft.isVisible = false
             it.toolBar.setOnClickListener {
-                binding.rvGallery.safeScrollToTop(true)
+                viewModel.touchToolBarEvent()
             }
         }
     }
@@ -140,6 +140,8 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
                         showRemoveDialog(it.selectCount)
                     is GalleryViewModel.UiEvent.NavigateSearchView ->
                         (requireActivity() as? BottomMenuRoot)?.navigateSearchTab()
+                    is GalleryViewModel.UiEvent.ScrollToTop ->
+                        binding.rvGallery.safeScrollToTop(it.smoothScroll)
                 }
             }
         }
