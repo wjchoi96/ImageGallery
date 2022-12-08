@@ -87,25 +87,24 @@ class SearchImageViewModel @Inject constructor(
     private fun bindAction(){
         uiAction
             .filter { it is UiAction.Search }
+            .cast(UiAction.Search::class.java)
             .flatMap {
-                with (it as UiAction.Search) {
-                    _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
-                    when (dataLoading.value) {
-                        true -> {
-                            Observable.just(
-                                Result.failure(Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.Loading)))
-                            )
+                _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
+                when (dataLoading.value) {
+                    true -> {
+                        Observable.just(
+                            Result.failure(Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.Loading)))
+                        )
+                    }
+                    else -> {
+                        if(it.query != lastQuery && selectImageUrlMap.isNotEmpty()) {
+                            selectImageUrlMap.clear()
+                            setHeaderTitleUseSelectMap()
                         }
-                        else -> {
-                            if(query != lastQuery && selectImageUrlMap.isNotEmpty()) {
-                                selectImageUrlMap.clear()
-                                setHeaderTitleUseSelectMap()
-                            }
-                            lastQuery = it.query
-                            currentPage = 1
-                            _dataLoading.value = true
-                            fetchSearchDataQueryDataUseCase(it.query, 1)
-                        }
+                        lastQuery = it.query
+                        currentPage = 1
+                        _dataLoading.value = true
+                        fetchSearchDataQueryDataUseCase(it.query, 1)
                     }
                 }
             }
@@ -117,15 +116,14 @@ class SearchImageViewModel @Inject constructor(
 
         uiAction
             .filter { it is UiAction.Paging }
+            .cast(UiAction.Paging::class.java)
             .flatMap {
-                with (it as UiAction.Paging) {
-                    when {
-                        it.query.isNullOrBlank() -> Observable.empty()
-                        pagingDataLoading.value == true -> Observable.empty()
-                        else -> {
-                            _pagingDataLoading.value = true
-                            fetchSearchDataQueryDataUseCase(it.query, it.page)
-                        }
+                when {
+                    it.query.isNullOrBlank() -> Observable.empty()
+                    pagingDataLoading.value == true -> Observable.empty()
+                    else -> {
+                        _pagingDataLoading.value = true
+                        fetchSearchDataQueryDataUseCase(it.query, it.page)
                     }
                 }
             }.observeOn(AndroidSchedulers.mainThread())
@@ -135,17 +133,16 @@ class SearchImageViewModel @Inject constructor(
 
         uiAction
             .filter { it is UiAction.SaveSelectImage }
+            .cast(UiAction.SaveSelectImage::class.java)
             .flatMapSingle {
                 _dataLoading.value = true
-                with (it as UiAction.SaveSelectImage) {
-                    when (it.selectImageMap.isEmpty() || it.images == null) {
-                        true ->
-                            Single.error(Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)))
-                        else -> saveSelectImageUseCase(
-                            it.selectImageMap,
-                            it.images
-                        )
-                    }
+                when (it.selectImageMap.isEmpty() || it.images == null) {
+                    true ->
+                        Single.error(Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)))
+                    else -> saveSelectImageUseCase(
+                        it.selectImageMap,
+                        it.images
+                    )
                 }
             }.observeOn(AndroidSchedulers.mainThread())
             .subscribe({

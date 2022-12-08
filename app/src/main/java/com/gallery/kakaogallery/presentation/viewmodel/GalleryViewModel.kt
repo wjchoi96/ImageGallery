@@ -83,11 +83,10 @@ class GalleryViewModel @Inject constructor(
 
         uiAction
             .filter { it is UiAction.RemoveSelectImage }
+            .cast(UiAction.RemoveSelectImage::class.java)
             .flatMapSingle {
                 _dataLoading.value = true
-                with(it as UiAction.RemoveSelectImage) {
-                    removeSaveImageUseCase(it.selectImageMap)
-                }
+                removeSaveImageUseCase(it.selectImageMap)
             }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
