@@ -177,10 +177,10 @@ class SearchImageViewModel @Inject constructor(
             }
         }.onFailure {
             when (it) {
-                is MaxPageException -> showToast(
+                is MaxPageException -> showSnackBar(
                     resourceProvider.getString(
                         StringResourceProvider.StringResourceId.LastPage
-                    )
+                    ), null
                 )
                 else -> showToast("$searchFailMessage\n${it.message}")
             }
@@ -195,12 +195,12 @@ class SearchImageViewModel @Inject constructor(
             _searchImages.value = prevList + it
         }.onFailure {
             when (it) {
-                is MaxPageException -> showToast(
+                is MaxPageException -> showSnackBar(
                     resourceProvider.getString(
                         StringResourceProvider.StringResourceId.LastPage
-                    )
+                    ), null
                 )
-                else -> showToast("$searchFailMessage\n${it.message}")
+                else -> showSnackBar("$searchFailMessage\n${it.message}", null)
             }
         }
     }
