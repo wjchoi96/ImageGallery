@@ -32,6 +32,7 @@ class SearchImageViewModel @Inject constructor(
         private const val KEY_HEADER_TITLE = "key_header_title"
         private const val KEY_LAST_QUERY = "key_last_query"
         private const val KEY_CURRENT_PAGE = "key_current_page"
+        private const val KEY_NOTIFY_TEXT = "key_notify_text"
     }
     private var currentPage: Int= handle[KEY_CURRENT_PAGE] ?: 1
         set(value) {
@@ -70,6 +71,9 @@ class SearchImageViewModel @Inject constructor(
 
     private val _pagingDataLoading = MutableLiveData(false)
     val pagingDataLoading: LiveData<Boolean> = _pagingDataLoading
+
+    private val _notifyText: MutableLiveData<String> = handle.getLiveData(KEY_NOTIFY_TEXT, "")
+    val notifyText: LiveData<String> = _notifyText
 
     private val _uiEvent = MutableLiveData<SingleEvent<UiEvent>>()
     val uiEvent: LiveData<SingleEvent<UiEvent>> = _uiEvent
