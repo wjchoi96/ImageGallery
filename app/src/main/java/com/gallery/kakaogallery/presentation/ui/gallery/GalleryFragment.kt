@@ -80,7 +80,7 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
 
 
     private fun bindRecyclerView() {
-        binding.galleryGridLayoutManager = GridLayoutManager(mContext, itemCount)
+        binding.galleryGridLayoutManager = GridLayoutManager(context, itemCount)
         binding.galleryAdapter = galleryAdapter.apply {
             stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
         }
@@ -122,7 +122,7 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
             event.getContentIfNotHandled()?.let {
                 when (it) {
                     is GalleryViewModel.UiEvent.ShowToast ->
-                        mContext?.showToast(it.message)
+                        context?.showToast(it.message)
                     is GalleryViewModel.UiEvent.ShowSnackBar -> {
                         when (it.action) {
                             null -> binding.background.showSnackBar(it.message)
@@ -135,7 +135,7 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
                         }
                     }
                     is GalleryViewModel.UiEvent.KeyboardVisibleEvent ->
-                        mContext?.setSoftKeyboardVisible(binding.background, it.visible)
+                        context?.setSoftKeyboardVisible(binding.background, it.visible)
                     is GalleryViewModel.UiEvent.PresentRemoveDialog ->
                         showRemoveDialog(it.selectCount)
                     is GalleryViewModel.UiEvent.NavigateSearchView ->

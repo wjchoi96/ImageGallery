@@ -111,7 +111,7 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
 
     private fun bindRecyclerView() {
         binding.searchLayoutManager =
-            GridLayoutManager(mContext, itemCount, GridLayoutManager.VERTICAL, false).apply {
+            GridLayoutManager(context, itemCount, GridLayoutManager.VERTICAL, false).apply {
                 spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
                     override fun getSpanSize(position: Int): Int {
                         return if (imageSearchAdapter.getItemViewType(position) == SearchImageListTypeModel.ViewType.Query.id)
@@ -183,7 +183,7 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
             event.getContentIfNotHandled()?.let {
                 when (it) {
                     is SearchImageViewModel.UiEvent.ShowToast ->
-                        mContext?.showToast(it.message)
+                        context?.showToast(it.message)
                     is SearchImageViewModel.UiEvent.ShowSnackBar -> {
                         when (it.action) {
                             null -> binding.background.showSnackBar(it.message)
@@ -197,7 +197,7 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
                         }
                     }
                     is SearchImageViewModel.UiEvent.KeyboardVisibleEvent ->
-                        mContext?.setSoftKeyboardVisible(binding.background, it.visible)
+                        context?.setSoftKeyboardVisible(binding.background, it.visible)
                     is SearchImageViewModel.UiEvent.PresentSaveDialog ->
                         showSaveDialog(it.selectCount)
                 }
