@@ -161,7 +161,10 @@ class SearchImageViewModel @Inject constructor(
         res.onSuccess {
             if (lastQuery?.isNotEmpty() == true) _searchResultIsEmpty.value = it.size <= 1
             when (selectImageUrlMap.isEmpty()) {
-                true -> _searchImages.value = it
+                true -> {
+                    _notifyText.value = resourceProvider.getString(StringResourceProvider.StringResourceId.EmptySearchResult)
+                    _searchImages.value = it
+                }
                 else -> {
                     _searchImages.value = it.map { item ->
                         when {
@@ -182,7 +185,11 @@ class SearchImageViewModel @Inject constructor(
                         StringResourceProvider.StringResourceId.LastPage
                     ), null
                 )
-                else -> showToast("$searchFailMessage\n${it.message}")
+                else -> {
+                    "$searchFailMessage\n${it.message}".let { msg ->
+                        _notifyText.value = msg
+                    }
+                }
             }
         }
     }
