@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
+        android:usesCleartextTraffic="true"
         android:name=".presentation.application.KakaoGalleryApplication"
         android:allowBackup="true"
         android:icon="@mipmap/app_icon"
@@ -14,9 +15,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.KakaoGallery">
         <activity
-            android:theme="@style/Theme.KakaoGallery.Splash"
+            android:name=".presentation.ui.imagedetail.ImageDetailActivity"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
             android:name=".presentation.ui.root.RootActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.KakaoGallery.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
