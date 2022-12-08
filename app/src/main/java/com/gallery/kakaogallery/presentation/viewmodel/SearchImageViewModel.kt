@@ -329,6 +329,10 @@ class SearchImageViewModel @Inject constructor(
         uiAction.onNext(UiAction.Paging(lastQuery, currentPage + 1))
     }
 
+    fun touchToolBarEvent() {
+        _uiEvent.value = SingleEvent(UiEvent.ScrollToTop(currentPage == 1))
+    }
+
     private fun showToast(message: String) {
         _uiEvent.value = SingleEvent(UiEvent.ShowToast(message))
     }
@@ -351,5 +355,6 @@ class SearchImageViewModel @Inject constructor(
         data class ShowSnackBar(val message: String, val action: (Pair<String, ()->Unit>)?) : UiEvent()
         data class PresentSaveDialog(val selectCount: Int) : UiEvent()
         data class KeyboardVisibleEvent(val visible: Boolean) : UiEvent()
+        data class ScrollToTop(val smoothScroll: Boolean) : UiEvent()
     }
 }

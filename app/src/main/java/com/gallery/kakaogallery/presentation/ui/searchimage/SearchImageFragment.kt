@@ -93,7 +93,7 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
             it.tvBtnLeft.isVisible = false
             it.tvBtnRight.isVisible = false
             it.toolBar.setOnClickListener {
-                binding.rvSearch.safeScrollToTop(true)
+                viewModel.touchToolBarEvent()
             }
         }
     }
@@ -198,6 +198,8 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
                         context?.setSoftKeyboardVisible(binding.background, it.visible)
                     is SearchImageViewModel.UiEvent.PresentSaveDialog ->
                         showSaveDialog(it.selectCount)
+                    is SearchImageViewModel.UiEvent.ScrollToTop ->
+                        binding.rvSearch.safeScrollToTop(it.smoothScroll)
                 }
             }
         }
