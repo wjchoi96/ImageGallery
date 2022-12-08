@@ -18,6 +18,7 @@ import com.gallery.kakaogallery.presentation.extension.showToast
 import com.gallery.kakaogallery.presentation.ui.base.BindingFragment
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetDialog
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetEventReceiver
+import com.gallery.kakaogallery.presentation.ui.root.BottomMenuRoot
 import com.gallery.kakaogallery.presentation.viewmodel.GalleryViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -137,6 +138,8 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
                         mContext?.setSoftKeyboardVisible(binding.background, it.visible)
                     is GalleryViewModel.UiEvent.PresentRemoveDialog ->
                         showRemoveDialog(it.selectCount)
+                    is GalleryViewModel.UiEvent.NavigateSearchView ->
+                        (requireActivity() as? BottomMenuRoot)?.navigateSearchTab()
                 }
             }
         }
