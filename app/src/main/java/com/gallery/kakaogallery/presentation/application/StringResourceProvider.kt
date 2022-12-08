@@ -16,6 +16,7 @@ interface StringResourceProvider {
         Retry(R.string.retry),
 
         NoneQuery(R.string.message_none_query),
+        EmptySearchResult(R.string.message_empty_search_query_result),
         SearchFail(R.string.message_search_query_fail),
         LastPage(R.string.message_last_page),
 
