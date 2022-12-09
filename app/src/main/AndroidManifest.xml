@@ -15,6 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.KakaoGallery">
         <activity
+            android:theme="@style/Theme.ImageDetail"
             android:name=".presentation.ui.imagedetail.ImageDetailActivity"
             android:exported="false">
         </activity>

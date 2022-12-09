@@ -17,28 +17,4 @@
         <item name="android:windowSharedElementExitTransition">
             @transition/transition_image_detail</item>
     </style>
-
-    <!-- Bottom Sheet Radius -->
-    <style name="CustomBottomSheetDialog" parent="@style/ThemeOverlay.MaterialComponents.BottomSheetDialog">
-        <item name="bottomSheetStyle">@style/CustomBottomSheet</item>
-    </style>
-
-    <style name="CustomBottomSheet" parent="Widget.MaterialComponents.BottomSheet">
-        <item name="shapeAppearanceOverlay">@style/CustomShapeAppearanceBottomSheetDialog</item>
-    </style>
-
-    <style name="CustomShapeAppearanceBottomSheetDialog" parent="">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSizeTopRight">15dp</item>
-        <item name="cornerSizeTopLeft">15dp</item>
-        <item name="cornerSizeBottomRight">0dp</item>
-        <item name="cornerSizeBottomLeft">0dp</item>
-    </style>
-
-    <style name="Theme.KakaoGallery.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/yellow_f1eb52</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_app_logo</item>
-        <item name="windowSplashScreenAnimationDuration">1000</item>
-        <item name="postSplashScreenTheme">@style/Theme.KakaoGallery</item>
-    </style>
 </resources>
