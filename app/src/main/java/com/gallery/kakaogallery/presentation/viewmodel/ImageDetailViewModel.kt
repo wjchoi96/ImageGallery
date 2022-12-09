@@ -15,6 +15,7 @@ class ImageDetailViewModel @Inject constructor(
 
     companion object {
         private const val KEY_IMAGE_URL = "key_image_url"
+        private const val KEY_IMAGE_FULL_SCREEN_MODE = "key_image_full_screen_mode"
         const val EXTRA_IMAGE_DETAIL = "extra_image_detail"
     }
 
@@ -28,6 +29,9 @@ class ImageDetailViewModel @Inject constructor(
 
     private val _loadOnlyCache = MutableLiveData(true)
     val loadOnlyCache: LiveData<Boolean> = _loadOnlyCache
+
+    private val _fullScreenMode: MutableLiveData<Boolean> = handle.getLiveData(KEY_IMAGE_FULL_SCREEN_MODE, false)
+    val fullScreenMode: LiveData<Boolean> = _fullScreenMode
 
     private val _uiEvent: MutableLiveData<SingleEvent<UiEvent>> = MutableLiveData()
     val uiEvent: LiveData<SingleEvent<UiEvent>> = _uiEvent
@@ -45,6 +49,10 @@ class ImageDetailViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun touchBackgroundEvent() {
+        _fullScreenMode.value = !(fullScreenMode.value ?: false)
     }
 
     fun reloadIfCacheLoadFail() {
