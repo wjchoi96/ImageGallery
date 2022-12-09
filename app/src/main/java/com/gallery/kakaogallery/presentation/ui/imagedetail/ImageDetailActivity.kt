@@ -25,7 +25,6 @@ class ImageDetailActivity : BindingActivity<ActivityImageDetailBinding>() {
             imageUrl: String
         ): Intent = Intent(context, ImageDetailActivity::class.java).apply {
             putExtra(ImageDetailViewModel.EXTRA_IMAGE_DETAIL, imageUrl)
-            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
         }
     }
 

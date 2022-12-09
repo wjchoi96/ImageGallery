@@ -13,6 +13,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.subjects.PublishSubject
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltViewModel
@@ -109,6 +110,14 @@ class GalleryViewModel @Inject constructor(
             }) {
                 processRemoveSelectImageException(it)
             }.addTo(compositeDisposable)
+
+        uiAction
+            .filter { it is UiAction.ClickImageNoneSelectModeEvent }
+            .cast(UiAction.ClickImageNoneSelectModeEvent::class.java)
+            .throttleFirst(500, TimeUnit.MILLISECONDS)
+            .subscribe {
+                _uiEvent.value = SingleEvent(UiEvent.NavigateImageDetail(it.imageUrl, it.position))
+            }.addTo(compositeDisposable)
     }
 
     private fun processFetchSaveImages(res: Result<List<GalleryImageListTypeModel>>){
@@ -203,7 +212,7 @@ class GalleryViewModel @Inject constructor(
             true ->
                 setSelectImage(image, idx, !selectImageHashMap.containsKey(image.hash))
             else ->
-                _uiEvent.value = SingleEvent(UiEvent.NavigateImageDetail(image.imageUrl, idx))
+                uiAction.onNext(UiAction.ClickImageNoneSelectModeEvent(image.imageUrl, idx))
         }
     }
 
@@ -261,6 +270,7 @@ class GalleryViewModel @Inject constructor(
         object FetchSaveImages : UiAction()
         object Refresh : UiAction()
         data class RemoveSelectImage(val selectImageMap: MutableMap<String, Int>) : UiAction()
+        data class ClickImageNoneSelectModeEvent(val imageUrl: String, val position: Int) : UiAction()
     }
 
     sealed class UiEvent {

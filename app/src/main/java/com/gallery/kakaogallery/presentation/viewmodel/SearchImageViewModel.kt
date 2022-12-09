@@ -14,8 +14,10 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.kotlin.addTo
+import io.reactivex.rxjava3.kotlin.cast
 import io.reactivex.rxjava3.subjects.PublishSubject
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltViewModel
@@ -153,6 +155,14 @@ class SearchImageViewModel @Inject constructor(
                 processSaveImageResult(it)
             }){
                 processSaveImageException(it)
+            }.addTo(compositeDisposable)
+
+        uiAction
+            .filter { it is UiAction.ClickImageNoneSelectModeEvent }
+            .cast(UiAction.ClickImageNoneSelectModeEvent::class.java)
+            .throttleFirst(500, TimeUnit.MILLISECONDS)
+            .subscribe {
+                _uiEvent.value = SingleEvent(UiEvent.NavigateImageDetail(it.imageUrl, it.position))
             }.addTo(compositeDisposable)
     }
 
@@ -318,7 +328,7 @@ class SearchImageViewModel @Inject constructor(
             true ->
                 setSelectImage(image, idx, !selectImageUrlMap.containsKey(image.imageUrl))
             else ->
-                _uiEvent.value = SingleEvent(UiEvent.NavigateImageDetail(image.imageUrl, idx))
+                uiAction.onNext(UiAction.ClickImageNoneSelectModeEvent(image.imageUrl, idx))
         }
     }
 
@@ -349,6 +359,7 @@ class SearchImageViewModel @Inject constructor(
             val selectImageMap: MutableMap<String, Int>,
             val images: List<SearchImageListTypeModel>?
         ) : UiAction()
+        data class ClickImageNoneSelectModeEvent(val imageUrl: String, val position: Int) : UiAction()
     }
 
     sealed class UiEvent {
