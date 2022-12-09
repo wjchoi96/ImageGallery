@@ -197,8 +197,11 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
                             )
                         }
                     }
-                    is SearchImageViewModel.UiEvent.KeyboardVisibleEvent ->
+                    is SearchImageViewModel.UiEvent.KeyboardVisibleEvent -> {
                         context?.setSoftKeyboardVisible(binding.background, it.visible)
+                        if(!it.visible)
+                            (binding.rvSearch.findViewHolderForAdapterPosition(0) as? SearchQueryViewHolder)?.clearFocus()
+                    }
 
                     is SearchImageViewModel.UiEvent.PresentSaveDialog ->
                         showSaveDialog(it.selectCount)

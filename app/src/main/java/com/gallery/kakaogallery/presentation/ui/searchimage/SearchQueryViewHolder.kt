@@ -32,6 +32,10 @@ class SearchQueryViewHolder private constructor(
             return binding.etQuery.text.toString()
         }
 
+    fun clearFocus(){
+        binding.etQuery.clearFocus()
+    }
+
     fun bind(query: SearchImageListTypeModel.Query) {
         binding.holder = this
         bindQuery(query)
