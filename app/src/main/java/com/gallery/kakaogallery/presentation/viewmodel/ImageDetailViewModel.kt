@@ -48,7 +48,7 @@ class ImageDetailViewModel @Inject constructor(
     }
 
     fun reloadIfCacheLoadFail() {
-        if(loadOnlyCache.value == true && !prevLoadSuccess) {
+        if(imageUrl.value?.endsWith(".gif") == true || loadOnlyCache.value == true && !prevLoadSuccess) {
             _loadOnlyCache.value = false
         }
     }
