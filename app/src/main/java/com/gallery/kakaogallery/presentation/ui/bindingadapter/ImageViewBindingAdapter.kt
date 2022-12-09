@@ -6,6 +6,7 @@ import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.gallery.kakaogallery.R
@@ -26,7 +27,7 @@ fun loadUrl(imageView: ImageView, url: String) {
  * loadInfo.second => loadFromCache
  */
 @BindingAdapter("app:loadUrl", "app:loadOnlyCache", "app:loadUrlFinishListener")
-fun loadUrlWithListener(imageView: ImageView, imageUrl: String, loadOnlyCache: Boolean, onLoadingFinish: (Boolean) -> Unit) {
+fun loadForSharedElementTransition(imageView: ImageView, imageUrl: String, loadOnlyCache: Boolean, onLoadingFinish: (success: Boolean) -> Unit) {
     Timber.d("animation debug => loadUrlWithListener\nurl[$imageUrl], loadOnlyCache[$loadOnlyCache]")
     Glide.with(imageView)
         .load(imageUrl)
@@ -54,6 +55,8 @@ fun loadUrlWithListener(imageView: ImageView, imageUrl: String, loadOnlyCache: B
                 isFirstResource: Boolean
             ): Boolean {
                 onLoadingFinish(true)
+                if(imageUrl.endsWith(".gif") || resource is GifDrawable)
+                    imageView.post { resource?.setVisible(true, true) } // shared element transition 이후에 gif 가 실행이 안되는 문제를 해결하기 위해 재실행 코드 추가
                 return false
             }
         })
