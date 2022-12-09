@@ -10,20 +10,23 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".presentation.ui.imagedetail.ImageDetailActivity">
+        tools:context=".presentation.ui.imagedetail.ImageDetailActivity"
+        android:id="@+id/background"
+        >
 
         <com.google.android.material.appbar.AppBarLayout xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/layout_app_bar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:background="#FFFFFF"
+            android:background="@color/black_222222"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             >
 
             <com.google.android.material.appbar.MaterialToolbar
+                app:navigationIconTint="@color/white_ffffff"
                 android:id="@+id/tool_bar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
@@ -32,6 +35,7 @@
         </com.google.android.material.appbar.AppBarLayout>
 
         <ImageView
+            android:background="@color/black_000000"
             app:loadOnlyCache="@{viewModel.loadOnlyCache}"
             app:loadUrl="@{viewModel.imageUrl}"
             app:loadUrlFinishListener="@{viewModel.finishLoadImageEvent}"
