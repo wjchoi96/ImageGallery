@@ -6,6 +6,7 @@
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
     <color name="black_000000">#FF000000</color>
+    <color name="black_222222">#222222</color>
     <color name="white_ffffff">#FFFFFFFF</color>
 
     <color name="gold_aa9763">#aa9763</color>
@@ -13,6 +14,7 @@
     <color name="brown_5d5235">#5d5235</color>
     <color name="brown_2b2618">#2b2618</color>
     <color name="gray_b7babd">#b7babd</color>
+    <color name="gray_ffaaaaaa">#ffaaaaaa</color>
 
     <color name="yellow_f1eb52">#f1eb52</color> <!-- 202020 -->
 </resources>

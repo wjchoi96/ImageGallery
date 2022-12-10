@@ -3,17 +3,17 @@ package com.gallery.kakaogallery.presentation.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
-import com.gallery.kakaogallery.domain.model.GalleryImageModel
+import com.gallery.kakaogallery.domain.model.GalleryImageListTypeModel
 import com.gallery.kakaogallery.domain.model.ImageModel
-import com.gallery.kakaogallery.domain.model.MaxPageException
 import com.gallery.kakaogallery.domain.usecase.FetchSaveImageUseCase
 import com.gallery.kakaogallery.domain.usecase.RemoveSaveImageUseCase
 import com.gallery.kakaogallery.presentation.application.StringResourceProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.kotlin.addTo
+import io.reactivex.rxjava3.subjects.PublishSubject
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltViewModel
@@ -28,16 +28,22 @@ class GalleryViewModel @Inject constructor(
         private const val KEY_SAVE_IMAGE_LIST = "key_save_image_list"
         private const val KEY_SELECT_MODE = "key_select_mode"
         private const val KEY_HEADER_TITLE = "key_header_title"
+        private const val KEY_NOTIFY_GROUP_VISIBLE = "key_notify_text_visible"
+        private const val KEY_NOTIFY_TEXT = "key_notify_text"
+        private const val KEY_NOTIFY_BTN = "key_notify_btn"
     }
 
     private val fetchImageFailMessage: String =
         resourceProvider.getString(StringResourceProvider.StringResourceId.FetchFailSaveImage)
+    private val emptyNotifyBtn = resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage)
+    private val retryNotifyBtn = resourceProvider.getString(StringResourceProvider.StringResourceId.Retry)
+
     private val selectImageHashMap: MutableMap<String, Int> = handle[KEY_SELECT_IMAGE_MAP] ?: kotlin.run {
         mutableMapOf<String, Int>().also { handle[KEY_SELECT_IMAGE_MAP] = it }
     }
 
-    private val _saveImages: MutableLiveData<List<GalleryImageModel>> = handle.getLiveData(KEY_SAVE_IMAGE_LIST, emptyList())
-    val saveImages: LiveData<List<GalleryImageModel>> = _saveImages
+    private val _saveImages: MutableLiveData<List<GalleryImageListTypeModel>> = handle.getLiveData(KEY_SAVE_IMAGE_LIST, emptyList())
+    val saveImages: LiveData<List<GalleryImageListTypeModel>> = _saveImages
 
     private val _headerTitle: MutableLiveData<String> =
         handle.getLiveData(KEY_HEADER_TITLE, resourceProvider.getString(StringResourceProvider.StringResourceId.MenuGallery))
@@ -52,63 +58,124 @@ class GalleryViewModel @Inject constructor(
     private val _refreshLoading = MutableLiveData(false)
     val refreshLoading: LiveData<Boolean> = _refreshLoading
 
+    private val _notifyGroupVisible: MutableLiveData<Boolean> = handle.getLiveData(KEY_NOTIFY_GROUP_VISIBLE, false)
+    val notifyGroupVisible: LiveData<Boolean> = _notifyGroupVisible
+
+    private val _notifyText: MutableLiveData<String> = handle.getLiveData(KEY_NOTIFY_TEXT, "")
+    val notifyText: LiveData<String> = _notifyText
+
+    private val _notifyBtn: MutableLiveData<String> = handle.getLiveData(KEY_NOTIFY_BTN, "")
+    val notifyBtn: LiveData<String> = _notifyBtn
+
     private val _uiEvent = MutableLiveData<SingleEvent<UiEvent>>()
     val uiEvent: LiveData<SingleEvent<UiEvent>> = _uiEvent
 
+    private val uiAction: PublishSubject<UiAction> = PublishSubject.create()
+
     init {
-        fetchSaveImages() // stream 연결을 위해 무조건 호출
-        Timber.d("save state handle debug => ${selectImageHashMap.size}")
+        bindAction()
+        uiAction.onNext(UiAction.FetchSaveImages)
     }
 
-    fun removeSelectImage() {
-        _dataLoading.value = true
-        removeSaveImageUseCase(selectImageHashMap)
+    private fun bindAction() {
+        uiAction.filter { action -> action is UiAction.Refresh }
+            .subscribe {
+                _refreshLoading.value = true
+            }
+
+        uiAction
+            .filter { it is UiAction.FetchSaveImages }
+            .flatMap {
+                _dataLoading.value = true
+                fetchSaveImageUseCase()
+                    .takeUntil(uiAction.filter { action -> action is UiAction.Refresh })
+                    .doFinally { Timber.d("dispose debug => dispose fetchSaveImageUseCase Stream") }
+            }
+            .doOnNext { Timber.d("dispose debug => emit data from fetchAction") }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                processFetchSaveImages(it)
+            }.addTo(compositeDisposable)
+
+        uiAction
+            .filter { it is UiAction.RemoveSelectImage }
+            .cast(UiAction.RemoveSelectImage::class.java)
+            .flatMapSingle {
+                _dataLoading.value = true
+                removeSaveImageUseCase(it.selectImageMap)
+            }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
-                _dataLoading.value = false
-                when (it) {
-                    true -> {
-                        showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveSuccess))
-                        clickSelectModeEvent() // 삭제라면 선택모드 였을테니, toggle 해주면 선택모드가 해제됨
-                    }
-                    else -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail))
-                }
+                processRemoveSelectImage(it)
             }) {
-                _dataLoading.value = false
-                it.printStackTrace()
-                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail) + " $it")
+                processRemoveSelectImageException(it)
+            }.addTo(compositeDisposable)
+
+        uiAction
+            .filter { it is UiAction.ClickImageNoneSelectModeEvent }
+            .cast(UiAction.ClickImageNoneSelectModeEvent::class.java)
+            .throttleFirst(500, TimeUnit.MILLISECONDS)
+            .subscribe {
+                _uiEvent.value = SingleEvent(UiEvent.NavigateImageDetail(it.imageUrl, it.position))
             }.addTo(compositeDisposable)
     }
 
-    private var saveImageDisposable: Disposable? = null
-    private fun fetchSaveImages(isRefresh: Boolean = false) {
-        saveImageDisposable?.dispose()
-        saveImageDisposable = null
-
-        _dataLoading.value = true
-        saveImageDisposable = fetchSaveImageUseCase()
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { res ->
-                _dataLoading.value = false
-                if (isRefresh) _refreshLoading.value = false
-                res.onSuccess {
-                    _saveImages.value = it
-                }.onFailure {
-                    when (it) {
-                        is MaxPageException -> showToast(
-                            resourceProvider.getString(
-                                StringResourceProvider.StringResourceId.LastPage
-                            )
-                        )
-                        else -> showToast("$fetchImageFailMessage\n${it.message}")
+    private fun processFetchSaveImages(res: Result<List<GalleryImageListTypeModel>>){
+        _dataLoading.value = false
+        _refreshLoading.value = false
+        res.onSuccess {
+            setNotifyGroup(
+                it.isEmpty(),
+                resourceProvider.getString(StringResourceProvider.StringResourceId.EmptySaveImage),
+                emptyNotifyBtn
+            )
+            _saveImages.value = it
+        }.onFailure {
+            "$fetchImageFailMessage\n${it.message}".let { msg ->
+                showSnackBar(
+                    msg,
+                    resourceProvider.getString(
+                        StringResourceProvider.StringResourceId.Retry
+                    ) to {
+                        refreshGalleryEvent()
                     }
-                }
-            }.addTo(compositeDisposable)
+                )
+                setNotifyGroup(true, msg, retryNotifyBtn)
+            }
+        }
+    }
+
+    private fun processRemoveSelectImage(res: Boolean) {
+        _dataLoading.value = false
+        when (res) {
+            true -> {
+                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveSuccess))
+                clickSelectModeEvent() // 삭제라면 선택모드 였을테니, toggle 해주면 선택모드가 해제됨
+            }
+            else -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail))
+        }
+    }
+
+    private fun processRemoveSelectImageException(throwable: Throwable){
+        _dataLoading.value = false
+        throwable.printStackTrace()
+        showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail) + " $throwable")
+    }
+
+    fun clickNotifyEvent() {
+        when(notifyBtn.value) {
+            emptyNotifyBtn -> _uiEvent.value = SingleEvent(UiEvent.NavigateSearchView)
+            retryNotifyBtn -> refreshGalleryEvent()
+        }
     }
 
     fun refreshGalleryEvent() {
-        _refreshLoading.value = true
-        fetchSaveImages(isRefresh = true)
+        uiAction.onNext(UiAction.Refresh)
+        uiAction.onNext(UiAction.FetchSaveImages)
+    }
+
+    fun removeSelectImage() {
+        uiAction.onNext(UiAction.RemoveSelectImage(selectImageHashMap))
     }
 
     fun clickRemoveEvent() {
@@ -118,6 +185,10 @@ class GalleryViewModel @Inject constructor(
             return
         }
         _uiEvent.value = SingleEvent(UiEvent.PresentRemoveDialog(selectImageHashMap.size))
+    }
+
+    fun touchToolBarEvent() {
+        _uiEvent.value = SingleEvent(UiEvent.ScrollToTop((saveImages.value?.size ?: 0) <= 80))
     }
 
     fun clickSelectModeEvent() {
@@ -140,7 +211,8 @@ class GalleryViewModel @Inject constructor(
         when (selectMode.value) {
             true ->
                 setSelectImage(image, idx, !selectImageHashMap.containsKey(image.hash))
-            else -> {}
+            else ->
+                uiAction.onNext(UiAction.ClickImageNoneSelectModeEvent(image.imageUrl, idx))
         }
     }
 
@@ -148,7 +220,9 @@ class GalleryViewModel @Inject constructor(
         val images = saveImages.value?.toMutableList() ?: return
         try {
             for (idx in selectImageHashMap.values) {
-                images[idx] = images[idx].copy(isSelect = false)
+                images[idx] = (images[idx] as GalleryImageListTypeModel.Image).let {
+                    it.copy(image = it.image.copy(isSelect = false))
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -160,7 +234,9 @@ class GalleryViewModel @Inject constructor(
     private fun setSelectImage(image: ImageModel, idx: Int, select: Boolean) {
         val images = saveImages.value?.toMutableList() ?: return
         try {
-            images[idx] = images[idx].copy(isSelect = select)
+            images[idx] = (images[idx] as GalleryImageListTypeModel.Image).let {
+                it.copy(image = it.image.copy(isSelect = select))
+            }
             when (select) {
                 true -> selectImageHashMap[image.hash] = idx
                 else -> selectImageHashMap.remove(image.hash)
@@ -180,9 +256,30 @@ class GalleryViewModel @Inject constructor(
         _uiEvent.value = SingleEvent(UiEvent.ShowToast(message))
     }
 
+    private fun showSnackBar(message: String, action: Pair<String, () -> Unit>?) {
+        _uiEvent.value = SingleEvent(UiEvent.ShowSnackBar(message, action))
+    }
+
+    private fun setNotifyGroup(visible: Boolean, message: String, btn: String) {
+        _notifyGroupVisible.value = visible
+        _notifyText.value = message
+        _notifyBtn.value = btn
+    }
+
+    sealed class UiAction {
+        object FetchSaveImages : UiAction()
+        object Refresh : UiAction()
+        data class RemoveSelectImage(val selectImageMap: MutableMap<String, Int>) : UiAction()
+        data class ClickImageNoneSelectModeEvent(val imageUrl: String, val position: Int) : UiAction()
+    }
+
     sealed class UiEvent {
         data class ShowToast(val message: String) : UiEvent()
+        data class ShowSnackBar(val message: String, val action: (Pair<String, ()->Unit>)?) : UiEvent()
         data class PresentRemoveDialog(val selectCount: Int) : UiEvent()
         data class KeyboardVisibleEvent(val visible: Boolean) : UiEvent()
+        data class ScrollToTop(val smoothScroll: Boolean) : UiEvent()
+        object NavigateSearchView : UiEvent()
+        data class NavigateImageDetail(val imageUrl: String, val position: Int) : UiEvent()
     }
 }

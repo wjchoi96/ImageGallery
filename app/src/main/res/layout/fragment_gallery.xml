@@ -1,4 +1,5 @@
-<layout xmlns:app="http://schemas.android.com/apk/res-auto">
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
         <import type="android.view.View"/>
@@ -38,34 +39,58 @@
             app:onRefreshListener="@{() -> viewModel.refreshGalleryEvent()}"
             app:refreshing="@{viewModel.refreshLoading}"
             android:id="@+id/layout_swipe_refresh"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/layout_toolbar">
+            app:layout_constraintTop_toBottomOf="@+id/layout_toolbar"
+            >
 
             <androidx.recyclerview.widget.RecyclerView
                 app:itemDecoration="@{galleryItemDecoration}"
                 app:layoutManager="@{galleryGridLayoutManager}"
                 android:adapter="@{galleryAdapter}"
                 android:id="@+id/rv_gallery"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                />
+
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
         <TextView
-            android:id="@+id/tv_none_notify"
+            android:gravity="center"
+            android:id="@+id/tv_notify"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/message_none_save_image"
+            android:text="@{viewModel.notifyText}"
             android:textColor="@color/brown_5d5235"
             android:textSize="17sp"
-            android:visibility="@{viewModel.saveImages.size() == 0 ? View.VISIBLE : View.GONE, default=gone}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/btn_notify"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@{viewModel.notifyBtn}"
+            android:onClick="@{() -> viewModel.clickNotifyEvent()}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_notify"
+            />
+        
+        <androidx.constraintlayout.widget.Group
+            tools:visibility="visible"
+            android:id="@+id/group_notify"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids="tv_notify, btn_notify"
+            android:visibility="@{viewModel.notifyGroupVisible ? View.VISIBLE : View.GONE, default=gone}"
+            />
 
         <ProgressBar
             android:id="@+id/progress"

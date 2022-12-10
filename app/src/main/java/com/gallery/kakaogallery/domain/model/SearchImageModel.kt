@@ -20,6 +20,20 @@ data class SearchImageModel(
         get() = thumbnailUrl ?: imageUrl
     override val isImageType: Boolean
         get() = imageType == ImageType.Image
+
+    infix fun isSameItem(other: Any?): Boolean {
+        return when (other) {
+            is SearchImageModel -> this.hash == other.hash
+            else -> false
+        }
+    }
+
+    infix fun isSameContent(other: Any?): Boolean {
+        return when (other) {
+            is SearchImageModel -> this == other
+            else -> false
+        }
+    }
 }
 
 

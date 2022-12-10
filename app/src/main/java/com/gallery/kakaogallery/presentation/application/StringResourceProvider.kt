@@ -13,8 +13,10 @@ interface StringResourceProvider {
 
         Loading(R.string.message_loading),
         Confirm(R.string.confirm),
+        Retry(R.string.retry),
 
         NoneQuery(R.string.message_none_query),
+        EmptySearchResult(R.string.message_empty_search_query_result),
         SearchFail(R.string.message_search_query_fail),
         LastPage(R.string.message_last_page),
 
@@ -24,7 +26,7 @@ interface StringResourceProvider {
 
         SaveSuccess(R.string.message_save_success),
         SaveFail(R.string.message_save_fail),
-        NoneSaveImage(R.string.message_none_save_image),
+        EmptySaveImage(R.string.message_empty_save_image),
         FetchFailSaveImage(R.string.message_fetch_save_image_fail),
 
         RemoveSuccess(R.string.message_remove_success),

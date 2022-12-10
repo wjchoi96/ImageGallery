@@ -60,10 +60,11 @@
             app:layout_constraintStart_toStartOf="@+id/rv_search" />
 
         <TextView
+            android:gravity="center"
             android:id="@+id/tv_none_notify"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/message_none_search_query_result"
+            android:text="@{viewModel.notifyText}"
             android:textColor="@color/brown_5d5235"
             android:textSize="17sp"
             android:visibility="@{viewModel.searchResultIsEmpty ? View.VISIBLE : View.GONE, default=gone}"

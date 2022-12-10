@@ -12,5 +12,6 @@ abstract class BindingActivity<T : ViewDataBinding> : LifeCycleLoggingActivity()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, layoutResId)
+        binding.lifecycleOwner = this
     }
 }

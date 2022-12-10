@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    changeImageTransform
+    This Transition captures an ImageView's matrix before and after the scene change and animates it during the transition
+    In combination with ChangeBounds, ChangeImageTransform allows ImageViews that change size, shape, or ImageView.ScaleType to animate contents smoothly.
+
+    changeBounds
+    This transition captures the layout bounds of target views before and after the scene change and animates those changes during the transition.
+-->
+<transitionSet xmlns:android="http://schemas.android.com/apk/res/android">
+    <changeBounds />
+    <changeImageTransform />
+</transitionSet>

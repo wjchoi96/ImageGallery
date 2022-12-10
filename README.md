@@ -12,39 +12,18 @@
 | [main](https://github.com/wjchoi96/KakaoGallery/tree/main) | 배포용 |
 | [dev](https://github.com/wjchoi96/KakaoGallery/tree/dev) | 개발용 |
 
-## Docs
+## Reference
  - [프로젝트 관리](https://full-growth-4d2.notion.site/KakaoGallery-e1de93d4a6cb452989253006bc06e59d)
+ - [트러블 슈팅 및 문서화 모음](https://full-growth-4d2.notion.site/KakaoGallery-32461f6f8e964c85a847805cb6fb7015)
+ - [App Release Link](https://appdistribution.firebase.google.com/pub/i/e608755ba7c9f066)
 
 ## Development Environment
 - kotlin
-- Android Studio Bumblebee | 2021.1.1 Patch 2
+- Android Studio Dolphin | 2021.3.1 Patch 1
 
 ## Application Version
-- minSdkVersion : 23
-- targetSdkVersion : 31
-
-## APIs
-### Rx
-- [RxKotlin](https://github.com/ReactiveX/RxKotlin)
-- [RxAndroid](https://github.com/Reactivex/Rxandroid/wiki)
-
-### 네트워크 통신
-- [Retrofit2](https://github.com/square/retrofit)
-- [Retrofit2 RxJava adapter](https://github.com/square/retrofit/tree/master/retrofit-adapters/rxjava3)
-- [Retrofit2 Gson Converter](https://github.com/square/retrofit/tree/master/retrofit-converters/gson)
-
-#### HTTP 요청 및 응답 데이터 로그
-- [OkHttp Logging Interceptor](https://github.com/square/okhttp/tree/master/okhttp-logging-interceptor )
-  
-### 이미지 검색
-- [카카오 이미지 검색 api : Kakao Image Search Api](https://developers.kakao.com/docs/latest/ko/daum-search/dev-guide#search-image )
-- [카카오 비디오 검색 api : Kakao Video Search Api](https://developers.kakao.com/docs/latest/ko/daum-search/dev-guide#search-video)
-
-### 이미지 불러오기
-- [Glide](https://github.com/bumptech/glide )
-  
-### Debug Log
-- [Timber](https://github.com/JakeWharton/timber)
+- minSdkVersion : 24
+- targetSdkVersion : 33
   
 ## Package
 ``` 

@@ -1,5 +1,7 @@
 package com.gallery.kakaogallery.presentation.ui.gallery
 
+import android.app.ActivityOptions
+import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Rect
 import android.os.Bundle
@@ -13,10 +15,13 @@ import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.FragmentGalleryBinding
 import com.gallery.kakaogallery.presentation.extension.safeScrollToTop
 import com.gallery.kakaogallery.presentation.extension.setSoftKeyboardVisible
+import com.gallery.kakaogallery.presentation.extension.showSnackBar
 import com.gallery.kakaogallery.presentation.extension.showToast
 import com.gallery.kakaogallery.presentation.ui.base.BindingFragment
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetDialog
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetEventReceiver
+import com.gallery.kakaogallery.presentation.ui.imagedetail.ImageDetailActivity
+import com.gallery.kakaogallery.presentation.ui.root.BottomMenuRoot
 import com.gallery.kakaogallery.presentation.viewmodel.GalleryViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -62,13 +67,23 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
             it.tvBtnRight.isVisible = false
             it.tvBtnLeft.isVisible = false
             it.toolBar.setOnClickListener {
-                binding.rvGallery.safeScrollToTop(true)
+                viewModel.touchToolBarEvent()
             }
         }
     }
 
+    private fun setSwipeRefreshLayout() {
+        binding.layoutSwipeRefresh.setColorSchemeResources(
+            android.R.color.holo_blue_bright,
+            android.R.color.holo_green_light,
+            android.R.color.holo_orange_light,
+            android.R.color.holo_red_light
+        )
+    }
+
+
     private fun bindRecyclerView() {
-        binding.galleryGridLayoutManager = GridLayoutManager(mContext, itemCount)
+        binding.galleryGridLayoutManager = GridLayoutManager(context, itemCount)
         binding.galleryAdapter = galleryAdapter.apply {
             stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
         }
@@ -105,34 +120,44 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
         return dp * (displayMetrics.densityDpi.toFloat() / DisplayMetrics.DENSITY_DEFAULT)
     }
 
-    private fun setSwipeRefreshLayout() {
-        binding.layoutSwipeRefresh.setColorSchemeResources(
-            android.R.color.holo_blue_bright,
-            android.R.color.holo_green_light,
-            android.R.color.holo_orange_light,
-            android.R.color.holo_red_light
-        )
-    }
-
     private fun observeData() {
         viewModel.uiEvent.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let {
                 when (it) {
                     is GalleryViewModel.UiEvent.ShowToast ->
-                        mContext?.showToast(it.message)
+                        context?.showToast(it.message)
+
+                    is GalleryViewModel.UiEvent.ShowSnackBar -> {
+                        when (it.action) {
+                            null -> binding.background.showSnackBar(it.message)
+                            else -> binding.background.showSnackBar(
+                                it.message,
+                                it.action.first to View.OnClickListener { _ ->
+                                    it.action.second.invoke()
+                                }
+                            )
+                        }
+                    }
                     is GalleryViewModel.UiEvent.KeyboardVisibleEvent ->
-                        mContext?.setSoftKeyboardVisible(binding.background, it.visible)
+                        context?.setSoftKeyboardVisible(binding.background, it.visible)
+
                     is GalleryViewModel.UiEvent.PresentRemoveDialog ->
                         showRemoveDialog(it.selectCount)
+
+                    is GalleryViewModel.UiEvent.NavigateSearchView ->
+                        (requireActivity() as? BottomMenuRoot)?.navigateSearchTab()
+
+                    is GalleryViewModel.UiEvent.ScrollToTop ->
+                        binding.rvGallery.safeScrollToTop(it.smoothScroll)
+
+                    is GalleryViewModel.UiEvent.NavigateImageDetail -> {
+                        showImageDetailActivity(it.imageUrl, it.position)
+                    }
                 }
             }
         }
 
         viewModel.saveImages.observe(viewLifecycleOwner) {
-            Timber.d("savedImageListObservable subscribe thread - " + Thread.currentThread().name)
-            for ((idx, i) in it.withIndex()) {
-                Timber.d("[" + idx + "] : " + i.toMinString())
-            }
             galleryAdapter.updateList(it)
         }
 
@@ -143,6 +168,19 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
                 else -> finishSelectMode()
             }
         }
+    }
+
+    private fun showImageDetailActivity(imageUrl: String, viewPosition: Int) {
+        val imageView = binding.rvGallery
+            .findViewHolderForLayoutPosition(viewPosition)?.itemView?.findViewById<View>(R.id.iv_image)
+        startActivity(
+            ImageDetailActivity.get(requireContext(), imageUrl),
+            ActivityOptions.makeSceneTransitionAnimation(
+                requireActivity(),
+                imageView,
+                ImageDetailActivity.VIEW_NAME_IMAGE_DETAIL
+            ).toBundle()
+        )
     }
 
     private fun showRemoveDialog(selectCount: Int) {

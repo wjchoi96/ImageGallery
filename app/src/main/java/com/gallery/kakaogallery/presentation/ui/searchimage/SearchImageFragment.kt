@@ -1,6 +1,7 @@
 package com.gallery.kakaogallery.presentation.ui.searchimage
 
 import android.annotation.SuppressLint
+import android.app.ActivityOptions
 import android.content.res.Configuration
 import android.graphics.Rect
 import android.os.Bundle
@@ -16,13 +17,15 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.FragmentSearchImageBinding
-import com.gallery.kakaogallery.domain.model.ImageListTypeModel
+import com.gallery.kakaogallery.domain.model.SearchImageListTypeModel
 import com.gallery.kakaogallery.presentation.extension.safeScrollToTop
 import com.gallery.kakaogallery.presentation.extension.setSoftKeyboardVisible
+import com.gallery.kakaogallery.presentation.extension.showSnackBar
 import com.gallery.kakaogallery.presentation.extension.showToast
 import com.gallery.kakaogallery.presentation.ui.base.BindingFragment
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetDialog
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetEventReceiver
+import com.gallery.kakaogallery.presentation.ui.imagedetail.ImageDetailActivity
 import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -92,7 +95,7 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
             it.tvBtnLeft.isVisible = false
             it.tvBtnRight.isVisible = false
             it.toolBar.setOnClickListener {
-                binding.rvSearch.safeScrollToTop(true)
+                viewModel.touchToolBarEvent()
             }
         }
     }
@@ -109,10 +112,10 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
 
     private fun bindRecyclerView() {
         binding.searchLayoutManager =
-            GridLayoutManager(mContext, itemCount, GridLayoutManager.VERTICAL, false).apply {
+            GridLayoutManager(context, itemCount, GridLayoutManager.VERTICAL, false).apply {
                 spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
                     override fun getSpanSize(position: Int): Int {
-                        return if (imageSearchAdapter.getItemViewType(position) == ImageListTypeModel.ViewType.Query.id)
+                        return if (imageSearchAdapter.getItemViewType(position) == SearchImageListTypeModel.ViewType.Query.id)
                             this@SearchImageFragment.itemCount
                         else
                             1
@@ -181,11 +184,34 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
             event.getContentIfNotHandled()?.let {
                 when (it) {
                     is SearchImageViewModel.UiEvent.ShowToast ->
-                        mContext?.showToast(it.message)
-                    is SearchImageViewModel.UiEvent.KeyboardVisibleEvent ->
-                        mContext?.setSoftKeyboardVisible(binding.background, it.visible)
+                        context?.showToast(it.message)
+
+                    is SearchImageViewModel.UiEvent.ShowSnackBar -> {
+                        when (it.action) {
+                            null -> binding.background.showSnackBar(it.message)
+                            else -> binding.background.showSnackBar(
+                                it.message,
+                                it.action.first to View.OnClickListener { _ ->
+                                    it.action.second.invoke()
+                                }
+                            )
+                        }
+                    }
+                    is SearchImageViewModel.UiEvent.KeyboardVisibleEvent -> {
+                        context?.setSoftKeyboardVisible(binding.background, it.visible)
+                        if(!it.visible)
+                            (binding.rvSearch.findViewHolderForAdapterPosition(0) as? SearchQueryViewHolder)?.clearFocus()
+                    }
+
                     is SearchImageViewModel.UiEvent.PresentSaveDialog ->
                         showSaveDialog(it.selectCount)
+
+                    is SearchImageViewModel.UiEvent.ScrollToTop ->
+                        binding.rvSearch.safeScrollToTop(it.smoothScroll)
+
+                    is SearchImageViewModel.UiEvent.NavigateImageDetail -> {
+                        showImageDetailActivity(it.imageUrl, it.position)
+                    }
                 }
             }
         }
@@ -203,6 +229,19 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
                 else -> finishSelectMode()
             }
         }
+    }
+
+    private fun showImageDetailActivity(imageUrl: String, viewPosition: Int) {
+        val imageView = binding.rvSearch
+            .findViewHolderForLayoutPosition(viewPosition)?.itemView?.findViewById<View>(R.id.iv_image)
+        startActivity(
+            ImageDetailActivity.get(requireContext(), imageUrl),
+            ActivityOptions.makeSceneTransitionAnimation(
+                requireActivity(),
+                imageView,
+                ImageDetailActivity.VIEW_NAME_IMAGE_DETAIL
+            ).toBundle()
+        )
     }
 
     private fun showSaveDialog(selectCount: Int) {
