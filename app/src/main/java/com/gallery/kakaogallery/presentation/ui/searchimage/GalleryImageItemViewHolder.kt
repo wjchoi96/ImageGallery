@@ -1,14 +1,20 @@
 package com.gallery.kakaogallery.presentation.ui.searchimage
 
+import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.databinding.ItemGalleryImageBinding
 import com.gallery.kakaogallery.domain.model.ImageModel
+import timber.log.Timber
 
+@SuppressLint("ClickableViewAccessibility")
 class GalleryImageItemViewHolder private constructor(
     private val binding: ItemGalleryImageBinding,
-    val imageItemSelectListener: (ImageModel, Int) -> Unit
+    itemSelectListener: (ImageModel, Int) -> Unit
 ) : RecyclerView.ViewHolder(binding.root) {
     companion object {
         fun from(
@@ -24,6 +30,27 @@ class GalleryImageItemViewHolder private constructor(
     val itemPosition: Int
         get() = bindingAdapterPosition
 
+    val imageItemSelectListener: (ImageModel, Int) -> Unit by lazy {
+        { image, idx ->
+            Timber.d("animation debug => click")
+            scaleAnimate(binding.cvImage, 1f) {
+                itemSelectListener.invoke(image, idx)
+            }
+        }
+    }
+
+    init {
+        binding.cvImage.setOnTouchListener { view, motionEvent ->
+            when (motionEvent.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    Timber.d("animation debug => ACTION_DOWN")
+                    scaleAnimate(view, 0.93f)
+                }
+            }
+            false
+        }
+    }
+
     fun bind(item: ImageModel, isSave: Boolean) {
         binding.holder = this
         binding.imageItem = item
@@ -37,6 +64,16 @@ class GalleryImageItemViewHolder private constructor(
 
     private fun bindIsSave(isSave: Boolean) {
         binding.isSaveImage = isSave
+    }
+
+    private fun scaleAnimate(view: View, scale: Float, duration: Long = 100, endAction: ((View) -> Unit)? = null ) {
+        view.animate()
+            .scaleX(scale)
+            .scaleY(scale)
+            .setDuration(duration)
+            .withEndAction {
+                endAction?.invoke(view)
+            }
     }
 
 }
