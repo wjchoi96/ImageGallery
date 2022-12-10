@@ -13,6 +13,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.subjects.PublishSubject
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltViewModel
@@ -109,6 +110,14 @@ class GalleryViewModel @Inject constructor(
             }) {
                 processRemoveSelectImageException(it)
             }.addTo(compositeDisposable)
+
+        uiAction
+            .filter { it is UiAction.ClickImageNoneSelectModeEvent }
+            .cast(UiAction.ClickImageNoneSelectModeEvent::class.java)
+            .throttleFirst(500, TimeUnit.MILLISECONDS)
+            .subscribe {
+                _uiEvent.value = SingleEvent(UiEvent.NavigateImageDetail(it.imageUrl, it.position))
+            }.addTo(compositeDisposable)
     }
 
     private fun processFetchSaveImages(res: Result<List<GalleryImageListTypeModel>>){
@@ -202,7 +211,8 @@ class GalleryViewModel @Inject constructor(
         when (selectMode.value) {
             true ->
                 setSelectImage(image, idx, !selectImageHashMap.containsKey(image.hash))
-            else -> {}
+            else ->
+                uiAction.onNext(UiAction.ClickImageNoneSelectModeEvent(image.imageUrl, idx))
         }
     }
 
@@ -247,7 +257,7 @@ class GalleryViewModel @Inject constructor(
     }
 
     private fun showSnackBar(message: String, action: Pair<String, () -> Unit>?) {
-        _uiEvent.value = SingleEvent(GalleryViewModel.UiEvent.ShowSnackBar(message, action))
+        _uiEvent.value = SingleEvent(UiEvent.ShowSnackBar(message, action))
     }
 
     private fun setNotifyGroup(visible: Boolean, message: String, btn: String) {
@@ -260,6 +270,7 @@ class GalleryViewModel @Inject constructor(
         object FetchSaveImages : UiAction()
         object Refresh : UiAction()
         data class RemoveSelectImage(val selectImageMap: MutableMap<String, Int>) : UiAction()
+        data class ClickImageNoneSelectModeEvent(val imageUrl: String, val position: Int) : UiAction()
     }
 
     sealed class UiEvent {
@@ -267,7 +278,8 @@ class GalleryViewModel @Inject constructor(
         data class ShowSnackBar(val message: String, val action: (Pair<String, ()->Unit>)?) : UiEvent()
         data class PresentRemoveDialog(val selectCount: Int) : UiEvent()
         data class KeyboardVisibleEvent(val visible: Boolean) : UiEvent()
-        object NavigateSearchView : UiEvent()
         data class ScrollToTop(val smoothScroll: Boolean) : UiEvent()
+        object NavigateSearchView : UiEvent()
+        data class NavigateImageDetail(val imageUrl: String, val position: Int) : UiEvent()
     }
 }

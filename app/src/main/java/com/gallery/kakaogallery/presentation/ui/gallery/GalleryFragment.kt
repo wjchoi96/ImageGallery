@@ -1,5 +1,7 @@
 package com.gallery.kakaogallery.presentation.ui.gallery
 
+import android.app.ActivityOptions
+import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Rect
 import android.os.Bundle
@@ -18,6 +20,7 @@ import com.gallery.kakaogallery.presentation.extension.showToast
 import com.gallery.kakaogallery.presentation.ui.base.BindingFragment
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetDialog
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetEventReceiver
+import com.gallery.kakaogallery.presentation.ui.imagedetail.ImageDetailActivity
 import com.gallery.kakaogallery.presentation.ui.root.BottomMenuRoot
 import com.gallery.kakaogallery.presentation.viewmodel.GalleryViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -123,6 +126,7 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
                 when (it) {
                     is GalleryViewModel.UiEvent.ShowToast ->
                         context?.showToast(it.message)
+
                     is GalleryViewModel.UiEvent.ShowSnackBar -> {
                         when (it.action) {
                             null -> binding.background.showSnackBar(it.message)
@@ -136,12 +140,19 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
                     }
                     is GalleryViewModel.UiEvent.KeyboardVisibleEvent ->
                         context?.setSoftKeyboardVisible(binding.background, it.visible)
+
                     is GalleryViewModel.UiEvent.PresentRemoveDialog ->
                         showRemoveDialog(it.selectCount)
+
                     is GalleryViewModel.UiEvent.NavigateSearchView ->
                         (requireActivity() as? BottomMenuRoot)?.navigateSearchTab()
+
                     is GalleryViewModel.UiEvent.ScrollToTop ->
                         binding.rvGallery.safeScrollToTop(it.smoothScroll)
+
+                    is GalleryViewModel.UiEvent.NavigateImageDetail -> {
+                        showImageDetailActivity(it.imageUrl, it.position)
+                    }
                 }
             }
         }
@@ -157,6 +168,19 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
                 else -> finishSelectMode()
             }
         }
+    }
+
+    private fun showImageDetailActivity(imageUrl: String, viewPosition: Int) {
+        val imageView = binding.rvGallery
+            .findViewHolderForLayoutPosition(viewPosition)?.itemView?.findViewById<View>(R.id.iv_image)
+        startActivity(
+            ImageDetailActivity.get(requireContext(), imageUrl),
+            ActivityOptions.makeSceneTransitionAnimation(
+                requireActivity(),
+                imageView,
+                ImageDetailActivity.VIEW_NAME_IMAGE_DETAIL
+            ).toBundle()
+        )
     }
 
     private fun showRemoveDialog(selectCount: Int) {
