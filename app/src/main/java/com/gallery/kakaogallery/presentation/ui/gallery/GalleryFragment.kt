@@ -9,6 +9,7 @@ import android.util.DisplayMetrics
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.R
@@ -21,6 +22,7 @@ import com.gallery.kakaogallery.presentation.ui.imagedetail.ImageDetailActivity
 import com.gallery.kakaogallery.presentation.ui.root.BottomMenuRoot
 import com.gallery.kakaogallery.presentation.viewmodel.GalleryViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -165,10 +167,14 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
                     }
                 }
             }
-        }
 
-        viewModel.saveImages.observe(viewLifecycleOwner) {
-            galleryAdapter.updateList(it)
+            launch {
+                viewModel.saveImages.collectLatest {
+                    lifecycleScope.launch {
+                        galleryAdapter.updateList(it)
+                    }
+                }
+            }
         }
     }
 

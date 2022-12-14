@@ -45,8 +45,7 @@ class GalleryViewModel @Inject constructor(
         mutableMapOf<String, Int>().also { handle[KEY_SELECT_IMAGE_MAP] = it }
     }
 
-    private val _saveImages: MutableLiveData<List<GalleryImageListTypeModel>> = handle.getLiveData(KEY_SAVE_IMAGE_LIST, emptyList())
-    val saveImages: LiveData<List<GalleryImageListTypeModel>> = _saveImages
+    val saveImages: StateFlow<List<GalleryImageListTypeModel>> = handle.getStateFlow(KEY_SAVE_IMAGE_LIST, emptyList())
 
     override val headerTitle: StateFlow<String> = handle.getStateFlow(KEY_HEADER_TITLE, resourceProvider.getString(StringResourceProvider.StringResourceId.MenuGallery))
 
@@ -126,7 +125,7 @@ class GalleryViewModel @Inject constructor(
                 resourceProvider.getString(StringResourceProvider.StringResourceId.EmptySaveImage),
                 emptyNotifyBtn
             )
-            _saveImages.value = it
+            handle[KEY_SAVE_IMAGE_LIST] = it
         }.onFailure {
             "$fetchImageFailMessage\n${it.message}".let { msg ->
                 showSnackBar(
@@ -231,7 +230,7 @@ class GalleryViewModel @Inject constructor(
             e.printStackTrace()
         }
         selectImageHashMap.clear()
-        _saveImages.value = images
+        handle[KEY_SAVE_IMAGE_LIST] = images
     }
 
     private fun setSelectImage(image: ImageModel, idx: Int, select: Boolean) {
@@ -244,7 +243,7 @@ class GalleryViewModel @Inject constructor(
                 true -> selectImageHashMap[image.hash] = idx
                 else -> selectImageHashMap.remove(image.hash)
             }
-            _saveImages.value = images
+            handle[KEY_SAVE_IMAGE_LIST] = images
             handle[KEY_HEADER_TITLE] = resourceProvider.getString(
                 StringResourceProvider.StringResourceId.SelectState,
                 selectImageHashMap.size
