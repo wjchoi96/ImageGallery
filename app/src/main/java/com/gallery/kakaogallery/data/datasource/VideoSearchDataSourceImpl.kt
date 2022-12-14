@@ -5,7 +5,8 @@ import com.gallery.kakaogallery.data.entity.remote.request.VideoSearchRequest
 import com.gallery.kakaogallery.data.entity.remote.response.VideoSearchResponse
 import com.gallery.kakaogallery.data.service.VideoSearchService
 import com.gallery.kakaogallery.domain.model.MaxPageException
-import io.reactivex.rxjava3.core.Single
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -15,33 +16,37 @@ class VideoSearchDataSourceImpl @Inject constructor(
 
     private var videoPageable = true
 
-    override fun fetchVideoQueryRes(
+    override suspend fun fetchVideoQueryRes(
         query: String,
         page: Int
-    ): Single<List<VideoSearchResponse.Document>> {
+    ): Flow<List<VideoSearchResponse.Document>> {
         if (page == 1)
             videoPageable = true
         return when (videoPageable) {
             false -> {
-                Timber.d("error debug => throw MaxPageException")
-                Single.error { MaxPageException() }
-            }
-            true -> {
-                searchVideoApi.requestSearchVideo(
-                    query,
-                    VideoSearchRequest.SortType.Recency.key,
-                    page, // 1~50
-                    SearchConstant.VideoPageSizeMaxValue
-                ).map {
-                    Timber.d("Video mapping run at " + Thread.currentThread().name)
-                    videoPageable = !it.meta.isEnd
-                    it.documents
-                }.onErrorResumeNext {
-                    it.printStackTrace()
-                    Timber.d("error debug => after api response => $it")
-                    Single.error { it }
+                flow {
+                    Timber.d("error debug => throw MaxPageException")
+                    throw MaxPageException()
                 }
             }
+            true -> flow {
+                emit(
+                    searchVideoApi.requestSearchVideo(
+                        query,
+                        VideoSearchRequest.SortType.Recency.key,
+                        page, // 1~50
+                        SearchConstant.VideoPageSizeMaxValue
+                    )
+                )
+            }.map {
+                Timber.d("Video mapping run at " + Thread.currentThread().name)
+                videoPageable = !it.meta.isEnd
+                it.documents
+            }.catch {
+                it.printStackTrace()
+                Timber.d("error debug => after api response => $it")
+                throw it
+            }.flowOn(Dispatchers.IO)
         }
     }
 }
