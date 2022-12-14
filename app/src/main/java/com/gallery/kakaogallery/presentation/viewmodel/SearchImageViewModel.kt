@@ -3,6 +3,7 @@ package com.gallery.kakaogallery.presentation.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewModelScope
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.MaxPageException
 import com.gallery.kakaogallery.domain.model.SearchImageListTypeModel
@@ -16,6 +17,8 @@ import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.kotlin.cast
 import io.reactivex.rxjava3.subjects.PublishSubject
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -58,27 +61,23 @@ class SearchImageViewModel @Inject constructor(
         handle.getLiveData(KEY_SEARCH_IMAGE_LIST, emptyList())
     val searchImages: LiveData<List<SearchImageListTypeModel>> = _searchImages
 
-    private val _searchResultIsEmpty = MutableLiveData(false)
-    val searchResultIsEmpty: LiveData<Boolean> = _searchResultIsEmpty
+    override val headerTitle: StateFlow<String> = handle.getStateFlow(KEY_HEADER_TITLE, resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage))
 
-    private val _headerTitle: MutableLiveData<String> =
-        handle.getLiveData(KEY_HEADER_TITLE, resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage))
-    override val headerTitle: LiveData<String> = _headerTitle
+    val selectMode: StateFlow<Boolean> = handle.getStateFlow(KEY_SELECT_MODE, false)
 
-    private val _selectMode: MutableLiveData<Boolean> = handle.getLiveData(KEY_SELECT_MODE, false)
-    val selectMode: LiveData<Boolean> = _selectMode
+    val notifyText: StateFlow<String> = handle.getStateFlow(KEY_NOTIFY_TEXT, "")
 
-    private val _dataLoading = MutableLiveData(false)
-    val dataLoading: LiveData<Boolean> = _dataLoading
+    private val _searchResultIsEmpty = MutableStateFlow(false)
+    val searchResultIsEmpty = _searchResultIsEmpty.asStateFlow()
 
-    private val _pagingDataLoading = MutableLiveData(false)
-    val pagingDataLoading: LiveData<Boolean> = _pagingDataLoading
+    private val _dataLoading = MutableStateFlow(false)
+    val dataLoading = _dataLoading.asStateFlow()
 
-    private val _notifyText: MutableLiveData<String> = handle.getLiveData(KEY_NOTIFY_TEXT, "")
-    val notifyText: LiveData<String> = _notifyText
+    private val _pagingDataLoading = MutableStateFlow(false)
+    val pagingDataLoading = _pagingDataLoading.asStateFlow()
 
-    private val _uiEvent = MutableLiveData<SingleEvent<UiEvent>>()
-    val uiEvent: LiveData<SingleEvent<UiEvent>> = _uiEvent
+    private val _uiEvent = MutableSharedFlow<UiEvent>()
+    val uiEvent: SharedFlow<UiEvent> = _uiEvent.asSharedFlow()
 
     private val uiAction: PublishSubject<UiAction> = PublishSubject.create()
 
@@ -95,7 +94,9 @@ class SearchImageViewModel @Inject constructor(
             .filter { it is UiAction.Search }
             .cast(UiAction.Search::class.java)
             .flatMap {
-                _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
+                viewModelScope.launch {
+                    _uiEvent.emit(UiEvent.KeyboardVisibleEvent(false))
+                }
                 when (dataLoading.value) {
                     true -> {
                         Observable.just(
@@ -126,7 +127,7 @@ class SearchImageViewModel @Inject constructor(
             .flatMap {
                 when {
                     it.query.isNullOrBlank() -> Observable.empty()
-                    pagingDataLoading.value == true -> Observable.empty()
+                    pagingDataLoading.value -> Observable.empty()
                     else -> {
                         _pagingDataLoading.value = true
                         fetchSearchDataQueryDataUseCase(it.query, it.page)
@@ -162,7 +163,9 @@ class SearchImageViewModel @Inject constructor(
             .cast(UiAction.ClickImageNoneSelectModeEvent::class.java)
             .throttleFirst(500, TimeUnit.MILLISECONDS)
             .subscribe {
-                _uiEvent.value = SingleEvent(UiEvent.NavigateImageDetail(it.imageUrl, it.position))
+                viewModelScope.launch {
+                    _uiEvent.emit(UiEvent.NavigateImageDetail(it.imageUrl, it.position))
+                }
             }.addTo(compositeDisposable)
     }
 
@@ -172,7 +175,7 @@ class SearchImageViewModel @Inject constructor(
             if (lastQuery?.isNotEmpty() == true) _searchResultIsEmpty.value = it.size <= 1
             when (selectImageUrlMap.isEmpty()) {
                 true -> {
-                    _notifyText.value = resourceProvider.getString(StringResourceProvider.StringResourceId.EmptySearchResult)
+                    handle[KEY_NOTIFY_TEXT] = resourceProvider.getString(StringResourceProvider.StringResourceId.EmptySearchResult)
                     _searchImages.value = it
                 }
                 else -> {
@@ -207,7 +210,7 @@ class SearchImageViewModel @Inject constructor(
                                 }
                             }
                         )
-                        _notifyText.value = msg
+                        handle[KEY_NOTIFY_TEXT] = msg
                     }
                 }
             }
@@ -257,31 +260,36 @@ class SearchImageViewModel @Inject constructor(
     }
 
     fun backgroundTouchEvent() {
-        _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
+        viewModelScope.launch {
+            _uiEvent.emit(UiEvent.KeyboardVisibleEvent(false))
+        }
     }
 
     fun clickSaveEvent() {
         when (selectImageUrlMap.size) {
-            0 -> _uiEvent.value =
-                SingleEvent(UiEvent.ShowToast(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)))
-            else -> _uiEvent.value = SingleEvent(UiEvent.PresentSaveDialog(selectImageUrlMap.size))
+            0 -> viewModelScope.launch {
+                _uiEvent.emit(UiEvent.ShowToast(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)))
+            }
+            else -> viewModelScope.launch {
+                _uiEvent.emit(UiEvent.PresentSaveDialog(selectImageUrlMap.size))
+            }
         }
     }
 
     fun clickSelectModeEvent() {
-        when (_selectMode.value) {
+        when (selectMode.value) {
             true -> unSelectAllImage()
             else -> {}
         }
         setHeaderTitleUseSelectMap()
-        _selectMode.value = !(_selectMode.value ?: false)
+        handle[KEY_SELECT_MODE] = !selectMode.value
     }
 
     private fun setHeaderTitleUseSelectMap() {
         when (selectImageUrlMap.isEmpty()) {
-            true -> _headerTitle.value =
+            true -> handle[KEY_HEADER_TITLE] =
                 resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage)
-            else -> _headerTitle.value = resourceProvider.getString(
+            else -> handle[KEY_HEADER_TITLE] = resourceProvider.getString(
                 StringResourceProvider.StringResourceId.SelectState,
                 selectImageUrlMap.size
             )
@@ -323,7 +331,9 @@ class SearchImageViewModel @Inject constructor(
 
 
     fun touchImageEvent(image: ImageModel, idx: Int) {
-        _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
+        viewModelScope.launch {
+            _uiEvent.emit(UiEvent.KeyboardVisibleEvent(false))
+        }
         when (selectMode.value) {
             true ->
                 setSelectImage(image, idx, !selectImageUrlMap.containsKey(image.imageUrl))
@@ -341,15 +351,21 @@ class SearchImageViewModel @Inject constructor(
     }
 
     fun touchToolBarEvent() {
-        _uiEvent.value = SingleEvent(UiEvent.ScrollToTop(currentPage == 1))
+        viewModelScope.launch {
+            _uiEvent.emit(UiEvent.ScrollToTop(currentPage == 1))
+        }
     }
 
     private fun showToast(message: String) {
-        _uiEvent.value = SingleEvent(UiEvent.ShowToast(message))
+        viewModelScope.launch {
+            _uiEvent.emit(UiEvent.ShowToast(message))
+        }
     }
 
     private fun showSnackBar(message: String, action: Pair<String, () -> Unit>?) {
-        _uiEvent.value = SingleEvent(UiEvent.ShowSnackBar(message, action))
+        viewModelScope.launch {
+            _uiEvent.emit(UiEvent.ShowSnackBar(message, action))
+        }
     }
 
     sealed class UiAction {

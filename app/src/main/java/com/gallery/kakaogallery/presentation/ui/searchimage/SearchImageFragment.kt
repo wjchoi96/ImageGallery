@@ -18,16 +18,15 @@ import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.FragmentSearchImageBinding
 import com.gallery.kakaogallery.domain.model.SearchImageListTypeModel
-import com.gallery.kakaogallery.presentation.extension.safeScrollToTop
-import com.gallery.kakaogallery.presentation.extension.setSoftKeyboardVisible
-import com.gallery.kakaogallery.presentation.extension.showSnackBar
-import com.gallery.kakaogallery.presentation.extension.showToast
+import com.gallery.kakaogallery.presentation.extension.*
 import com.gallery.kakaogallery.presentation.ui.base.BindingFragment
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetDialog
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetEventReceiver
 import com.gallery.kakaogallery.presentation.ui.imagedetail.ImageDetailActivity
 import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -180,37 +179,49 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
     }
 
     private fun observeData() {
-        viewModel.uiEvent.observe(viewLifecycleOwner) { event ->
-            event.getContentIfNotHandled()?.let {
-                when (it) {
-                    is SearchImageViewModel.UiEvent.ShowToast ->
-                        context?.showToast(it.message)
+        repeatOnStarted {
+            launch {
+                viewModel.uiEvent.collect {
+                    when (it) {
+                        is SearchImageViewModel.UiEvent.ShowToast ->
+                            context?.showToast(it.message)
 
-                    is SearchImageViewModel.UiEvent.ShowSnackBar -> {
-                        when (it.action) {
-                            null -> binding.background.showSnackBar(it.message)
-                            else -> binding.background.showSnackBar(
-                                it.message,
-                                it.action.first to View.OnClickListener { _ ->
-                                    it.action.second.invoke()
-                                }
-                            )
+                        is SearchImageViewModel.UiEvent.ShowSnackBar -> {
+                            when (it.action) {
+                                null -> binding.background.showSnackBar(it.message)
+                                else -> binding.background.showSnackBar(
+                                    it.message,
+                                    it.action.first to View.OnClickListener { _ ->
+                                        it.action.second.invoke()
+                                    }
+                                )
+                            }
+                        }
+                        is SearchImageViewModel.UiEvent.KeyboardVisibleEvent -> {
+                            context?.setSoftKeyboardVisible(binding.background, it.visible)
+                            if(!it.visible)
+                                (binding.rvSearch.findViewHolderForAdapterPosition(0) as? SearchQueryViewHolder)?.clearFocus()
+                        }
+
+                        is SearchImageViewModel.UiEvent.PresentSaveDialog ->
+                            showSaveDialog(it.selectCount)
+
+                        is SearchImageViewModel.UiEvent.ScrollToTop ->
+                            binding.rvSearch.safeScrollToTop(it.smoothScroll)
+
+                        is SearchImageViewModel.UiEvent.NavigateImageDetail -> {
+                            showImageDetailActivity(it.imageUrl, it.position)
                         }
                     }
-                    is SearchImageViewModel.UiEvent.KeyboardVisibleEvent -> {
-                        context?.setSoftKeyboardVisible(binding.background, it.visible)
-                        if(!it.visible)
-                            (binding.rvSearch.findViewHolderForAdapterPosition(0) as? SearchQueryViewHolder)?.clearFocus()
-                    }
+                }
+            }
 
-                    is SearchImageViewModel.UiEvent.PresentSaveDialog ->
-                        showSaveDialog(it.selectCount)
-
-                    is SearchImageViewModel.UiEvent.ScrollToTop ->
-                        binding.rvSearch.safeScrollToTop(it.smoothScroll)
-
-                    is SearchImageViewModel.UiEvent.NavigateImageDetail -> {
-                        showImageDetailActivity(it.imageUrl, it.position)
+            launch {
+                viewModel.selectMode.collect {
+                    Timber.d("select mode debug at observe -> $it")
+                    when (it) {
+                        true -> startSelectMode()
+                        else -> finishSelectMode()
                     }
                 }
             }
@@ -222,13 +233,6 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
             imageSearchAdapter.updateList(it)
         }
 
-        viewModel.selectMode.observe(viewLifecycleOwner) {
-            Timber.d("select mode debug at observe -> $it")
-            when (it) {
-                true -> startSelectMode()
-                else -> finishSelectMode()
-            }
-        }
     }
 
     private fun showImageDetailActivity(imageUrl: String, viewPosition: Int) {
