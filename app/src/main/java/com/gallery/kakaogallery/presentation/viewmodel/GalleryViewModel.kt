@@ -3,6 +3,7 @@ package com.gallery.kakaogallery.presentation.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewModelScope
 import com.gallery.kakaogallery.domain.model.GalleryImageListTypeModel
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.usecase.FetchSaveImageUseCase
@@ -13,6 +14,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.subjects.PublishSubject
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -48,26 +50,22 @@ class GalleryViewModel @Inject constructor(
 
     override val headerTitle: StateFlow<String> = handle.getStateFlow(KEY_HEADER_TITLE, resourceProvider.getString(StringResourceProvider.StringResourceId.MenuGallery))
 
-    private val _selectMode: MutableLiveData<Boolean> = handle.getLiveData(KEY_SELECT_MODE, false)
-    val selectMode: LiveData<Boolean> = _selectMode
+    val selectMode: StateFlow<Boolean> = handle.getStateFlow(KEY_SELECT_MODE, false)
 
-    private val _dataLoading = MutableLiveData(false)
-    val dataLoading: LiveData<Boolean> = _dataLoading
+    val notifyGroupVisible: StateFlow<Boolean> = handle.getStateFlow(KEY_NOTIFY_GROUP_VISIBLE, false)
 
-    private val _refreshLoading = MutableLiveData(false)
-    val refreshLoading: LiveData<Boolean> = _refreshLoading
+    val notifyText: StateFlow<String> = handle.getStateFlow(KEY_NOTIFY_TEXT, "")
 
-    private val _notifyGroupVisible: MutableLiveData<Boolean> = handle.getLiveData(KEY_NOTIFY_GROUP_VISIBLE, false)
-    val notifyGroupVisible: LiveData<Boolean> = _notifyGroupVisible
+    val notifyBtn: StateFlow<String> = handle.getStateFlow(KEY_NOTIFY_BTN, "")
 
-    private val _notifyText: MutableLiveData<String> = handle.getLiveData(KEY_NOTIFY_TEXT, "")
-    val notifyText: LiveData<String> = _notifyText
+    private val _dataLoading = MutableStateFlow(false)
+    val dataLoading: StateFlow<Boolean> = _dataLoading.asStateFlow()
 
-    private val _notifyBtn: MutableLiveData<String> = handle.getLiveData(KEY_NOTIFY_BTN, "")
-    val notifyBtn: LiveData<String> = _notifyBtn
+    private val _refreshLoading = MutableStateFlow(false)
+    val refreshLoading: StateFlow<Boolean> = _refreshLoading.asStateFlow()
 
-    private val _uiEvent = MutableLiveData<SingleEvent<UiEvent>>()
-    val uiEvent: LiveData<SingleEvent<UiEvent>> = _uiEvent
+    private val _uiEvent = MutableSharedFlow<UiEvent>()
+    val uiEvent = _uiEvent.asSharedFlow()
 
     private val uiAction: PublishSubject<UiAction> = PublishSubject.create()
 
@@ -115,7 +113,7 @@ class GalleryViewModel @Inject constructor(
             .cast(UiAction.ClickImageNoneSelectModeEvent::class.java)
             .throttleFirst(500, TimeUnit.MILLISECONDS)
             .subscribe {
-                _uiEvent.value = SingleEvent(UiEvent.NavigateImageDetail(it.imageUrl, it.position))
+                viewModelScope.launch { _uiEvent.emit(UiEvent.NavigateImageDetail(it.imageUrl, it.position)) }
             }.addTo(compositeDisposable)
     }
 
@@ -163,7 +161,7 @@ class GalleryViewModel @Inject constructor(
 
     fun clickNotifyEvent() {
         when(notifyBtn.value) {
-            emptyNotifyBtn -> _uiEvent.value = SingleEvent(UiEvent.NavigateSearchView)
+            emptyNotifyBtn -> viewModelScope.launch { _uiEvent.emit(UiEvent.NavigateSearchView) }
             retryNotifyBtn -> refreshGalleryEvent()
         }
     }
@@ -179,19 +177,24 @@ class GalleryViewModel @Inject constructor(
 
     fun clickRemoveEvent() {
         if (selectImageHashMap.isEmpty()) {
-            _uiEvent.value =
-                SingleEvent(UiEvent.ShowToast(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)))
+            viewModelScope.launch {
+                _uiEvent.emit(UiEvent.ShowToast(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)))
+            }
             return
         }
-        _uiEvent.value = SingleEvent(UiEvent.PresentRemoveDialog(selectImageHashMap.size))
+        viewModelScope.launch {
+            _uiEvent.emit(UiEvent.PresentRemoveDialog(selectImageHashMap.size))
+        }
     }
 
     fun touchToolBarEvent() {
-        _uiEvent.value = SingleEvent(UiEvent.ScrollToTop((saveImages.value?.size ?: 0) <= 80))
+        viewModelScope.launch {
+            _uiEvent.emit(UiEvent.ScrollToTop((saveImages.value?.size ?: 0) <= 80))
+        }
     }
 
     fun clickSelectModeEvent() {
-        when (_selectMode.value) {
+        when (selectMode.value) {
             true -> {
                 unSelectAllImage()
                 handle[KEY_HEADER_TITLE] = resourceProvider.getString(StringResourceProvider.StringResourceId.MenuGallery)
@@ -201,11 +204,13 @@ class GalleryViewModel @Inject constructor(
                 selectImageHashMap.size
             )
         }
-        _selectMode.value = !(_selectMode.value ?: false)
+        handle[KEY_SELECT_MODE] = !selectMode.value
     }
 
     fun touchImageEvent(image: ImageModel, idx: Int) {
-        _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
+        viewModelScope.launch {
+            _uiEvent.emit(UiEvent.KeyboardVisibleEvent(false))
+        }
         when (selectMode.value) {
             true ->
                 setSelectImage(image, idx, !selectImageHashMap.containsKey(image.hash))
@@ -251,17 +256,17 @@ class GalleryViewModel @Inject constructor(
     }
 
     private fun showToast(message: String) {
-        _uiEvent.value = SingleEvent(UiEvent.ShowToast(message))
+        viewModelScope.launch { _uiEvent.emit(UiEvent.ShowToast(message)) }
     }
 
     private fun showSnackBar(message: String, action: Pair<String, () -> Unit>?) {
-        _uiEvent.value = SingleEvent(UiEvent.ShowSnackBar(message, action))
+        viewModelScope.launch { _uiEvent.emit(UiEvent.ShowSnackBar(message, action)) }
     }
 
     private fun setNotifyGroup(visible: Boolean, message: String, btn: String) {
-        _notifyGroupVisible.value = visible
-        _notifyText.value = message
-        _notifyBtn.value = btn
+        handle[KEY_NOTIFY_GROUP_VISIBLE] = visible
+        handle[KEY_NOTIFY_TEXT] = message
+        handle[KEY_NOTIFY_BTN] = btn
     }
 
     sealed class UiAction {
