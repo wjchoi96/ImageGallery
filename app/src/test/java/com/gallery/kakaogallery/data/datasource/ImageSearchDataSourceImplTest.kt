@@ -8,8 +8,12 @@ import com.gallery.kakaogallery.data.entity.remote.response.ImageSearchResponse
 import com.gallery.kakaogallery.data.service.ImageSearchService
 import com.gallery.kakaogallery.domain.model.MaxPageException
 import com.google.gson.Gson
+import io.mockk.coVerify
 import io.mockk.mockk
-import io.mockk.verify
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -22,6 +26,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.net.HttpURLConnection
 
+@ExperimentalCoroutinesApi
 @Suppress("NonAsciiCharacters")
 internal class ImageSearchDataSourceImplTest {
 
@@ -49,7 +54,7 @@ internal class ImageSearchDataSourceImplTest {
     }
 
     @After
-    fun downMockServer(){
+    fun downMockServer() {
         mockWebServer.shutdown()
     }
 
@@ -67,7 +72,11 @@ internal class ImageSearchDataSourceImplTest {
             setBody(actualResponseJson)
         }
         mockWebServer.enqueue(actualResponse)
-        val actual = catchThrowable { imageSearchDataSource.fetchImageQueryRes(query, page).blockingGet() }
+        val actual = catchThrowable {
+            runTest {
+                imageSearchDataSource.fetchImageQueryRes(query, page).first()
+            }
+        }
         val expect = FakeNetworkConnectionInterceptor.ioExceptionMessage
         assertThat(actual)
             .isInstanceOf(Throwable::class.java)
@@ -77,7 +86,7 @@ internal class ImageSearchDataSourceImplTest {
 
     //state test
     @Test
-    fun `fetchImageQueryRes는 1번 페이지를 검색한다면 페이징 여부를 초기화한다`() {
+    fun `fetchImageQueryRes는 1번 페이지를 검색한다면 페이징 여부를 초기화한다`() = runTest {
         imageSearchDataSource = ImageSearchDataSourceImpl(
             mockRetrofit.create(ImageSearchService::class.java)
         )
@@ -90,10 +99,11 @@ internal class ImageSearchDataSourceImplTest {
         mockWebServer.enqueue(actualResponse)
         mockWebServer.enqueue(actualResponse)
 
-        imageSearchDataSource.fetchImageQueryRes(query, page).blockingGet()
-        val actual = imageSearchDataSource.fetchImageQueryRes(query, page).blockingGet()
+        imageSearchDataSource.fetchImageQueryRes(query, page).firstOrNull()
+        val actual = imageSearchDataSource.fetchImageQueryRes(query, page).firstOrNull()
         val expect = Gson().fromJson(actualResponseJson, ImageSearchResponse::class.java).documents
         assertThat(actual)
+            .isNotNull
             .isEqualTo(expect)
     }
 
@@ -111,10 +121,15 @@ internal class ImageSearchDataSourceImplTest {
         }
         mockWebServer.enqueue(actualResponse)
 
-        catchThrowable { imageSearchDataSource.fetchImageQueryRes(query, page).blockingGet() }
-        val actual = catchThrowable { imageSearchDataSource.fetchImageQueryRes(query, page + 1).blockingGet() }
+        runTest { imageSearchDataSource.fetchImageQueryRes(query, page).firstOrNull() }
+        val actual = catchThrowable {
+            runTest {
+                imageSearchDataSource.fetchImageQueryRes(query, page + 1).firstOrNull()
+            }
+        }
         val expect = MaxPageException().message
         assertThat(actual)
+            .isNotNull
             .isInstanceOf(Throwable::class.java)
             .hasMessageContaining(expect)
     }
@@ -133,9 +148,14 @@ internal class ImageSearchDataSourceImplTest {
         }
         mockWebServer.enqueue(actualResponse)
 
-        val actual = catchThrowable { imageSearchDataSource.fetchImageQueryRes(query, page).blockingGet() }
-//        val actual = catchThrowable { throw MaxPageException("test") }
+        val actual = catchThrowable {
+            runTest {
+                imageSearchDataSource.fetchImageQueryRes(query, page).firstOrNull()
+            }
+        }
+
         assertThat(actual)
+            .isNotNull
             .isInstanceOf(HttpException::class.java)
     }
 
@@ -153,13 +173,20 @@ internal class ImageSearchDataSourceImplTest {
         }
         mockWebServer.enqueue(actualResponse)
 
-        assertThatThrownBy { imageSearchDataSource.fetchImageQueryRes(query, page).blockingGet() }
+        val actual = catchThrowable {
+            runTest {
+                imageSearchDataSource.fetchImageQueryRes(query, page).firstOrNull()
+            }
+        }
+
+        assertThat(actual)
+            .isNotNull
             .isInstanceOf(Throwable::class.java)
     }
 
     //state test
     @Test
-    fun `fetchImageQueryRes는 올바른 서버 응답을 처리할 수 있다`() {
+    fun `fetchImageQueryRes는 올바른 서버 응답을 처리할 수 있다`() = runTest {
         imageSearchDataSource = ImageSearchDataSourceImpl(
             mockRetrofit.create(ImageSearchService::class.java)
         )
@@ -171,10 +198,12 @@ internal class ImageSearchDataSourceImplTest {
         }
         mockWebServer.enqueue(actualResponse)
 
-        val actual = imageSearchDataSource.fetchImageQueryRes(query, page).blockingGet()
+        val actual = imageSearchDataSource.fetchImageQueryRes(query, page).firstOrNull()
 
         val expect = Gson().fromJson(actualResponseJson, ImageSearchResponse::class.java).documents
-        assertThat(actual).isEqualTo(expect)
+        assertThat(actual)
+            .isNotNull
+            .isEqualTo(expect)
     }
 
     //behavior test
@@ -184,15 +213,19 @@ internal class ImageSearchDataSourceImplTest {
         val mockService: ImageSearchService = mockk(relaxed = true)
         imageSearchDataSource = ImageSearchDataSourceImpl(mockService)
 
-        imageSearchDataSource.fetchImageQueryRes(query, page)
+        runTest {
+            imageSearchDataSource.fetchImageQueryRes(query, page).firstOrNull()
+        }
 
-        verify {
-            mockService.requestSearchImage(
-                query,
-                ImageSearchRequest.SortType.Recency.key,
-                page, // 1~50
-                SearchConstant.ImagePageSizeMaxValue
-            )
+        coVerify(exactly = 1) {
+            runTest {
+                mockService.requestSearchImage(
+                    query,
+                    ImageSearchRequest.SortType.Recency.key,
+                    page, // 1~50
+                    SearchConstant.ImagePageSizeMaxValue
+                )
+            }
         }
     }
 }
