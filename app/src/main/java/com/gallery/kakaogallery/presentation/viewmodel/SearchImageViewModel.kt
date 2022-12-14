@@ -15,11 +15,14 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.subjects.PublishSubject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
+@FlowPreview
 @HiltViewModel
 class SearchImageViewModel @Inject constructor(
     private val handle: SavedStateHandle,
@@ -81,58 +84,67 @@ class SearchImageViewModel @Inject constructor(
     init {
         bindAction()
         if(searchImages.value.isEmpty()) {
-            uiAction.onNext(UiAction.Search(lastQuery ?: ""))
+            viewModelScope.launch {
+                uiActionFlow.emit(UiAction.Search(lastQuery ?: ""))
+            }
         }
     }
 
+    @FlowPreview
     private fun bindAction(){
-        uiAction
-            .filter { it is UiAction.Search }
-            .cast(UiAction.Search::class.java)
-            .flatMap {
-                viewModelScope.launch {
-                    _uiEvent.emit(UiEvent.KeyboardVisibleEvent(false))
-                }
-                when (dataLoading.value) {
-                    true -> {
-                        Observable.just(
-                            Result.failure(Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.Loading)))
-                        )
-                    }
-                    else -> {
-                        if(it.query != lastQuery && selectImageUrlMap.isNotEmpty()) {
-                            selectImageUrlMap.clear()
-                            setHeaderTitleUseSelectMap()
+        viewModelScope.launch {
+            launch {
+                uiActionFlow
+                    .filterIsInstance<UiAction.Search>()
+                    .flatMapConcat {
+                        _uiEvent.emit(UiEvent.KeyboardVisibleEvent(false))
+                        when (dataLoading.value) {
+                            true -> flow {
+                                emit(Result.failure(Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.Loading))))
+                            }
+                            else -> {
+                                if(it.query != lastQuery && selectImageUrlMap.isNotEmpty()) {
+                                    selectImageUrlMap.clear()
+                                    setHeaderTitleUseSelectMap()
+                                }
+                                lastQuery = it.query
+                                currentPage = 1
+                                _dataLoading.value = true
+                                fetchSearchDataQueryDataUseCase(it.query, 1)
+                            }
                         }
-                        lastQuery = it.query
-                        currentPage = 1
-                        _dataLoading.value = true
-                        fetchSearchDataQueryDataUseCase(it.query, 1)
                     }
-                }
+                    .flowOn(Dispatchers.Default)
+                    .collect {
+                        Timber.d("collect run at ${Thread.currentThread().name}")
+                        Timber.d("search query subscribe => $it")
+                        processSearchResult(it)
+                    }
             }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                Timber.d("search query subscribe => $it")
-                processSearchResult(it)
-            }.addTo(compositeDisposable)
 
-        uiAction
-            .filter { it is UiAction.Paging }
-            .cast(UiAction.Paging::class.java)
-            .flatMap {
-                when {
-                    it.query.isNullOrBlank() -> Observable.empty()
-                    pagingDataLoading.value -> Observable.empty()
-                    else -> {
+            launch {
+                uiActionFlow
+                    .filterIsInstance<UiAction.Paging>()
+                    .filter { !it.query.isNullOrBlank() && !pagingDataLoading.value }
+                    .flatMapConcat {
                         _pagingDataLoading.value = true
-                        fetchSearchDataQueryDataUseCase(it.query, it.page)
+                        fetchSearchDataQueryDataUseCase(requireNotNull(it.query), it.page)
+                    }.flowOn(Dispatchers.Default)
+                    .collect {
+                        processPagingResult(it)
                     }
-                }
-            }.observeOn(AndroidSchedulers.mainThread())
-            .subscribe{ res ->
-                processPagingResult(res)
-            }.addTo(compositeDisposable)
+            }
+
+            launch {
+                uiActionFlow
+                    .filterIsInstance<UiAction.ClickImageNoneSelectModeEvent>()
+                    .throttleFirst(500)
+                    .collect {
+                        _uiEvent.emit(UiEvent.NavigateImageDetail(it.imageUrl, it.position))
+                    }
+            }
+
+        }
 
         uiAction
             .filter { it is UiAction.SaveSelectImage }
@@ -154,17 +166,9 @@ class SearchImageViewModel @Inject constructor(
                 processSaveImageException(it)
             }.addTo(compositeDisposable)
 
-        viewModelScope.launch {
-            uiActionFlow
-                .filterIsInstance<UiAction.ClickImageNoneSelectModeEvent>()
-                .throttleFirst(500)
-                .collect {
-                    _uiEvent.emit(UiEvent.NavigateImageDetail(it.imageUrl, it.position))
-                }
-        }
     }
 
-    private fun processSearchResult(res: Result<List<SearchImageListTypeModel>>){
+    private suspend fun processSearchResult(res: Result<List<SearchImageListTypeModel>>){
         _dataLoading.value = false
         res.onSuccess {
             if (lastQuery?.isNotEmpty() == true) _searchResultIsEmpty.value = it.size <= 1
@@ -201,7 +205,7 @@ class SearchImageViewModel @Inject constructor(
                                 StringResourceProvider.StringResourceId.Retry
                             ) to {
                                 lastQuery?.let { query ->
-                                    uiAction.onNext(UiAction.Search(query))
+                                    viewModelScope.launch { uiActionFlow.emit(UiAction.Search(query)) }
                                 }
                             }
                         )
@@ -212,7 +216,7 @@ class SearchImageViewModel @Inject constructor(
         }
     }
 
-    private fun processPagingResult(res: Result<List<SearchImageListTypeModel>>) {
+    private suspend fun processPagingResult(res: Result<List<SearchImageListTypeModel>>) {
         _pagingDataLoading.value = false
         res.onSuccess {
             currentPage++
@@ -233,17 +237,23 @@ class SearchImageViewModel @Inject constructor(
         _dataLoading.value = false
         when (res) {
             true -> {
-                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveSuccess))
+                viewModelScope.launch {
+                    showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveSuccess))
+                }
                 clickSelectModeEvent()
             }
-            else -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveFail))
+            else -> viewModelScope.launch {
+                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveFail))
+            }
         }
     }
 
     private fun processSaveImageException(throwable: Throwable) {
         _dataLoading.value = false
         throwable.printStackTrace()
-        showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveFail) + " $throwable")
+        viewModelScope.launch {
+            showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveFail) + " $throwable")
+        }
     }
 
     fun saveSelectImage() {
@@ -319,7 +329,9 @@ class SearchImageViewModel @Inject constructor(
             setHeaderTitleUseSelectMap()
         } catch (e: Exception) {
             e.printStackTrace()
-            showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SelectFail))
+            viewModelScope.launch {
+                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SelectFail))
+            }
         }
     }
 
@@ -338,11 +350,15 @@ class SearchImageViewModel @Inject constructor(
     }
 
     fun searchQueryEvent(query: String) {
-        uiAction.onNext(UiAction.Search(query))
+        viewModelScope.launch {
+            uiActionFlow.emit(UiAction.Search(query))
+        }
     }
 
     fun fetchNextPage() {
-        uiAction.onNext(UiAction.Paging(lastQuery, currentPage + 1))
+        viewModelScope.launch {
+            uiActionFlow.emit(UiAction.Paging(lastQuery, currentPage + 1))
+        }
     }
 
     fun touchToolBarEvent() {
@@ -351,16 +367,12 @@ class SearchImageViewModel @Inject constructor(
         }
     }
 
-    private fun showToast(message: String) {
-        viewModelScope.launch {
-            _uiEvent.emit(UiEvent.ShowToast(message))
-        }
+    private suspend fun showToast(message: String) {
+        _uiEvent.emit(UiEvent.ShowToast(message))
     }
 
-    private fun showSnackBar(message: String, action: Pair<String, () -> Unit>?) {
-        viewModelScope.launch {
-            _uiEvent.emit(UiEvent.ShowSnackBar(message, action))
-        }
+    private suspend fun showSnackBar(message: String, action: Pair<String, () -> Unit>?) {
+        _uiEvent.emit(UiEvent.ShowSnackBar(message, action))
     }
 
     sealed class UiAction {
