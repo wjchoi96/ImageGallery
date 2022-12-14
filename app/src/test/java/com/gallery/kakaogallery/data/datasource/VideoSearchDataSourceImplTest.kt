@@ -8,12 +8,16 @@ import com.gallery.kakaogallery.data.entity.remote.response.VideoSearchResponse
 import com.gallery.kakaogallery.data.service.VideoSearchService
 import com.gallery.kakaogallery.domain.model.MaxPageException
 import com.google.gson.Gson
+import io.mockk.coVerify
 import io.mockk.mockk
-import io.mockk.verify
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.catchThrowable
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -22,6 +26,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.net.HttpURLConnection
 
+@ExperimentalCoroutinesApi
 @Suppress("NonAsciiCharacters")
 internal class VideoSearchDataSourceImplTest {
 
@@ -67,9 +72,14 @@ internal class VideoSearchDataSourceImplTest {
             setBody(actualResponseJson)
         }
         mockWebServer.enqueue(actualResponse)
-        val actual = Assertions.catchThrowable { videoSearchDataSource.fetchVideoQueryRes(query, page).blockingGet() }
+        val actual = catchThrowable {
+            runTest {
+                videoSearchDataSource.fetchVideoQueryRes(query, page).firstOrNull()
+            }
+        }
         val expect = FakeNetworkConnectionInterceptor.ioExceptionMessage
-        Assertions.assertThat(actual)
+        assertThat(actual)
+            .isNotNull
             .isInstanceOf(Throwable::class.java)
             .hasMessageContaining(expect)
 
@@ -77,7 +87,7 @@ internal class VideoSearchDataSourceImplTest {
 
     //state test
     @Test
-    fun `fetchVideoQueryRes는 1번 페이지를 검색한다면 페이징 여부를 초기화한다`() {
+    fun `fetchVideoQueryRes는 1번 페이지를 검색한다면 페이징 여부를 초기화한다`() = runTest {
         videoSearchDataSource = VideoSearchDataSourceImpl(
             mockRetrofit.create(VideoSearchService::class.java)
         )
@@ -90,10 +100,11 @@ internal class VideoSearchDataSourceImplTest {
         mockWebServer.enqueue(actualResponse)
         mockWebServer.enqueue(actualResponse)
 
-        videoSearchDataSource.fetchVideoQueryRes(query, page).blockingGet()
-        val actual = videoSearchDataSource.fetchVideoQueryRes(query, page).blockingGet()
+        videoSearchDataSource.fetchVideoQueryRes(query, page).firstOrNull()
+        val actual = videoSearchDataSource.fetchVideoQueryRes(query, page).firstOrNull()
         val expect = Gson().fromJson(actualResponseJson, VideoSearchResponse::class.java).documents
-        Assertions.assertThat(actual)
+        assertThat(actual)
+            .isNotNull
             .isEqualTo(expect)
     }
 
@@ -111,10 +122,15 @@ internal class VideoSearchDataSourceImplTest {
         }
         mockWebServer.enqueue(actualResponse)
 
-        Assertions.catchThrowable { videoSearchDataSource.fetchVideoQueryRes(query, page).blockingGet() }
-        val actual = Assertions.catchThrowable { videoSearchDataSource.fetchVideoQueryRes(query, page + 1).blockingGet() }
+        runTest { videoSearchDataSource.fetchVideoQueryRes(query, page).firstOrNull() }
+        val actual = catchThrowable {
+            runTest {
+                videoSearchDataSource.fetchVideoQueryRes(query, page + 1).firstOrNull()
+            }
+        }
         val expect = MaxPageException().message
-        Assertions.assertThat(actual)
+        assertThat(actual)
+            .isNotNull
             .isInstanceOf(Throwable::class.java)
             .hasMessageContaining(expect)
     }
@@ -133,8 +149,13 @@ internal class VideoSearchDataSourceImplTest {
         }
         mockWebServer.enqueue(actualResponse)
 
-        val actual = Assertions.catchThrowable { videoSearchDataSource.fetchVideoQueryRes(query, page).blockingGet() }
-        Assertions.assertThat(actual)
+        val actual = catchThrowable {
+            runTest {
+                videoSearchDataSource.fetchVideoQueryRes(query, page).firstOrNull()
+            }
+        }
+        assertThat(actual)
+            .isNotNull
             .isInstanceOf(HttpException::class.java)
     }
 
@@ -152,13 +173,20 @@ internal class VideoSearchDataSourceImplTest {
         }
         mockWebServer.enqueue(actualResponse)
 
-        Assertions.assertThatThrownBy { videoSearchDataSource.fetchVideoQueryRes(query, page).blockingGet() }
+        val actual = catchThrowable {
+            runTest {
+                videoSearchDataSource.fetchVideoQueryRes(query, page).firstOrNull()
+            }
+        }
+
+        assertThat(actual)
+            .isNotNull
             .isInstanceOf(Throwable::class.java)
     }
 
     //state test
     @Test
-    fun `fetchVideoQueryRes는 올바른 서버 응답을 처리할 수 있다`() {
+    fun `fetchVideoQueryRes는 올바른 서버 응답을 처리할 수 있다`() = runTest {
         videoSearchDataSource = VideoSearchDataSourceImpl(
             mockRetrofit.create(VideoSearchService::class.java)
         )
@@ -170,10 +198,13 @@ internal class VideoSearchDataSourceImplTest {
         }
         mockWebServer.enqueue(actualResponse)
 
-        val actual = videoSearchDataSource.fetchVideoQueryRes(query, page).blockingGet()
+        val actual = videoSearchDataSource.fetchVideoQueryRes(query, page).firstOrNull()
 
         val expect = Gson().fromJson(actualResponseJson, VideoSearchResponse::class.java).documents
-        Assertions.assertThat(actual).isEqualTo(expect)
+
+        assertThat(actual)
+            .isNotNull
+            .isEqualTo(expect)
     }
 
     //behavior test
@@ -183,9 +214,11 @@ internal class VideoSearchDataSourceImplTest {
         val mockService: VideoSearchService = mockk(relaxed = true)
         videoSearchDataSource = VideoSearchDataSourceImpl(mockService)
 
-        videoSearchDataSource.fetchVideoQueryRes(query, page)
+        runTest {
+            videoSearchDataSource.fetchVideoQueryRes(query, page).firstOrNull()
+        }
 
-        verify {
+        coVerify(exactly = 1) {
             mockService.requestSearchVideo(
                 query,
                 VideoSearchRequest.SortType.Recency.key,
