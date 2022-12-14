@@ -34,7 +34,7 @@
 
         </com.google.android.material.appbar.AppBarLayout>
 
-        <ImageView
+        <com.ortiz.touchview.TouchImageView
             android:background="@color/black_000000"
             app:loadOnlyCache="@{viewModel.loadOnlyCache}"
             app:loadUrl="@{viewModel.imageUrl}"

@@ -81,6 +81,8 @@ dependencies {
 
     implementation(Dependencies.Libraries.SkeletonUi)
 
+    implementation(Dependencies.Libraries.ImagePinchZoom)
+
     testImplementation(Dependencies.Libraries.Test)
 
     androidTestImplementation(Dependencies.Libraries.AndroidTest)
