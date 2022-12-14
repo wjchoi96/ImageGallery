@@ -16,6 +16,7 @@ import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.kotlin.cast
 import io.reactivex.rxjava3.subjects.PublishSubject
+import kotlinx.coroutines.flow.StateFlow
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -61,9 +62,7 @@ class SearchImageViewModel @Inject constructor(
     private val _searchResultIsEmpty = MutableLiveData(false)
     val searchResultIsEmpty: LiveData<Boolean> = _searchResultIsEmpty
 
-    private val _headerTitle: MutableLiveData<String> =
-        handle.getLiveData(KEY_HEADER_TITLE, resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage))
-    override val headerTitle: LiveData<String> = _headerTitle
+    override val headerTitle: StateFlow<String> = handle.getStateFlow(KEY_HEADER_TITLE, resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage))
 
     private val _selectMode: MutableLiveData<Boolean> = handle.getLiveData(KEY_SELECT_MODE, false)
     val selectMode: LiveData<Boolean> = _selectMode
@@ -279,9 +278,9 @@ class SearchImageViewModel @Inject constructor(
 
     private fun setHeaderTitleUseSelectMap() {
         when (selectImageUrlMap.isEmpty()) {
-            true -> _headerTitle.value =
+            true -> handle[KEY_HEADER_TITLE] =
                 resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage)
-            else -> _headerTitle.value = resourceProvider.getString(
+            else -> handle[KEY_HEADER_TITLE] = resourceProvider.getString(
                 StringResourceProvider.StringResourceId.SelectState,
                 selectImageUrlMap.size
             )

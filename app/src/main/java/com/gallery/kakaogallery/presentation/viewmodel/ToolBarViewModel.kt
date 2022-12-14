@@ -1,7 +1,7 @@
 package com.gallery.kakaogallery.presentation.viewmodel
 
-import androidx.lifecycle.LiveData
+import kotlinx.coroutines.flow.StateFlow
 
 interface ToolBarViewModel {
-    val headerTitle: LiveData<String>
+    val headerTitle: StateFlow<String>
 }

@@ -12,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.subjects.PublishSubject
+import kotlinx.coroutines.flow.*
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -45,9 +46,7 @@ class GalleryViewModel @Inject constructor(
     private val _saveImages: MutableLiveData<List<GalleryImageListTypeModel>> = handle.getLiveData(KEY_SAVE_IMAGE_LIST, emptyList())
     val saveImages: LiveData<List<GalleryImageListTypeModel>> = _saveImages
 
-    private val _headerTitle: MutableLiveData<String> =
-        handle.getLiveData(KEY_HEADER_TITLE, resourceProvider.getString(StringResourceProvider.StringResourceId.MenuGallery))
-    override val headerTitle: LiveData<String> = _headerTitle
+    override val headerTitle: StateFlow<String> = handle.getStateFlow(KEY_HEADER_TITLE, resourceProvider.getString(StringResourceProvider.StringResourceId.MenuGallery))
 
     private val _selectMode: MutableLiveData<Boolean> = handle.getLiveData(KEY_SELECT_MODE, false)
     val selectMode: LiveData<Boolean> = _selectMode
@@ -195,10 +194,9 @@ class GalleryViewModel @Inject constructor(
         when (_selectMode.value) {
             true -> {
                 unSelectAllImage()
-                _headerTitle.value =
-                    resourceProvider.getString(StringResourceProvider.StringResourceId.MenuGallery)
+                handle[KEY_HEADER_TITLE] = resourceProvider.getString(StringResourceProvider.StringResourceId.MenuGallery)
             }
-            else -> _headerTitle.value = resourceProvider.getString(
+            else -> handle[KEY_HEADER_TITLE] = resourceProvider.getString(
                 StringResourceProvider.StringResourceId.SelectState,
                 selectImageHashMap.size
             )
@@ -242,7 +240,7 @@ class GalleryViewModel @Inject constructor(
                 else -> selectImageHashMap.remove(image.hash)
             }
             _saveImages.value = images
-            _headerTitle.value = resourceProvider.getString(
+            handle[KEY_HEADER_TITLE] = resourceProvider.getString(
                 StringResourceProvider.StringResourceId.SelectState,
                 selectImageHashMap.size
             )
