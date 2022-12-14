@@ -26,6 +26,7 @@ import com.gallery.kakaogallery.presentation.ui.imagedetail.ImageDetailActivity
 import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -225,12 +226,14 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
                     }
                 }
             }
-        }
 
-        viewModel.searchImages.observe(viewLifecycleOwner) {
-            Timber.d("searchResultObservable subscribe thread - " + Thread.currentThread().name + ", it.address : " + it)
-            Timber.d("diff debug searchImagesUseDiff observe")
-            imageSearchAdapter.updateList(it)
+            launch {
+                viewModel.searchImages.collectLatest {
+                    Timber.d("searchResultObservable subscribe thread - " + Thread.currentThread().name + ", it.address : " + it)
+                    Timber.d("diff debug searchImagesUseDiff observe")
+                    imageSearchAdapter.updateList(it)
+                }
+            }
         }
 
     }

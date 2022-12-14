@@ -57,9 +57,7 @@ class SearchImageViewModel @Inject constructor(
         mutableMapOf<String, Int>().also { handle[KEY_SELECT_IMAGE_MAP] = it }
     }
 
-    private val _searchImages: MutableLiveData<List<SearchImageListTypeModel>> =
-        handle.getLiveData(KEY_SEARCH_IMAGE_LIST, emptyList())
-    val searchImages: LiveData<List<SearchImageListTypeModel>> = _searchImages
+    val searchImages: StateFlow<List<SearchImageListTypeModel>> = handle.getStateFlow(KEY_SEARCH_IMAGE_LIST, emptyList())
 
     override val headerTitle: StateFlow<String> = handle.getStateFlow(KEY_HEADER_TITLE, resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage))
 
@@ -84,7 +82,7 @@ class SearchImageViewModel @Inject constructor(
 
     init {
         bindAction()
-        if(_searchImages.value == null || _searchImages.value!!.isEmpty()){
+        if(searchImages.value.isEmpty()) {
             uiAction.onNext(UiAction.Search(lastQuery ?: ""))
         }
     }
@@ -176,10 +174,10 @@ class SearchImageViewModel @Inject constructor(
             when (selectImageUrlMap.isEmpty()) {
                 true -> {
                     handle[KEY_NOTIFY_TEXT] = resourceProvider.getString(StringResourceProvider.StringResourceId.EmptySearchResult)
-                    _searchImages.value = it
+                    handle[KEY_SEARCH_IMAGE_LIST] = it
                 }
                 else -> {
-                    _searchImages.value = it.map { item ->
+                    handle[KEY_SEARCH_IMAGE_LIST] = it.map { item ->
                         when {
                             item is SearchImageListTypeModel.Image &&
                                     selectImageUrlMap.containsKey(item.image.imageUrl) ->
@@ -221,8 +219,7 @@ class SearchImageViewModel @Inject constructor(
         _pagingDataLoading.value = false
         res.onSuccess {
             currentPage++
-            val prevList = _searchImages.value ?: emptyList()
-            _searchImages.value = prevList + it
+            handle[KEY_SEARCH_IMAGE_LIST] = searchImages.value + it
         }.onFailure {
             when (it) {
                 is MaxPageException -> showSnackBar(
@@ -297,7 +294,7 @@ class SearchImageViewModel @Inject constructor(
     }
 
     private fun unSelectAllImage() {
-        val images = searchImages.value?.toMutableList() ?: return
+        val images = searchImages.value.toMutableList()
         try {
             for (idx in selectImageUrlMap.values) {
                 images[idx] = (images[idx] as SearchImageListTypeModel.Image).let {
@@ -308,11 +305,11 @@ class SearchImageViewModel @Inject constructor(
             e.printStackTrace()
         }
         selectImageUrlMap.clear()
-        _searchImages.value = images
+        handle[KEY_SEARCH_IMAGE_LIST] = images
     }
 
     private fun setSelectImage(image: ImageModel, idx: Int, select: Boolean) {
-        val images = searchImages.value?.toMutableList() ?: return
+        val images = searchImages.value.toMutableList()
         try {
             images[idx] = (images[idx] as SearchImageListTypeModel.Image).let {
                 it.copy(image = it.image.copy(isSelect = select))
@@ -321,7 +318,7 @@ class SearchImageViewModel @Inject constructor(
                 true -> selectImageUrlMap[image.imageUrl] = idx
                 else -> selectImageUrlMap.remove(image.imageUrl)
             }
-            _searchImages.value = images
+            handle[KEY_SEARCH_IMAGE_LIST] = images
             setHeaderTitleUseSelectMap()
         } catch (e: Exception) {
             e.printStackTrace()
