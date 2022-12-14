@@ -63,8 +63,11 @@ object Dependencies {
         //Timber
         const val timber = "5.0.1"
 
-        //android-Shimmer
+        //Android-Shimmer
         const val shimmer = "0.5.0"
+
+        //Image pinch zoom
+        const val TouchImageView = "3.2.1"
 
         //Firebase
         const val firebase = "31.0.2"
@@ -175,6 +178,12 @@ object Dependencies {
             private const val shimmer = "com.facebook.shimmer:shimmer:${Dependencies.Version.shimmer}"
 
             override val implementations = listOf(shimmer)
+        }
+
+        object ImagePinchZoom : ImplementationItem {
+            private const val TouchImageView = "com.github.MikeOrtiz:TouchImageView:${Dependencies.Version.TouchImageView}"
+
+            override val implementations = listOf(TouchImageView)
         }
 
         object Firebase : ClassPathItem {
