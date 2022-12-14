@@ -1,7 +1,5 @@
 package com.gallery.kakaogallery.presentation.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.gallery.kakaogallery.domain.model.ImageModel
@@ -10,17 +8,16 @@ import com.gallery.kakaogallery.domain.model.SearchImageListTypeModel
 import com.gallery.kakaogallery.domain.usecase.FetchQueryDataUseCase
 import com.gallery.kakaogallery.domain.usecase.SaveSelectImageUseCase
 import com.gallery.kakaogallery.presentation.application.StringResourceProvider
+import com.gallery.kakaogallery.presentation.extension.throttleFirst
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.kotlin.addTo
-import io.reactivex.rxjava3.kotlin.cast
 import io.reactivex.rxjava3.subjects.PublishSubject
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltViewModel
@@ -78,6 +75,7 @@ class SearchImageViewModel @Inject constructor(
     val uiEvent: SharedFlow<UiEvent> = _uiEvent.asSharedFlow()
 
     private val uiAction: PublishSubject<UiAction> = PublishSubject.create()
+    private val uiActionFlow = MutableSharedFlow<UiAction>()
 
 
     init {
@@ -156,15 +154,14 @@ class SearchImageViewModel @Inject constructor(
                 processSaveImageException(it)
             }.addTo(compositeDisposable)
 
-        uiAction
-            .filter { it is UiAction.ClickImageNoneSelectModeEvent }
-            .cast(UiAction.ClickImageNoneSelectModeEvent::class.java)
-            .throttleFirst(500, TimeUnit.MILLISECONDS)
-            .subscribe {
-                viewModelScope.launch {
+        viewModelScope.launch {
+            uiActionFlow
+                .filterIsInstance<UiAction.ClickImageNoneSelectModeEvent>()
+                .throttleFirst(500)
+                .collect {
                     _uiEvent.emit(UiEvent.NavigateImageDetail(it.imageUrl, it.position))
                 }
-            }.addTo(compositeDisposable)
+        }
     }
 
     private fun processSearchResult(res: Result<List<SearchImageListTypeModel>>){
@@ -334,8 +331,9 @@ class SearchImageViewModel @Inject constructor(
         when (selectMode.value) {
             true ->
                 setSelectImage(image, idx, !selectImageUrlMap.containsKey(image.imageUrl))
-            else ->
-                uiAction.onNext(UiAction.ClickImageNoneSelectModeEvent(image.imageUrl, idx))
+            else -> viewModelScope.launch {
+                uiActionFlow.emit((UiAction.ClickImageNoneSelectModeEvent(image.imageUrl, idx)))
+            }
         }
     }
 

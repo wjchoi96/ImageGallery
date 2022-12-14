@@ -1,7 +1,5 @@
 package com.gallery.kakaogallery.presentation.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.gallery.kakaogallery.domain.model.GalleryImageListTypeModel
@@ -9,6 +7,7 @@ import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.usecase.FetchSaveImageUseCase
 import com.gallery.kakaogallery.domain.usecase.RemoveSaveImageUseCase
 import com.gallery.kakaogallery.presentation.application.StringResourceProvider
+import com.gallery.kakaogallery.presentation.extension.throttleFirst
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.kotlin.addTo
@@ -16,7 +15,6 @@ import io.reactivex.rxjava3.subjects.PublishSubject
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltViewModel
@@ -67,6 +65,7 @@ class GalleryViewModel @Inject constructor(
     val uiEvent = _uiEvent.asSharedFlow()
 
     private val uiAction: PublishSubject<UiAction> = PublishSubject.create()
+    private val uiActionFlow = MutableSharedFlow<UiAction>()
 
     init {
         bindAction()
@@ -107,13 +106,14 @@ class GalleryViewModel @Inject constructor(
                 processRemoveSelectImageException(it)
             }.addTo(compositeDisposable)
 
-        uiAction
-            .filter { it is UiAction.ClickImageNoneSelectModeEvent }
-            .cast(UiAction.ClickImageNoneSelectModeEvent::class.java)
-            .throttleFirst(500, TimeUnit.MILLISECONDS)
-            .subscribe {
-                viewModelScope.launch { _uiEvent.emit(UiEvent.NavigateImageDetail(it.imageUrl, it.position)) }
-            }.addTo(compositeDisposable)
+        viewModelScope.launch {
+            uiActionFlow
+                .filterIsInstance<UiAction.ClickImageNoneSelectModeEvent>()
+                .throttleFirst(500)
+                .collect {
+                    _uiEvent.emit(UiEvent.NavigateImageDetail(it.imageUrl, it.position))
+                }
+        }
     }
 
     private fun processFetchSaveImages(res: Result<List<GalleryImageListTypeModel>>){
@@ -188,7 +188,7 @@ class GalleryViewModel @Inject constructor(
 
     fun touchToolBarEvent() {
         viewModelScope.launch {
-            _uiEvent.emit(UiEvent.ScrollToTop((saveImages.value?.size ?: 0) <= 80))
+            _uiEvent.emit(UiEvent.ScrollToTop(saveImages.value.size <= 80))
         }
     }
 
@@ -213,13 +213,14 @@ class GalleryViewModel @Inject constructor(
         when (selectMode.value) {
             true ->
                 setSelectImage(image, idx, !selectImageHashMap.containsKey(image.hash))
-            else ->
-                uiAction.onNext(UiAction.ClickImageNoneSelectModeEvent(image.imageUrl, idx))
+            else -> viewModelScope.launch {
+                uiActionFlow.emit(UiAction.ClickImageNoneSelectModeEvent(image.imageUrl, idx))
+            }
         }
     }
 
     private fun unSelectAllImage() {
-        val images = saveImages.value?.toMutableList() ?: return
+        val images = saveImages.value.toMutableList()
         try {
             for (idx in selectImageHashMap.values) {
                 images[idx] = (images[idx] as GalleryImageListTypeModel.Image).let {
@@ -234,7 +235,7 @@ class GalleryViewModel @Inject constructor(
     }
 
     private fun setSelectImage(image: ImageModel, idx: Int, select: Boolean) {
-        val images = saveImages.value?.toMutableList() ?: return
+        val images = saveImages.value.toMutableList()
         try {
             images[idx] = (images[idx] as GalleryImageListTypeModel.Image).let {
                 it.copy(image = it.image.copy(isSelect = select))
