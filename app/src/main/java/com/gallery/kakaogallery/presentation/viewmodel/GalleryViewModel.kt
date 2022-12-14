@@ -188,7 +188,7 @@ class GalleryViewModel @Inject constructor(
 
     fun touchToolBarEvent() {
         viewModelScope.launch {
-            _uiEvent.emit(UiEvent.ScrollToTop((saveImages.value?.size ?: 0) <= 80))
+            _uiEvent.emit(UiEvent.ScrollToTop(saveImages.value.size <= 80))
         }
     }
 
@@ -219,7 +219,7 @@ class GalleryViewModel @Inject constructor(
     }
 
     private fun unSelectAllImage() {
-        val images = saveImages.value?.toMutableList() ?: return
+        val images = saveImages.value.toMutableList()
         try {
             for (idx in selectImageHashMap.values) {
                 images[idx] = (images[idx] as GalleryImageListTypeModel.Image).let {
@@ -234,7 +234,7 @@ class GalleryViewModel @Inject constructor(
     }
 
     private fun setSelectImage(image: ImageModel, idx: Int, select: Boolean) {
-        val images = saveImages.value?.toMutableList() ?: return
+        val images = saveImages.value.toMutableList()
         try {
             images[idx] = (images[idx] as GalleryImageListTypeModel.Image).let {
                 it.copy(image = it.image.copy(isSelect = select))
