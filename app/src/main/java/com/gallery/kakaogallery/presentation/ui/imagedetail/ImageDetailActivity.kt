@@ -96,9 +96,16 @@ class ImageDetailActivity : BindingActivity<ActivityImageDetailBinding>() {
     }
 
     private fun setListener() {
-        binding.background.setOnClickListener {
-            viewModel.touchBackgroundEvent()
-        }
+        binding.ivImage.setOnDoubleTapListener(object : GestureDetector.OnDoubleTapListener {
+            override fun onSingleTapConfirmed(p0: MotionEvent): Boolean {
+                viewModel.touchBackgroundEvent()
+                return false
+            }
+
+            override fun onDoubleTap(p0: MotionEvent): Boolean = false
+
+            override fun onDoubleTapEvent(p0: MotionEvent): Boolean = false
+        })
     }
 
     private fun observeData() {
