@@ -10,6 +10,8 @@ import com.gallery.kakaogallery.presentation.ui.gallery.GallerySkeletonViewHolde
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 class SearchImagesAdapter(
@@ -40,17 +42,16 @@ class SearchImagesAdapter(
         return DiffUtil.calculateDiff(diffCallback)
     }
 
-    fun updateList(list: List<SearchImageListTypeModel>) {
+    suspend fun updateList(list: List<SearchImageListTypeModel>) {
         val newList = list.toList()
-        Observable.fromCallable{
-            getDiffRes(newList)
-        }.subscribeOn(Schedulers.computation())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
+        withContext(Dispatchers.Default) {
+            val diffRes = getDiffRes(newList)
+            withContext(Dispatchers.Main) {
                 Timber.d("getDiffRes subscribe run at ${Thread.currentThread().name}")
                 setList(newList) // must call main thread
-                it.dispatchUpdatesTo(this)
+                diffRes.dispatchUpdatesTo(this@SearchImagesAdapter)
             }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
