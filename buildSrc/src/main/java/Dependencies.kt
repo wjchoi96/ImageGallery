@@ -133,11 +133,10 @@ object Dependencies {
 
         object Retrofit : ImplementationItem {
             private const val retrofit = "com.squareup.retrofit2:retrofit:${Dependencies.Version.retrofit}"
-            private const val rxJavaAdapter = "com.squareup.retrofit2:adapter-rxjava3:${Version.retrofit}"
             private const val gsonConverter = "com.squareup.retrofit2:converter-gson:${Version.retrofit}"
 
             override val implementations = listOf(
-                retrofit, rxJavaAdapter, gsonConverter
+                retrofit, gsonConverter
             )
         }
 
