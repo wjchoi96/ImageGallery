@@ -5,8 +5,8 @@ import com.gallery.kakaogallery.data.entity.local.ImageEntity
 import com.gallery.kakaogallery.domain.model.SearchImageModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.subjects.BehaviorSubject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,7 +15,7 @@ import javax.inject.Singleton
 class SaveImageDaoImpl @Inject constructor(
     private val sp: KakaoGallerySharedPreferences
 ) : SaveImageDao {
-    private lateinit var saveImagesSubject: BehaviorSubject<List<ImageEntity>>
+    private lateinit var saveImagesSubject: MutableStateFlow<List<ImageEntity>>
 
     init {
         initImageStream()
@@ -29,10 +29,10 @@ class SaveImageDaoImpl @Inject constructor(
             val typeToken = object : TypeToken<List<ImageEntity>>() {}.type
             Gson().fromJson(listJson, typeToken)
         }
-        saveImagesSubject = BehaviorSubject.createDefault(list)
+        saveImagesSubject = MutableStateFlow(list)
     }
 
-    override fun fetchSaveImages(): Observable<List<ImageEntity>> {
+    override suspend fun fetchSaveImages(): Flow<List<ImageEntity>> {
         Timber.d("fetchSaveImages at Dao run in ${Thread.currentThread().name}")
         return saveImagesSubject // 공유된 하나의 hot stream 에서 데이터를 전달받게끔 설정
     }
@@ -40,7 +40,7 @@ class SaveImageDaoImpl @Inject constructor(
     override fun removeImages(idxList: List<Int>) {
         Timber.d("removeImages at Dao run in ${Thread.currentThread().name}")
         // idx 가 큰수부터 remove 를 실행해줘야 중간에 idx가 꼬이지 않는다
-        val list = saveImagesSubject.value?.toMutableList() ?: mutableListOf()
+        val list = saveImagesSubject.value.toMutableList()
         for (removeIdx in idxList.sorted().reversed()) {
             Timber.d("remove idx : $removeIdx")
             list.removeAt(removeIdx)
@@ -50,7 +50,7 @@ class SaveImageDaoImpl @Inject constructor(
 
     override fun saveImages(image: List<SearchImageModel>, saveDateTimeMill: Long) {
         Timber.d("saveImages at Dao run in ${Thread.currentThread().name}")
-        val list = (saveImagesSubject.value?.toMutableList() ?: mutableListOf()).apply {
+        val list = saveImagesSubject.value.toMutableList().apply {
             addAll(
                 image.toList().map {
                     ImageEntity.from(
@@ -70,6 +70,6 @@ class SaveImageDaoImpl @Inject constructor(
         sp.savedImageList = jsonStr
         Timber.d("syncData save finish : \n${sp.savedImageList}")
         Timber.d("syncData run at \n${Thread.currentThread().name}")
-        saveImagesSubject.onNext(list)
+        saveImagesSubject.value = list
     }
 }
