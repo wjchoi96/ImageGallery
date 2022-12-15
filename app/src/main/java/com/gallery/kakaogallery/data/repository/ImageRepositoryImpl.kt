@@ -10,7 +10,6 @@ import com.gallery.kakaogallery.domain.model.UnKnownException
 import com.gallery.kakaogallery.domain.repository.ImageRepository
 import com.gallery.kakaogallery.domain.util.GalleryDateConvertUtil
 import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -90,16 +89,15 @@ class ImageRepositoryImpl @Inject constructor(
             emit(Result.failure(it))
         }
 
-    override fun fetchSaveImages(): Observable<List<GalleryImageModel>> {
+    override suspend fun fetchSaveImages(): Flow<List<GalleryImageModel>> {
         return saveImageDataSource.fetchSaveImages()
-            .subscribeOn(Schedulers.io())
             .map {
                 it.map {  data ->
                     data.toModel(
                         dateTimeToShow = GalleryDateConvertUtil.convertToPrint(data.saveDateTimeMill),
                     )
                 }
-            }
+            }.flowOn(Dispatchers.Default)
     }
 
     override fun removeImages(idxList: List<Int>): Completable {
