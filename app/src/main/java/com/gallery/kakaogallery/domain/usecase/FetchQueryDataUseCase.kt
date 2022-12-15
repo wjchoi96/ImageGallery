@@ -52,6 +52,7 @@ class FetchQueryDataUseCase(
                         emit(Result.success(listOf(SearchImageListTypeModel.Query(query))))
                         emit(Result.failure(it))
                     }
+
                 else -> fetchQueryFlow
                     .catch {
                         it.printStackTrace()
