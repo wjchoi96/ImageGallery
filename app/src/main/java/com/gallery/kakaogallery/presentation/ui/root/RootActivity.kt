@@ -22,10 +22,12 @@ import com.gallery.kakaogallery.presentation.viewmodel.RootViewModel
 import com.gallery.kakaogallery.presentation.viewmodel.SplashViewModel
 import com.google.android.material.navigation.NavigationBarView
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 
+@FlowPreview
 @AndroidEntryPoint
 class RootActivity : BindingActivity<ActivityRootBinding>(), BottomMenuRoot {
     companion object {
