@@ -74,6 +74,9 @@ object Dependencies {
         const val googleServiceClassPath = "4.3.14"
         const val crashlyticsClassPath = "2.9.2"
 
+        //Coroutine Test
+        const val coroutineTest = "1.6.4"
+
         //Test
         const val junit = "1.1.3"
         const val assertj = "3.20.2"
@@ -133,11 +136,10 @@ object Dependencies {
 
         object Retrofit : ImplementationItem {
             private const val retrofit = "com.squareup.retrofit2:retrofit:${Dependencies.Version.retrofit}"
-            private const val rxJavaAdapter = "com.squareup.retrofit2:adapter-rxjava3:${Version.retrofit}"
             private const val gsonConverter = "com.squareup.retrofit2:converter-gson:${Version.retrofit}"
 
             override val implementations = listOf(
-                retrofit, rxJavaAdapter, gsonConverter
+                retrofit, gsonConverter
             )
         }
 
@@ -201,6 +203,14 @@ object Dependencies {
 
             override val classPaths = listOf(
                 googleServiceClassPath, crashlyticsClassPath
+            )
+        }
+
+        object CoroutineTest : TestImplementationItem {
+            private const val coroutineTest = "org.jetbrains.kotlinx:kotlinx-coroutines-test:${Dependencies.Version.coroutineTest}"
+
+            override val testImplementations = listOf(
+                coroutineTest
             )
         }
 

@@ -5,7 +5,8 @@ import com.gallery.kakaogallery.data.entity.remote.request.ImageSearchRequest
 import com.gallery.kakaogallery.data.entity.remote.response.ImageSearchResponse
 import com.gallery.kakaogallery.data.service.ImageSearchService
 import com.gallery.kakaogallery.domain.model.MaxPageException
-import io.reactivex.rxjava3.core.Single
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -23,33 +24,37 @@ class ImageSearchDataSourceImpl @Inject constructor(
      *
      * 참고: https://stackoverflow.com/questions/28462839/using-subscribeon-with-retrofit
      */
-    override fun fetchImageQueryRes(
+    override suspend fun fetchImageQueryRes(
         query: String,
         page: Int
-    ): Single<List<ImageSearchResponse.Document>> {
+    ): Flow<List<ImageSearchResponse.Document>> {
         if (page == 1)
             imagePageable = true
         return when (imagePageable) {
             false -> {
-                Timber.d("error debug => throw MaxPageException")
-                Single.error { MaxPageException() }
-            }
-            true -> {
-                searchImageApi.requestSearchImage(
-                    query,
-                    ImageSearchRequest.SortType.Recency.key,
-                    page, // 1~50
-                    SearchConstant.ImagePageSizeMaxValue
-                ).map {
-                    Timber.d("Image mapping run at " + Thread.currentThread().name)
-                    imagePageable = !it.meta.isEnd
-                    it.documents
-                }.onErrorResumeNext {
-                    it.printStackTrace()
-                    Timber.d("error debug => after api response => $it")
-                    Single.error { it }
+                flow {
+                    Timber.d("error debug => throw MaxPageException")
+                    throw MaxPageException()
                 }
             }
+            true -> flow {
+                emit(
+                    searchImageApi.requestSearchImage(
+                        query,
+                        ImageSearchRequest.SortType.Recency.key,
+                        page, // 1~50
+                        SearchConstant.ImagePageSizeMaxValue
+                    )
+                )
+            }.map {
+                Timber.d("Image mapping run at " + Thread.currentThread().name)
+                imagePageable = !it.meta.isEnd
+                it.documents
+            }.catch {
+                it.printStackTrace()
+                Timber.d("error debug => after api response => $it")
+                throw it
+            }.flowOn(Dispatchers.IO)
         }
     }
 }

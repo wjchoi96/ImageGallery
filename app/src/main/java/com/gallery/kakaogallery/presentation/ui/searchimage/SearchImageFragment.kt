@@ -25,11 +25,13 @@ import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetEve
 import com.gallery.kakaogallery.presentation.ui.imagedetail.ImageDetailActivity
 import com.gallery.kakaogallery.presentation.viewmodel.SearchImageViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
+@FlowPreview
 @AndroidEntryPoint
 class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
     ImageManageBottomSheetEventReceiver {

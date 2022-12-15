@@ -83,6 +83,8 @@ dependencies {
 
     implementation(Dependencies.Libraries.ImagePinchZoom)
 
+    testImplementation(Dependencies.Libraries.CoroutineTest)
+
     testImplementation(Dependencies.Libraries.Test)
 
     androidTestImplementation(Dependencies.Libraries.AndroidTest)
