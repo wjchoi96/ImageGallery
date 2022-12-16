@@ -12,11 +12,15 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.subjects.PublishSubject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
+@FlowPreview
 @HiltViewModel
 class GalleryViewModel @Inject constructor(
     private val handle: SavedStateHandle,
@@ -65,32 +69,44 @@ class GalleryViewModel @Inject constructor(
     val uiEvent = _uiEvent.asSharedFlow()
 
     private val uiAction: PublishSubject<UiAction> = PublishSubject.create()
+
     private val uiActionFlow = MutableSharedFlow<UiAction>()
+    private var saveImageStreamJob: Job? = null
 
     init {
         bindAction()
-        uiAction.onNext(UiAction.FetchSaveImages)
+        fetchSaveImagesStream()
     }
 
     private fun bindAction() {
-        uiAction.filter { action -> action is UiAction.Refresh }
-            .subscribe {
-                _refreshLoading.value = true
+        viewModelScope.launch {
+            launch {
+                uiActionFlow
+                    .collect {
+                        Timber.d("refresh debug => uiActionFlow collect $it")
+                    }
             }
 
-        uiAction
-            .filter { it is UiAction.FetchSaveImages }
-            .flatMap {
-                _dataLoading.value = true
-                fetchSaveImageUseCase()
-                    .takeUntil(uiAction.filter { action -> action is UiAction.Refresh })
-                    .doFinally { Timber.d("dispose debug => dispose fetchSaveImageUseCase Stream") }
+            launch {
+                uiActionFlow
+                    .filterIsInstance<UiAction.ClickImageNoneSelectModeEvent>()
+                    .throttleFirst(500)
+                    .collect {
+                        _uiEvent.emit(UiEvent.NavigateImageDetail(it.imageUrl, it.position))
+                    }
             }
-            .doOnNext { Timber.d("dispose debug => emit data from fetchAction") }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                processFetchSaveImages(it)
-            }.addTo(compositeDisposable)
+
+            launch {
+                uiActionFlow
+                    .filterIsInstance<UiAction.Refresh>()
+                    .collect {
+                        Timber.d("refresh debug => Refresh on")
+                        _refreshLoading.value = true
+                        saveImageStreamJob?.cancel()
+                        fetchSaveImagesStream()
+                    }
+            }
+        }
 
         uiAction
             .filter { it is UiAction.RemoveSelectImage }
@@ -105,20 +121,24 @@ class GalleryViewModel @Inject constructor(
             }) {
                 processRemoveSelectImageException(it)
             }.addTo(compositeDisposable)
+    }
 
+    private fun fetchSaveImagesStream() {
         viewModelScope.launch {
-            uiActionFlow
-                .filterIsInstance<UiAction.ClickImageNoneSelectModeEvent>()
-                .throttleFirst(500)
-                .collect {
-                    _uiEvent.emit(UiEvent.NavigateImageDetail(it.imageUrl, it.position))
-                }
+            saveImageStreamJob = launch {
+                fetchSaveImageUseCase()
+                    .flowOn(Dispatchers.Default)
+                    .collect {
+                        processFetchSaveImages(it)
+                    }
+            }
         }
     }
 
-    private fun processFetchSaveImages(res: Result<List<GalleryImageListTypeModel>>){
+    private suspend fun processFetchSaveImages(res: Result<List<GalleryImageListTypeModel>>){
         _dataLoading.value = false
         _refreshLoading.value = false
+        Timber.d("refresh debug => processFetchSaveImages [${_refreshLoading.value}]")
         res.onSuccess {
             setNotifyGroup(
                 it.isEmpty(),
@@ -145,17 +165,23 @@ class GalleryViewModel @Inject constructor(
         _dataLoading.value = false
         when (res) {
             true -> {
-                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveSuccess))
+                viewModelScope.launch {
+                    showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveSuccess))
+                }
                 clickSelectModeEvent() // 삭제라면 선택모드 였을테니, toggle 해주면 선택모드가 해제됨
             }
-            else -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail))
+            else -> viewModelScope.launch {
+                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail))
+            }
         }
     }
 
     private fun processRemoveSelectImageException(throwable: Throwable){
         _dataLoading.value = false
         throwable.printStackTrace()
-        showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail) + " $throwable")
+        viewModelScope.launch {
+            showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail) + " $throwable")
+        }
     }
 
     fun clickNotifyEvent() {
@@ -166,8 +192,7 @@ class GalleryViewModel @Inject constructor(
     }
 
     fun refreshGalleryEvent() {
-        uiAction.onNext(UiAction.Refresh)
-        uiAction.onNext(UiAction.FetchSaveImages)
+        viewModelScope.launch { uiActionFlow.emit(UiAction.Refresh) }
     }
 
     fun removeSelectImage() {
@@ -251,16 +276,18 @@ class GalleryViewModel @Inject constructor(
             )
         } catch (e: Exception) {
             e.printStackTrace()
-            showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SelectFail))
+            viewModelScope.launch {
+                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SelectFail))
+            }
         }
     }
 
-    private fun showToast(message: String) {
-        viewModelScope.launch { _uiEvent.emit(UiEvent.ShowToast(message)) }
+    private suspend fun showToast(message: String) {
+        _uiEvent.emit(UiEvent.ShowToast(message))
     }
 
-    private fun showSnackBar(message: String, action: Pair<String, () -> Unit>?) {
-        viewModelScope.launch { _uiEvent.emit(UiEvent.ShowSnackBar(message, action)) }
+    private suspend fun showSnackBar(message: String, action: Pair<String, () -> Unit>?) {
+        _uiEvent.emit(UiEvent.ShowSnackBar(message, action))
     }
 
     private fun setNotifyGroup(visible: Boolean, message: String, btn: String) {
@@ -270,7 +297,6 @@ class GalleryViewModel @Inject constructor(
     }
 
     sealed class UiAction {
-        object FetchSaveImages : UiAction()
         object Refresh : UiAction()
         data class RemoveSelectImage(val selectImageMap: MutableMap<String, Int>) : UiAction()
         data class ClickImageNoneSelectModeEvent(val imageUrl: String, val position: Int) : UiAction()
