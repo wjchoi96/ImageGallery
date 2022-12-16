@@ -5,7 +5,6 @@ import com.gallery.kakaogallery.domain.repository.ImageRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
-import timber.log.Timber
 
 class FetchSaveImageUseCase(
     private val imageRepository: ImageRepository
@@ -13,9 +12,6 @@ class FetchSaveImageUseCase(
     suspend operator fun invoke(skeletonSize: Int = 15): Flow<Result<List<GalleryImageListTypeModel>>> {
         return imageRepository
             .fetchSaveImages()
-            .onCompletion {
-                Timber.d("refresh debug => onCompletion[$it]")
-            }
             .map {
                 val list = it.map { image ->
                     GalleryImageListTypeModel.Image(image) as GalleryImageListTypeModel
