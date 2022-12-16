@@ -11,7 +11,6 @@ import com.gallery.kakaogallery.presentation.application.StringResourceProvider
 import com.gallery.kakaogallery.presentation.extension.throttleFirst
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.subjects.PublishSubject
@@ -66,7 +65,7 @@ class SearchImageViewModel @Inject constructor(
     private val _uiEvent = MutableSharedFlow<UiEvent>()
     val uiEvent: SharedFlow<UiEvent> = _uiEvent.asSharedFlow()
 
-    private val searchActionFlow:  StateFlow<SearchAction> = handle.getStateFlow(KEY_SEARCH_QUERY_INFO, SearchAction("", 1))
+    private val searchInfo: StateFlow<SearchInfo> = handle.getStateFlow(KEY_SEARCH_QUERY_INFO, SearchInfo("", 1))
     private val uiAction: PublishSubject<UiAction> = PublishSubject.create()
     private val uiActionFlow = MutableSharedFlow<UiAction>()
 
@@ -79,7 +78,8 @@ class SearchImageViewModel @Inject constructor(
     private fun bindAction(){
         viewModelScope.launch {
             launch {
-                searchActionFlow
+                uiActionFlow
+                    .filterIsInstance<UiAction.SearchAction>()
                     .filter { it.page == 1 }
                     .flatMapConcat {
                         _uiEvent.emit(UiEvent.KeyboardVisibleEvent(false))
@@ -88,7 +88,7 @@ class SearchImageViewModel @Inject constructor(
                                 emit(Result.failure(Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.Loading))))
                             }
                             else -> {
-                                if(selectImageUrlMap.isNotEmpty()) {
+                                if(it.query != searchInfo.value.query && selectImageUrlMap.isNotEmpty()) {
                                     selectImageUrlMap.clear()
                                     setHeaderTitleUseSelectMap()
                                 }
@@ -106,7 +106,8 @@ class SearchImageViewModel @Inject constructor(
             }
 
             launch {
-                searchActionFlow
+                uiActionFlow
+                    .filterIsInstance<UiAction.SearchAction>()
                     .filter { it.page > 1 }
                     .filter { it.query.isNotBlank() && !pagingDataLoading.value }
                     .flatMapConcat {
@@ -124,6 +125,14 @@ class SearchImageViewModel @Inject constructor(
                     .throttleFirst(500)
                     .collect {
                         _uiEvent.emit(UiEvent.NavigateImageDetail(it.imageUrl, it.position))
+                    }
+            }
+
+            launch {
+                searchInfo
+                    .collect {
+                        Timber.d("searchInfo emit $it")
+                        uiActionFlow.emit(UiAction.SearchAction(it.query, it.page))
                     }
             }
 
@@ -154,7 +163,7 @@ class SearchImageViewModel @Inject constructor(
     private suspend fun processSearchResult(res: Result<List<SearchImageListTypeModel>>){
         _dataLoading.value = false
         res.onSuccess {
-            if (searchActionFlow.value.query.isNotBlank()) _searchResultIsEmpty.value = it.size <= 1
+            if (searchInfo.value.query.isNotBlank()) _searchResultIsEmpty.value = it.size <= 1
             when (selectImageUrlMap.isEmpty()) {
                 true -> {
                     handle[KEY_NOTIFY_TEXT] = resourceProvider.getString(StringResourceProvider.StringResourceId.EmptySearchResult)
@@ -165,8 +174,7 @@ class SearchImageViewModel @Inject constructor(
                         it.map { item ->
                             when {
                                 item is SearchImageListTypeModel.Image &&
-                                    selectImageUrlMap.containsKey(item.image.imageUrl) ->
-                                    item.copy(image = item.image.copy(isSelect = true))
+                                    selectImageUrlMap.containsKey(item.image.imageUrl) -> item.copy(image = item.image.copy(isSelect = true))
                                 else -> item
                             }
                         }
@@ -189,8 +197,8 @@ class SearchImageViewModel @Inject constructor(
                             resourceProvider.getString(
                                 StringResourceProvider.StringResourceId.Retry
                             ) to {
-                                searchActionFlow.value.let {
-                                    viewModelScope.launch { handle[KEY_SEARCH_QUERY_INFO] = SearchAction(it.query, it.page) }
+                                searchInfo.value.let {
+                                    viewModelScope.launch { uiActionFlow.emit(UiAction.SearchAction(it. query, it.page)) }
                                 }
                             }
                         )
@@ -328,28 +336,31 @@ class SearchImageViewModel @Inject constructor(
             true ->
                 setSelectImage(image, idx, !selectImageUrlMap.containsKey(image.imageUrl))
             else -> viewModelScope.launch {
-                uiActionFlow.emit((UiAction.ClickImageNoneSelectModeEvent(image.imageUrl, idx)))
+                uiActionFlow.emit(UiAction.ClickImageNoneSelectModeEvent(image.imageUrl, idx))
             }
         }
     }
 
     fun searchQueryEvent(query: String) {
         viewModelScope.launch {
-            handle[KEY_SEARCH_QUERY_INFO] = SearchAction(query, 1)
+            when (searchInfo.value == SearchInfo(query, 1)) {
+                true -> uiActionFlow.emit(UiAction.SearchAction(query, 1))
+                else -> handle[KEY_SEARCH_QUERY_INFO] = SearchInfo(query, 1)
+            }
         }
     }
 
     fun fetchNextPage() {
         viewModelScope.launch {
-            searchActionFlow.value.let {
-                handle[KEY_SEARCH_QUERY_INFO] = SearchAction(it.query, it.page + 1)
+            searchInfo.value.let {
+                handle[KEY_SEARCH_QUERY_INFO] = SearchInfo(it.query, it.page + 1)
             }
         }
     }
 
     fun touchToolBarEvent() {
         viewModelScope.launch {
-            _uiEvent.emit(UiEvent.ScrollToTop(searchActionFlow.value.page == 1))
+            _uiEvent.emit(UiEvent.ScrollToTop(searchInfo.value.page == 1))
         }
     }
 
@@ -361,12 +372,16 @@ class SearchImageViewModel @Inject constructor(
         _uiEvent.emit(UiEvent.ShowSnackBar(message, action))
     }
 
-    private data class SearchAction(
+    private data class SearchInfo(
         val query: String,
         val page: Int
     ) : Serializable
 
     sealed class UiAction {
+        data class SearchAction(
+            val query: String,
+            val page: Int
+        ) : UiAction()
         data class SaveSelectImage(
             val selectImageMap: MutableMap<String, Int>,
             val images: List<SearchImageListTypeModel>?
