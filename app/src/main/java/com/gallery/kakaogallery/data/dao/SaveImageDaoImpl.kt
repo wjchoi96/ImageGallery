@@ -15,7 +15,7 @@ import javax.inject.Singleton
 class SaveImageDaoImpl @Inject constructor(
     private val sp: KakaoGallerySharedPreferences
 ) : SaveImageDao {
-    private lateinit var saveImagesSubject: MutableStateFlow<List<ImageEntity>>
+    private lateinit var saveImagesFlow: MutableStateFlow<List<ImageEntity>>
 
     init {
         initImageStream()
@@ -29,18 +29,18 @@ class SaveImageDaoImpl @Inject constructor(
             val typeToken = object : TypeToken<List<ImageEntity>>() {}.type
             Gson().fromJson(listJson, typeToken)
         }
-        saveImagesSubject = MutableStateFlow(list)
+        saveImagesFlow = MutableStateFlow(list)
     }
 
     override suspend fun fetchSaveImages(): Flow<List<ImageEntity>> {
         Timber.d("fetchSaveImages at Dao run in ${Thread.currentThread().name}")
-        return saveImagesSubject // 공유된 하나의 hot stream 에서 데이터를 전달받게끔 설정
+        return saveImagesFlow // 공유된 하나의 hot stream 에서 데이터를 전달받게끔 설정
     }
 
     override fun removeImages(idxList: List<Int>) {
         Timber.d("removeImages at Dao run in ${Thread.currentThread().name}")
         // idx 가 큰수부터 remove 를 실행해줘야 중간에 idx가 꼬이지 않는다
-        val list = saveImagesSubject.value.toMutableList()
+        val list = saveImagesFlow.value.toMutableList()
         for (removeIdx in idxList.sorted().reversed()) {
             Timber.d("remove idx : $removeIdx")
             list.removeAt(removeIdx)
@@ -50,7 +50,7 @@ class SaveImageDaoImpl @Inject constructor(
 
     override fun saveImages(image: List<SearchImageModel>, saveDateTimeMill: Long) {
         Timber.d("saveImages at Dao run in ${Thread.currentThread().name}")
-        val list = saveImagesSubject.value.toMutableList().apply {
+        val list = saveImagesFlow.value.toMutableList().apply {
             addAll(
                 image.toList().map {
                     ImageEntity.from(
@@ -70,6 +70,6 @@ class SaveImageDaoImpl @Inject constructor(
         sp.savedImageList = jsonStr
         Timber.d("syncData save finish : \n${sp.savedImageList}")
         Timber.d("syncData run at \n${Thread.currentThread().name}")
-        saveImagesSubject.value = list
+        saveImagesFlow.value = list
     }
 }
