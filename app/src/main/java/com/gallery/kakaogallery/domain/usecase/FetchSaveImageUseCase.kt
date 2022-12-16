@@ -2,34 +2,31 @@ package com.gallery.kakaogallery.domain.usecase
 
 import com.gallery.kakaogallery.domain.model.GalleryImageListTypeModel
 import com.gallery.kakaogallery.domain.repository.ImageRepository
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.schedulers.Schedulers
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
 
 class FetchSaveImageUseCase(
     private val imageRepository: ImageRepository
 ) {
-    operator fun invoke(skeletonSize: Int = 15): Observable<Result<List<GalleryImageListTypeModel>>> {
+    suspend operator fun invoke(skeletonSize: Int = 15): Flow<Result<List<GalleryImageListTypeModel>>> {
         return imageRepository
             .fetchSaveImages()
-            .observeOn(Schedulers.computation())
-            .map<Result<List<GalleryImageListTypeModel>>> {
+            .map {
                 val list = it.map { image ->
-                    GalleryImageListTypeModel.Image(image)
+                    GalleryImageListTypeModel.Image(image) as GalleryImageListTypeModel
                 }
                 Result.success(list)
             }
-            .onErrorResumeNext {
-                it.printStackTrace()
-                Observable.create { emitter ->
-                    emitter.onNext(Result.success(emptyList()))
-                    emitter.onNext(Result.failure(it))
-                    emitter.onComplete()
-                }
+            .onStart {
+                emit(Result.success(MutableList(skeletonSize) { GalleryImageListTypeModel.Skeleton }))
+                delay(500)
             }
-            .delay(500L, TimeUnit.MILLISECONDS)
-            .startWithItem(
-                Result.success(MutableList(skeletonSize) { GalleryImageListTypeModel.Skeleton })
-            )
+            .catch {
+                it.printStackTrace()
+                emit(Result.success(emptyList()))
+                emit(Result.failure(it))
+            }
+            .flowOn(Dispatchers.Default)
     }
 }

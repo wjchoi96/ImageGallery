@@ -12,8 +12,6 @@ import com.gallery.kakaogallery.domain.model.UnKnownException
 import com.gallery.kakaogallery.domain.repository.ImageRepository
 import com.google.gson.Gson
 import io.mockk.*
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.core.Single
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -200,22 +198,23 @@ internal class ImageRepositoryImplTest {
 
     //state test
     @Test
-    fun `fetchSaveImages는 ImageEntity를 GalleryImageModel로 가공한다`() {
+    fun `fetchSaveImages는 ImageEntity를 GalleryImageModel로 가공한다`() = runTest {
         val saveImages = listOf(
             ImageEntity.Empty.copy(imageUrl = "1"),
             ImageEntity.Empty.copy(imageUrl = "2")
         )
-        every { saveImageDataSource.fetchSaveImages() } returns Observable.just(saveImages)
-        val actual = repository.fetchSaveImages().blockingFirst().first()
+        coEvery { saveImageDataSource.fetchSaveImages() } returns flow { emit(saveImages) }
+        val actual = repository.fetchSaveImages().firstOrNull()?.first()
         assertThat(actual)
+            .isNotNull
             .isInstanceOf(GalleryImageModel::class.java)
     }
 
     //behavior test
     @Test
-    fun `fetchSaveImages는 SaveImageDataSource의 fetch메소드를 호출한다`() {
+    fun `fetchSaveImages는 SaveImageDataSource의 fetch메소드를 호출한다`() = runTest {
         repository.fetchSaveImages()
-        verify { saveImageDataSource.fetchSaveImages() }
+        coVerify { saveImageDataSource.fetchSaveImages() }
     }
 
     //behavior test
