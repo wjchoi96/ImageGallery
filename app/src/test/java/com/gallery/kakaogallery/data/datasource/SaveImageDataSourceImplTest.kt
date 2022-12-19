@@ -6,6 +6,7 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import java.util.*
@@ -39,14 +40,14 @@ internal class SaveImageDataSourceImplTest {
 
     //behavior test
     @Test
-    fun `saveImages는 SaveImageDao의 saveImages를 호출한다`() {
+    fun `saveImages는 SaveImageDao의 saveImages를 호출한다`() = runTest {
         val saveImageDao: SaveImageDao = mockk(relaxed = true)
         val saveMill = Date().time
         val searchImages = emptyList<SearchImageModel>()
         saveImageDataSource = SaveImageDataSourceImpl(saveImageDao)
-        saveImageDataSource.saveImages(searchImages, saveMill).blockingAwait()
+        saveImageDataSource.saveImages(searchImages, saveMill).firstOrNull()
 
-        verify { saveImageDao.saveImages(searchImages, saveMill) }
+        coVerify { saveImageDao.saveImages(searchImages, saveMill) }
     }
 
 }

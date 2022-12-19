@@ -6,6 +6,12 @@ import io.mockk.mockk
 import io.mockk.verify
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Single
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.catchThrowable
 import org.junit.Before
@@ -16,6 +22,8 @@ import org.junit.Test
  * 내부에서 DateMill을 생성중이라서 mocck의 every를 설정해놓기 까다로운 상태
  * 수정 예정
  */
+@ExperimentalCoroutinesApi
+@FlowPreview
 @Suppress("NonAsciiCharacters")
 internal class SaveSelectImageUseCaseTest {
     private lateinit var useCase: SaveSelectImageUseCase
@@ -27,53 +35,68 @@ internal class SaveSelectImageUseCaseTest {
         useCase = SaveSelectImageUseCase(repository)
     }
 
+    //state test
+    @Test
+    fun `useCase는 Flow타입을 리턴한다`() {
+        every { repository.saveImages(any(), any()) } returns flow { emit(true) }
+        val actual = useCase(mutableMapOf(), emptyList())
+
+        assertThat(actual)
+            .isNotNull
+            .isInstanceOf(Flow::class.java)
+    }
+
+    //state test
+    @Test
+    fun `useCase는 결과를 Result로 래핑하여 리턴한다`() = runTest {
+        every { repository.saveImages(any(), any()) } returns flow { emit(true) }
+        val actual = useCase(mutableMapOf(), emptyList()).firstOrNull()
+
+        assertThat(actual)
+            .isNotNull
+            .isInstanceOf(Result::class.java)
+    }
+
     @Test
     //state test
-    fun `useCase는 repository가 에러를 전달하면 처리할 수 있다`() {
-        val unitTestException = Exception("unit test exception")
-        every { repository.saveImages(any(), any()) } returns Completable.error(unitTestException)
-        val actual = catchThrowable { useCase(mutableMapOf(), emptyList()).blockingGet() }
+    fun `useCase는 repository가 정상 응답시 Result로 래핑된 true를 리턴한다`() = runTest {
+        every { repository.saveImages(any(), any()) } returns flow { emit(true) }
+        val actual = useCase(mutableMapOf(), emptyList()).firstOrNull()?.getOrNull()
         assertThat(actual)
+            .isNotNull
+            .isTrue
+    }
+
+    @Test
+    //state test
+    fun `useCase는 repository가 에러를 전달하면 Result로 래핑하여 전달한다`() = runTest {
+        val unitTestException = Exception("unit test exception")
+        every { repository.saveImages(any(), any()) } returns flow { throw unitTestException }
+        val actual = useCase(mutableMapOf(), emptyList()).firstOrNull()?.exceptionOrNull()
+        assertThat(actual)
+            .isNotNull
             .isInstanceOf(Exception::class.java)
             .hasMessageContaining(unitTestException.message)
     }
 
     @Test
     //state test
-    fun `useCase는 repository가 정상 응답시 true를 리턴한다`() {
-        every { repository.saveImages(any(), any()) } returns Completable.complete()
-        val actual = useCase(mutableMapOf(), emptyList()).blockingGet()
-        assertThat(actual)
-            .isTrue
-    }
-
-    @Test
-    //state test
-    fun `useCase는 잘못된 selectMap과 imageList의 상태가 일치하지 않는다면 에러를 발생시켜 전달한다`() {
+    fun `useCase는 잘못된 selectMap과 imageList의 상태가 일치하지 않는다면 에러를 발생시켜 전달한다`() = runTest {
         val map = mutableMapOf(
             "test" to 3
         )
-        val actual = catchThrowable { useCase(map, emptyList()).blockingGet() }
+        val actual = useCase(map, emptyList()).firstOrNull()?.exceptionOrNull()
         assertThat(actual)
+            .isNotNull
             .isInstanceOf(Exception::class.java)
 
     }
 
-    //state test
-    @Test
-    fun `useCase는 Single타입을 리턴한다`() {
-        every { repository.saveImages(any(), any()) } returns Completable.complete()
-        val actual = useCase(mutableMapOf(), emptyList())
-
-        assertThat(actual)
-            .isInstanceOf(Single::class.java)
-    }
-
     //behavior test
     @Test
-    fun `useCase는 repository의 saveImages를 호출한다`() {
-        every { repository.saveImages(any(), any()) } returns Completable.complete()
-        useCase(mutableMapOf(), emptyList()).blockingGet()
+    fun `useCase는 repository의 saveImages를 호출한다`() = runTest {
+        every { repository.saveImages(any(), any()) } returns flow { emit(true) }
+        useCase(mutableMapOf(), emptyList()).firstOrNull()
         verify { repository.saveImages(any(), any()) }
     }
 }

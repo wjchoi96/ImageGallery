@@ -48,7 +48,7 @@ class SaveImageDaoImpl @Inject constructor(
         syncData(list)
     }
 
-    override fun saveImages(image: List<SearchImageModel>, saveDateTimeMill: Long) {
+    override suspend fun saveImages(image: List<SearchImageModel>, saveDateTimeMill: Long) {
         Timber.d("saveImages at Dao run in ${Thread.currentThread().name}")
         val list = saveImagesFlow.value.toMutableList().apply {
             addAll(

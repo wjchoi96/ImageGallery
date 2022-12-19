@@ -9,5 +9,5 @@ interface SaveImageDao {
 
     fun removeImages(idxList: List<Int>)
 
-    fun saveImages(image: List<SearchImageModel>, saveDateTimeMill: Long)
+    suspend fun saveImages(image: List<SearchImageModel>, saveDateTimeMill: Long)
 }

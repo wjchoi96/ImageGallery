@@ -105,9 +105,8 @@ class ImageRepositoryImpl @Inject constructor(
             .subscribeOn(Schedulers.io())
     }
 
-    override fun saveImages(image: List<SearchImageModel>, saveDateTimeMill: Long): Completable {
+    override fun saveImages(image: List<SearchImageModel>, saveDateTimeMill: Long): Flow<Boolean> {
         return saveImageDataSource.saveImages(image, saveDateTimeMill)
-            .subscribeOn(Schedulers.io())
     }
 
 }

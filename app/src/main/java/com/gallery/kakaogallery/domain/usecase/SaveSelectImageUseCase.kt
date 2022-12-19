@@ -2,17 +2,19 @@ package com.gallery.kakaogallery.domain.usecase
 
 import com.gallery.kakaogallery.domain.model.SearchImageListTypeModel
 import com.gallery.kakaogallery.domain.model.SearchImageModel
+import com.gallery.kakaogallery.domain.model.UnKnownException
 import com.gallery.kakaogallery.domain.repository.ImageRepository
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.Single
-import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.*
 import java.util.*
 
+@FlowPreview
 class SaveSelectImageUseCase(
     private val imageRepository: ImageRepository
 ) {
-    operator fun invoke(selectImageUrlMap: MutableMap<String, Int>, images: List<SearchImageListTypeModel>): Single<Boolean>{
-        return Completable.defer{
+    operator fun invoke(selectImageUrlMap: MutableMap<String, Int>, images: List<SearchImageListTypeModel>): Flow<Result<Boolean>>{
+        return flow<Result<List<SearchImageModel>>> {
             val saveImages = mutableListOf<SearchImageModel>()
             for(selectIdx in selectImageUrlMap.values){
                 saveImages.add(
@@ -23,13 +25,20 @@ class SaveSelectImageUseCase(
                     }.image
                 )
             }
-            imageRepository.saveImages(saveImages, Date().time)
-        }.subscribeOn(Schedulers.computation())
-            .toSingle {
-                true
+            emit(Result.success(saveImages))
+        }.catch {
+            it.printStackTrace()
+            emit(Result.failure(it))
+        }.flatMapConcat {
+            when {
+                it.isSuccess -> imageRepository.saveImages(it.getOrThrow(), Date().time)
+                else -> throw it.exceptionOrNull() ?: UnKnownException()
             }
-            .doOnError {
-                it.printStackTrace()
-            }
+        }.map {
+            Result.success(it)
+        }.catch {
+            it.printStackTrace()
+            emit(Result.failure(it))
+        }.flowOn(Dispatchers.Default)
     }
 }
