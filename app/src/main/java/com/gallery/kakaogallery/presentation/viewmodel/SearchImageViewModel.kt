@@ -10,10 +10,6 @@ import com.gallery.kakaogallery.domain.usecase.SaveSelectImageUseCase
 import com.gallery.kakaogallery.presentation.application.StringResourceProvider
 import com.gallery.kakaogallery.presentation.extension.throttleFirst
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Single
-import io.reactivex.rxjava3.kotlin.addTo
-import io.reactivex.rxjava3.subjects.PublishSubject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
@@ -66,7 +62,6 @@ class SearchImageViewModel @Inject constructor(
     val uiEvent: SharedFlow<UiEvent> = _uiEvent.asSharedFlow()
 
     private val searchInfo: StateFlow<SearchInfo> = handle.getStateFlow(KEY_SEARCH_QUERY_INFO, SearchInfo("", 1))
-    private val uiAction: PublishSubject<UiAction> = PublishSubject.create()
     private val uiActionFlow = MutableSharedFlow<UiAction>()
 
 
@@ -136,27 +131,29 @@ class SearchImageViewModel @Inject constructor(
                     }
             }
 
-        }
+            launch {
+                uiActionFlow
+                    .filterIsInstance<UiAction.SaveSelectImage>()
+                    .flatMapConcat {
+                        _dataLoading.value = true
+                        when (it.selectImageMap.isEmpty() || it.images == null) {
+                            true ->
+                                flow { throw Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)) }
+                            else -> saveSelectImageUseCase(
+                                it.selectImageMap,
+                                it.images
+                            )
+                        }
+                    }.collect { res ->
+                        res.onSuccess {
+                            processSaveImageResult(it)
+                        }.onFailure {
+                            processSaveImageException(it)
+                        }
+                    }
+            }
 
-        uiAction
-            .filter { it is UiAction.SaveSelectImage }
-            .cast(UiAction.SaveSelectImage::class.java)
-            .flatMapSingle {
-                _dataLoading.value = true
-                when (it.selectImageMap.isEmpty() || it.images == null) {
-                    true ->
-                        Single.error(Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)))
-                    else -> saveSelectImageUseCase(
-                        it.selectImageMap,
-                        it.images
-                    )
-                }
-            }.observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                processSaveImageResult(it)
-            }){
-                processSaveImageException(it)
-            }.addTo(compositeDisposable)
+        }
 
     }
 
@@ -249,10 +246,14 @@ class SearchImageViewModel @Inject constructor(
     }
 
     fun saveSelectImage() {
-        uiAction.onNext(UiAction.SaveSelectImage(
-            selectImageUrlMap,
-            searchImages.value
-        ))
+        viewModelScope.launch {
+            uiActionFlow.emit(
+                UiAction.SaveSelectImage(
+                    selectImageUrlMap,
+                    searchImages.value
+                )
+            )
+        }
     }
 
     fun backgroundTouchEvent() {
