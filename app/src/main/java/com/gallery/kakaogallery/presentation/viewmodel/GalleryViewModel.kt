@@ -9,9 +9,6 @@ import com.gallery.kakaogallery.domain.usecase.RemoveSaveImageUseCase
 import com.gallery.kakaogallery.presentation.application.StringResourceProvider
 import com.gallery.kakaogallery.presentation.extension.throttleFirst
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.kotlin.addTo
-import io.reactivex.rxjava3.subjects.PublishSubject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -68,8 +65,6 @@ class GalleryViewModel @Inject constructor(
     private val _uiEvent = MutableSharedFlow<UiEvent>()
     val uiEvent = _uiEvent.asSharedFlow()
 
-    private val uiAction: PublishSubject<UiAction> = PublishSubject.create()
-
     private val uiActionFlow = MutableSharedFlow<UiAction>()
     private var saveImageStreamJob: Job? = null
 
@@ -106,21 +101,22 @@ class GalleryViewModel @Inject constructor(
                         fetchSaveImagesStream()
                     }
             }
-        }
 
-        uiAction
-            .filter { it is UiAction.RemoveSelectImage }
-            .cast(UiAction.RemoveSelectImage::class.java)
-            .flatMapSingle {
-                _dataLoading.value = true
-                removeSaveImageUseCase(it.selectImageMap)
+            launch {
+                uiActionFlow
+                    .filterIsInstance<UiAction.RemoveSelectImage>()
+                    .flatMapConcat {
+                        _dataLoading.value = true
+                        removeSaveImageUseCase(it.selectImageMap)
+                    }.collect { res ->
+                        res.onSuccess {
+                            processRemoveSelectImage(it)
+                        }.onFailure {
+                            processRemoveSelectImageException(it)
+                        }
+                    }
             }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                processRemoveSelectImage(it)
-            }) {
-                processRemoveSelectImageException(it)
-            }.addTo(compositeDisposable)
+        }
     }
 
     private fun fetchSaveImagesStream() {
@@ -196,7 +192,9 @@ class GalleryViewModel @Inject constructor(
     }
 
     fun removeSelectImage() {
-        uiAction.onNext(UiAction.RemoveSelectImage(selectImageHashMap))
+        viewModelScope.launch {
+            uiActionFlow.emit(UiAction.RemoveSelectImage(selectImageHashMap))
+        }
     }
 
     fun clickRemoveEvent() {
