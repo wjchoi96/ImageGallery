@@ -12,5 +12,5 @@ interface ImageRepository {
 
     fun removeImages(idxList: List<Int>): Completable
 
-    fun saveImages(image: List<SearchImageModel>, saveDateTimeMill: Long): Completable
+    fun saveImages(image: List<SearchImageModel>, saveDateTimeMill: Long): Flow<Boolean>
 }
