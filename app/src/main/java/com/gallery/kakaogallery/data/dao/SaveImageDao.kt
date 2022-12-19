@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 interface SaveImageDao {
     suspend fun fetchSaveImages(): Flow<List<ImageEntity>>
 
-    fun removeImages(idxList: List<Int>)
+    suspend fun removeImages(idxList: List<Int>)
 
     suspend fun saveImages(image: List<SearchImageModel>, saveDateTimeMill: Long)
 }
