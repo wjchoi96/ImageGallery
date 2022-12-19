@@ -37,7 +37,7 @@ class SaveImageDaoImpl @Inject constructor(
         return saveImagesFlow // 공유된 하나의 hot stream 에서 데이터를 전달받게끔 설정
     }
 
-    override fun removeImages(idxList: List<Int>) {
+    override suspend fun removeImages(idxList: List<Int>) {
         Timber.d("removeImages at Dao run in ${Thread.currentThread().name}")
         // idx 가 큰수부터 remove 를 실행해줘야 중간에 idx가 꼬이지 않는다
         val list = saveImagesFlow.value.toMutableList()

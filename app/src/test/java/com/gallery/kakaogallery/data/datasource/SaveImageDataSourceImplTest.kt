@@ -29,13 +29,13 @@ internal class SaveImageDataSourceImplTest {
 
     //behavior test
     @Test
-    fun `removeImages는 SaveImageDao의 removeImages를 호출한다`() {
+    fun `removeImages는 SaveImageDao의 removeImages를 호출한다`() = runTest {
         val saveImageDao: SaveImageDao = mockk(relaxed = true)
         val list = emptyList<Int>()
         saveImageDataSource = SaveImageDataSourceImpl(saveImageDao)
-        saveImageDataSource.removeImages(list).blockingAwait()
+        saveImageDataSource.removeImages(list).firstOrNull()
 
-        verify { saveImageDao.removeImages(list) }
+        coVerify { saveImageDao.removeImages(list) }
     }
 
     //behavior test

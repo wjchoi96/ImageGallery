@@ -9,8 +9,6 @@ import com.gallery.kakaogallery.domain.model.SearchImageModel
 import com.gallery.kakaogallery.domain.model.UnKnownException
 import com.gallery.kakaogallery.domain.repository.ImageRepository
 import com.gallery.kakaogallery.domain.util.GalleryDateConvertUtil
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import timber.log.Timber
@@ -100,9 +98,8 @@ class ImageRepositoryImpl @Inject constructor(
             }.flowOn(Dispatchers.Default)
     }
 
-    override fun removeImages(idxList: List<Int>): Completable {
+    override fun removeImages(idxList: List<Int>): Flow<Boolean> {
         return saveImageDataSource.removeImages(idxList)
-            .subscribeOn(Schedulers.io())
     }
 
     override fun saveImages(image: List<SearchImageModel>, saveDateTimeMill: Long): Flow<Boolean> {
