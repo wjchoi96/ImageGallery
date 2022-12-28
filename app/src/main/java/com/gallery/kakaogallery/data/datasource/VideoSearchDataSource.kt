@@ -4,5 +4,5 @@ import com.gallery.kakaogallery.data.entity.remote.response.VideoSearchResponse
 import kotlinx.coroutines.flow.Flow
 
 interface VideoSearchDataSource {
-    suspend fun fetchVideoQueryRes(query: String, page: Int): Flow<List<VideoSearchResponse.Document>>
+    fun fetchVideoQueryRes(query: String, page: Int): Flow<List<VideoSearchResponse.Document>>
 }
