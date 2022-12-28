@@ -13,7 +13,7 @@ class SaveImageDataSourceImpl @Inject constructor(
     private val saveImageDao: SaveImageDao
 ) : SaveImageDataSource {
 
-    override suspend fun fetchSaveImages(): Flow<List<ImageEntity>> {
+    override fun fetchSaveImages(): Flow<List<ImageEntity>> {
         return saveImageDao.fetchSaveImages()
             .flowOn(Dispatchers.IO)
     }
