@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.*
 class FetchSaveImageUseCase(
     private val imageRepository: ImageRepository
 ) {
-    suspend operator fun invoke(skeletonSize: Int = 15): Flow<Result<List<GalleryImageListTypeModel>>> {
+    operator fun invoke(skeletonSize: Int = 15): Flow<Result<List<GalleryImageListTypeModel>>> {
         return imageRepository
             .fetchSaveImages()
             .map {
