@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.*
 class FetchQueryDataUseCase(
     private val imageRepository: ImageRepository
 ) {
-    suspend operator fun invoke(
+    operator fun invoke(
         query: String,
         page: Int,
         skeletonSize: Int = 15
