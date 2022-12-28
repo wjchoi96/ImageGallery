@@ -24,7 +24,7 @@ class ImageRepositoryImpl @Inject constructor(
     private val saveImageDataSource: SaveImageDataSource
 ) : ImageRepository {
 
-    private suspend fun fetchImageQuery(query: String, page: Int): Flow<List<SearchImageModel>> {
+    private fun fetchImageQuery(query: String, page: Int): Flow<List<SearchImageModel>> {
         return imageSearchDataSource.fetchImageQueryRes(query, page)
             .map {
                 it.map { data ->
@@ -37,7 +37,7 @@ class ImageRepositoryImpl @Inject constructor(
             .flowOn(Dispatchers.Default)
     }
 
-    private suspend fun fetchVideoQuery(query: String, page: Int): Flow<List<SearchImageModel>> {
+    private fun fetchVideoQuery(query: String, page: Int): Flow<List<SearchImageModel>> {
         return videoSearchDataSource.fetchVideoQueryRes(query, page)
             .map {
                 it.map { data ->
@@ -53,7 +53,7 @@ class ImageRepositoryImpl @Inject constructor(
     // zip 은 가장 최근에 zip 되지 않은 데이터들끼리 zip 을 한다
     // 두개의 api 중 하나만 성공하고, 하나만 실패하는경우 다음 검색의 결과값에 이전 결과값의 데이터가 남아서 영향을 주게 되므로 api 에러가 뜨는 경우 빈 데이터를 넣어서 onNext 해준다
     // BiFunction 의 작업 환경은 첫번째 Stream 스케쥴러를 따라간다
-    override suspend fun fetchQueryData(query: String, page: Int): Flow<List<SearchImageModel>> {
+    override fun fetchQueryData(query: String, page: Int): Flow<List<SearchImageModel>> {
         return fetchImageQuery(query, page)
             .wrapResult()
             .zip(fetchVideoQuery(query, page)
@@ -87,7 +87,7 @@ class ImageRepositoryImpl @Inject constructor(
             emit(Result.failure(it))
         }
 
-    override suspend fun fetchSaveImages(): Flow<List<GalleryImageModel>> {
+    override fun fetchSaveImages(): Flow<List<GalleryImageModel>> {
         return saveImageDataSource.fetchSaveImages()
             .map {
                 it.map {  data ->
