@@ -5,7 +5,7 @@ import com.gallery.kakaogallery.domain.model.SearchImageModel
 import kotlinx.coroutines.flow.Flow
 
 interface SaveImageDao {
-    suspend fun fetchSaveImages(): Flow<List<ImageEntity>>
+    fun fetchSaveImages(): Flow<List<ImageEntity>>
 
     suspend fun removeImages(idxList: List<Int>)
 
