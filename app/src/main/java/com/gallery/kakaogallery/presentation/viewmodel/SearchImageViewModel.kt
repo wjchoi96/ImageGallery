@@ -40,9 +40,6 @@ class SearchImageViewModel @Inject constructor(
         mutableMapOf<String, Int>().also { handle[KEY_SELECT_IMAGE_MAP] = it }
     }
 
-    private val _searchImages: MutableStateFlow<List<SearchImageListTypeModel>> = MutableStateFlow(emptyList())
-    val searchImages = _searchImages.asStateFlow()
-
     override val headerTitle: StateFlow<String> = handle.getStateFlow(KEY_HEADER_TITLE, resourceProvider.getString(StringResourceProvider.StringResourceId.MenuSearchImage))
 
     val selectMode: StateFlow<Boolean> = handle.getStateFlow(KEY_SELECT_MODE, false)
@@ -61,101 +58,79 @@ class SearchImageViewModel @Inject constructor(
     private val _uiEvent = MutableSharedFlow<UiEvent>()
     val uiEvent: SharedFlow<UiEvent> = _uiEvent.asSharedFlow()
 
-    private val searchInfo: StateFlow<SearchInfo> = handle.getStateFlow(KEY_SEARCH_QUERY_INFO, SearchInfo("", 1))
     private val uiActionFlow = MutableSharedFlow<UiAction>()
-
-
-    init {
-        bindAction()
-    }
-
-    @FlowPreview
-    private fun bindAction(){
-        viewModelScope.launch {
-            launch {
-                uiActionFlow
-                    .filterIsInstance<UiAction.SearchAction>()
-                    .filter { it.page == 1 }
-                    .flatMapConcat {
-                        _uiEvent.emit(UiEvent.KeyboardVisibleEvent(false))
-                        when (dataLoading.value) {
-                            true -> flow {
-                                emit(Result.failure(Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.Loading))))
+        .also { flow ->
+            flow.filterIsInstance<UiAction.ClickImageNoneSelectModeEvent>()
+                .throttleFirst(500)
+                .onEach { _uiEvent.emit(UiEvent.NavigateImageDetail(it.imageUrl, it.position)) }
+                .launchIn(viewModelScope)
+        }.also { flow ->
+            flow.filterIsInstance<UiAction.SearchAction>()
+                .filter { it.page == 1 }
+                .flatMapConcat {
+                    _uiEvent.emit(UiEvent.KeyboardVisibleEvent(false))
+                    when (dataLoading.value) {
+                        true -> flow {
+                            emit(Result.failure(Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.Loading))))
+                        }
+                        else -> {
+                            if(selectMode.value && !it.reSearch && selectImageUrlMap.isNotEmpty()) {
+                                selectImageUrlMap.clear()
+                                setHeaderTitleUseSelectMap()
+                                handle[KEY_SELECT_MODE] = !selectMode.value
                             }
-                            else -> {
-                                if(it.query != searchInfo.value.query && selectImageUrlMap.isNotEmpty()) {
-                                    selectImageUrlMap.clear()
-                                    setHeaderTitleUseSelectMap()
-                                }
-                                _dataLoading.value = true
-                                fetchSearchDataQueryDataUseCase(it.query, it.page)
-                            }
+                            _dataLoading.value = true
+                            fetchSearchDataQueryDataUseCase(it.query, it.page)
                         }
                     }
-                    .flowOn(Dispatchers.Default)
-                    .collect {
-                        Timber.d("collect run at ${Thread.currentThread().name}")
-                        Timber.d("search query subscribe => $it")
-                        processSearchResult(it)
-                    }
-            }
+                }
+                .flowOn(Dispatchers.Default)
+                .onEach {
+                    Timber.d("collect run at ${Thread.currentThread().name}")
+                    Timber.d("search query subscribe => $it")
+                    processSearchResult(it)
+                }.launchIn(viewModelScope)
 
-            launch {
-                uiActionFlow
-                    .filterIsInstance<UiAction.SearchAction>()
-                    .filter { it.page > 1 }
-                    .filter { it.query.isNotBlank() && !pagingDataLoading.value }
-                    .flatMapConcat {
-                        _pagingDataLoading.value = true
-                        fetchSearchDataQueryDataUseCase(it.query, it.page)
-                    }.flowOn(Dispatchers.Default)
-                    .collect {
-                        processPagingResult(it)
+            flow.filterIsInstance<UiAction.SearchAction>()
+                .filter { it.page > 1 }
+                .filter { it.query.isNotBlank() && !pagingDataLoading.value }
+                .flatMapConcat {
+                    _pagingDataLoading.value = true
+                    fetchSearchDataQueryDataUseCase(it.query, it.page)
+                }.flowOn(Dispatchers.Default)
+                .onEach { processPagingResult(it) }
+                .launchIn(viewModelScope)
+        }.also { flow ->
+            flow.filterIsInstance<UiAction.SaveSelectImage>()
+                .flatMapConcat {
+                    _dataLoading.value = true
+                    when (it.selectImageMap.isEmpty() || it.images == null) {
+                        true ->
+                            flow { throw Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)) }
+                        else -> saveSelectImageUseCase(
+                            it.selectImageMap,
+                            it.images
+                        )
                     }
-            }
-
-            launch {
-                uiActionFlow
-                    .filterIsInstance<UiAction.ClickImageNoneSelectModeEvent>()
-                    .throttleFirst(500)
-                    .collect {
-                        _uiEvent.emit(UiEvent.NavigateImageDetail(it.imageUrl, it.position))
+                }.onEach { res ->
+                    res.onSuccess {
+                        processSaveImageResult(it)
+                    }.onFailure {
+                        processSaveImageException(it)
                     }
-            }
-
-            launch {
-                searchInfo
-                    .collect {
-                        Timber.d("searchInfo emit $it")
-                        uiActionFlow.emit(UiAction.SearchAction(it.query, it.page))
-                    }
-            }
-
-            launch {
-                uiActionFlow
-                    .filterIsInstance<UiAction.SaveSelectImage>()
-                    .flatMapConcat {
-                        _dataLoading.value = true
-                        when (it.selectImageMap.isEmpty() || it.images == null) {
-                            true ->
-                                flow { throw Throwable(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)) }
-                            else -> saveSelectImageUseCase(
-                                it.selectImageMap,
-                                it.images
-                            )
-                        }
-                    }.collect { res ->
-                        res.onSuccess {
-                            processSaveImageResult(it)
-                        }.onFailure {
-                            processSaveImageException(it)
-                        }
-                    }
-            }
-
+                }.launchIn(viewModelScope)
         }
 
-    }
+    private val searchInfo: StateFlow<SearchInfo> = handle.getStateFlow(KEY_SEARCH_QUERY_INFO, SearchInfo("", 1))
+        .also { flow ->
+            flow.onEach {
+                Timber.d("searchInfo emit $it")
+                uiActionFlow.emit(UiAction.SearchAction(it.query, it.page))
+            }.launchIn(viewModelScope)
+        }
+
+    private val _searchImages: MutableStateFlow<List<SearchImageListTypeModel>> = MutableStateFlow(emptyList())
+    val searchImages = _searchImages.asStateFlow()
 
     private suspend fun processSearchResult(res: Result<List<SearchImageListTypeModel>>){
         _dataLoading.value = false
@@ -345,7 +320,7 @@ class SearchImageViewModel @Inject constructor(
     fun searchQueryEvent(query: String) {
         viewModelScope.launch {
             when (searchInfo.value == SearchInfo(query, 1)) {
-                true -> uiActionFlow.emit(UiAction.SearchAction(query, 1))
+                true -> uiActionFlow.emit(UiAction.SearchAction(query, 1, true))
                 else -> handle[KEY_SEARCH_QUERY_INFO] = SearchInfo(query, 1)
             }
         }
@@ -381,7 +356,8 @@ class SearchImageViewModel @Inject constructor(
     sealed class UiAction {
         data class SearchAction(
             val query: String,
-            val page: Int
+            val page: Int,
+            val reSearch: Boolean = false
         ) : UiAction()
         data class SaveSelectImage(
             val selectImageMap: MutableMap<String, Int>,
