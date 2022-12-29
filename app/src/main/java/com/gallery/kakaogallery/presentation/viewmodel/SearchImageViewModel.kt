@@ -55,6 +55,9 @@ class SearchImageViewModel @Inject constructor(
     private val _pagingDataLoading = MutableStateFlow(false)
     val pagingDataLoading = _pagingDataLoading.asStateFlow()
 
+    private val _searchImages: MutableStateFlow<List<SearchImageListTypeModel>> = MutableStateFlow(emptyList())
+    val searchImages = _searchImages.asStateFlow()
+
     private val _uiEvent = MutableSharedFlow<UiEvent>()
     val uiEvent: SharedFlow<UiEvent> = _uiEvent.asSharedFlow()
 
@@ -129,28 +132,23 @@ class SearchImageViewModel @Inject constructor(
             }.launchIn(viewModelScope)
         }
 
-    private val _searchImages: MutableStateFlow<List<SearchImageListTypeModel>> = MutableStateFlow(emptyList())
-    val searchImages = _searchImages.asStateFlow()
-
-    private suspend fun processSearchResult(res: Result<List<SearchImageListTypeModel>>){
+    private fun processSearchResult(res: Result<List<SearchImageListTypeModel>>){
         _dataLoading.value = false
         res.onSuccess {
             if (searchInfo.value.query.isNotBlank()) _searchResultIsEmpty.value = it.size <= 1
             when (selectImageUrlMap.isEmpty()) {
                 true -> {
                     handle[KEY_NOTIFY_TEXT] = resourceProvider.getString(StringResourceProvider.StringResourceId.EmptySearchResult)
-                    _searchImages.emit(it)
+                    _searchImages.value = it
                 }
                 else -> {
-                    _searchImages.emit(
-                        it.map { item ->
-                            when {
-                                item is SearchImageListTypeModel.Image &&
-                                    selectImageUrlMap.containsKey(item.image.imageUrl) -> item.copy(image = item.image.copy(isSelect = true))
-                                else -> item
-                            }
+                    _searchImages.value = it.map { item ->
+                        when {
+                            item is SearchImageListTypeModel.Image &&
+                                selectImageUrlMap.containsKey(item.image.imageUrl) -> item.copy(image = item.image.copy(isSelect = true))
+                            else -> item
                         }
-                    )
+                    }
                     selectImageUrlMap.entries.removeIf { entry -> entry.value >= it.size }
                     setHeaderTitleUseSelectMap()
                 }
@@ -181,10 +179,10 @@ class SearchImageViewModel @Inject constructor(
         }
     }
 
-    private suspend fun processPagingResult(res: Result<List<SearchImageListTypeModel>>) {
+    private fun processPagingResult(res: Result<List<SearchImageListTypeModel>>) {
         _pagingDataLoading.value = false
         res.onSuccess {
-            _searchImages.emit(searchImages.value + it)
+            _searchImages.value = searchImages.value + it
         }.onFailure {
             when (it) {
                 is MaxPageException -> showSnackBar(
@@ -201,23 +199,17 @@ class SearchImageViewModel @Inject constructor(
         _dataLoading.value = false
         when (res) {
             true -> {
-                viewModelScope.launch {
-                    showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveSuccess))
-                }
+                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveSuccess))
                 clickSelectModeEvent()
             }
-            else -> viewModelScope.launch {
-                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveFail))
-            }
+            else ->showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveFail))
         }
     }
 
     private fun processSaveImageException(throwable: Throwable) {
         _dataLoading.value = false
         throwable.printStackTrace()
-        viewModelScope.launch {
-            showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveFail) + " $throwable")
-        }
+        showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SaveFail) + " $throwable")
     }
 
     fun saveSelectImage() {
@@ -297,9 +289,7 @@ class SearchImageViewModel @Inject constructor(
             setHeaderTitleUseSelectMap()
         } catch (e: Exception) {
             e.printStackTrace()
-            viewModelScope.launch {
-                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SelectFail))
-            }
+            showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SelectFail))
         }
     }
 
@@ -340,12 +330,16 @@ class SearchImageViewModel @Inject constructor(
         }
     }
 
-    private suspend fun showToast(message: String) {
-        _uiEvent.emit(UiEvent.ShowToast(message))
+    private fun showToast(message: String) {
+        viewModelScope.launch {
+            _uiEvent.emit(UiEvent.ShowToast(message))
+        }
     }
 
-    private suspend fun showSnackBar(message: String, action: Pair<String, () -> Unit>?) {
-        _uiEvent.emit(UiEvent.ShowSnackBar(message, action))
+    private fun showSnackBar(message: String, action: Pair<String, () -> Unit>?) {
+        viewModelScope.launch {
+            _uiEvent.emit(UiEvent.ShowSnackBar(message, action))
+        }
     }
 
     private data class SearchInfo(
