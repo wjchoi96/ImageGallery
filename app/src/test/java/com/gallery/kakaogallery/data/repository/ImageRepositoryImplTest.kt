@@ -48,8 +48,8 @@ internal class ImageRepositoryImplTest {
     fun `fetchQueryData는 ImageDataSource와 VideoDataSource의 fetchQuery메소드를 호출한다`() {
         val (query, page) = "test" to 1
         runTest { repository.fetchQueryData(query, page) }
-        coVerify { imageSearchDataSource.fetchImageQueryRes(query, page) }
-        coVerify { videoSearchDataSource.fetchVideoQueryRes(query, page) }
+        verify { imageSearchDataSource.fetchImageQueryRes(query, page) }
+        verify { videoSearchDataSource.fetchVideoQueryRes(query, page) }
     }
 
     //state test
@@ -59,15 +59,15 @@ internal class ImageRepositoryImplTest {
         val actualImageSearchResponse = Gson().fromJson(UnitTestUtil.readResource("image_search_success.json"), ImageSearchResponse::class.java).documents
         val actualVideoSearchResponse = Gson().fromJson(UnitTestUtil.readResource("video_search_success.json"), VideoSearchResponse::class.java).documents
 
-        coEvery { imageSearchDataSource.fetchImageQueryRes(query, page) } returns flow { throw MaxPageException() }
-        coEvery { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { emit(actualVideoSearchResponse) }
+        every { imageSearchDataSource.fetchImageQueryRes(query, page) } returns flow { throw MaxPageException() }
+        every { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { emit(actualVideoSearchResponse) }
 
         assertThat(repository.fetchQueryData(query, page)
             .first().size)
             .isEqualTo(actualVideoSearchResponse.size)
 
-        coEvery { imageSearchDataSource.fetchImageQueryRes(query, page) } returns flow { emit(actualImageSearchResponse) }
-        coEvery { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { throw MaxPageException() }
+        every { imageSearchDataSource.fetchImageQueryRes(query, page) } returns flow { emit(actualImageSearchResponse) }
+        every { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { throw MaxPageException() }
 
         assertThat(repository.fetchQueryData(query, page)
             .first().size)
@@ -79,8 +79,8 @@ internal class ImageRepositoryImplTest {
     fun `fetchQueryData는 DataSource가 서로 다른 Exception을 발생시키면 MaxPageException이 아닌것을 우선적으로 전달한다`() {
         val (query, page) = "test" to 0
         val unitTestException = UnKnownException("unit test exception")
-        coEvery { imageSearchDataSource.fetchImageQueryRes(query, page) } returns flow { throw MaxPageException() }
-        coEvery { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { throw unitTestException }
+        every { imageSearchDataSource.fetchImageQueryRes(query, page) } returns flow { throw MaxPageException() }
+        every { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { throw unitTestException }
 
         val actualException1 = catchThrowable {
             runTest {
@@ -93,8 +93,8 @@ internal class ImageRepositoryImplTest {
             .isInstanceOf(Throwable::class.java)  // blockingGet 에서 RuntimeException 으로 래핑해서 예외를 전달해줌
             .hasMessageContaining(unitTestException.message)
 
-        coEvery { imageSearchDataSource.fetchImageQueryRes(query, page) } returns flow { throw unitTestException }
-        coEvery { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { throw MaxPageException() }
+        every { imageSearchDataSource.fetchImageQueryRes(query, page) } returns flow { throw unitTestException }
+        every { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { throw MaxPageException() }
 
         val actualException2 = catchThrowable {
             runTest {
@@ -114,8 +114,8 @@ internal class ImageRepositoryImplTest {
         val (query, page) = "test" to 0
         val unitTestException1 = UnKnownException("unit test exception image")
         val unitTestException2 = UnKnownException("unit test exception video")
-        coEvery { imageSearchDataSource.fetchImageQueryRes(query, page) } returns flow { throw unitTestException1 }
-        coEvery { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { throw unitTestException2 }
+        every { imageSearchDataSource.fetchImageQueryRes(query, page) } returns flow { throw unitTestException1 }
+        every { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { throw unitTestException2 }
 
         val actualException = catchThrowable {
             runTest {
@@ -133,8 +133,8 @@ internal class ImageRepositoryImplTest {
     @Test
     fun `fetchQueryData는 DataSource모두 Exception을 발생시키면 해당 Exception을 발생시킨다`() {
         val (query, page) = "test" to 0
-        coEvery { imageSearchDataSource.fetchImageQueryRes(query, page) } returns flow { throw MaxPageException() }
-        coEvery { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { throw MaxPageException() }
+        every { imageSearchDataSource.fetchImageQueryRes(query, page) } returns flow { throw MaxPageException() }
+        every { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { throw MaxPageException() }
 
         val except = MaxPageException().message
         val actualException = catchThrowable {
@@ -154,8 +154,8 @@ internal class ImageRepositoryImplTest {
         val (query, page) = "test" to 0
         val actualImageSearchResponse = Gson().fromJson(UnitTestUtil.readResource("image_search_success.json"), ImageSearchResponse::class.java).documents
         val actualVideoSearchResponse = Gson().fromJson(UnitTestUtil.readResource("video_search_success.json"), VideoSearchResponse::class.java).documents
-        coEvery { imageSearchDataSource.fetchImageQueryRes(query, page) } returns flow { emit(actualImageSearchResponse) }
-        coEvery { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { emit(actualVideoSearchResponse) }
+        every { imageSearchDataSource.fetchImageQueryRes(query, page) } returns flow { emit(actualImageSearchResponse) }
+        every { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { emit(actualVideoSearchResponse) }
 
         val actual = repository.fetchQueryData(query, page).firstOrNull()
         assertThat(actual)
@@ -171,8 +171,8 @@ internal class ImageRepositoryImplTest {
         val (query, page) = "test" to 0
         val actualImageSearchResponse = Gson().fromJson(UnitTestUtil.readResource("image_search_success.json"), ImageSearchResponse::class.java).documents
         val actualVideoSearchResponse = Gson().fromJson(UnitTestUtil.readResource("video_search_success.json"), VideoSearchResponse::class.java).documents
-        coEvery { imageSearchDataSource.fetchImageQueryRes(query, page) } returns flow { emit(actualImageSearchResponse) }
-        coEvery { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { emit(actualVideoSearchResponse) }
+        every { imageSearchDataSource.fetchImageQueryRes(query, page) } returns flow { emit(actualImageSearchResponse) }
+        every { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { emit(actualVideoSearchResponse) }
 
         val actual = repository.fetchQueryData(query, page).firstOrNull()
         assertThat(actual?.first())
@@ -186,8 +186,8 @@ internal class ImageRepositoryImplTest {
         val (query, page) = "test" to 0
         val actualImageSearchResponse = Gson().fromJson(UnitTestUtil.readResource("image_search_success.json"), ImageSearchResponse::class.java).documents
         val actualVideoSearchResponse = Gson().fromJson(UnitTestUtil.readResource("video_search_success.json"), VideoSearchResponse::class.java).documents
-        coEvery { imageSearchDataSource.fetchImageQueryRes(query, page) } returns flow { emit(actualImageSearchResponse) }
-        coEvery { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { emit(actualVideoSearchResponse) }
+        every { imageSearchDataSource.fetchImageQueryRes(query, page) } returns flow { emit(actualImageSearchResponse) }
+        every { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { emit(actualVideoSearchResponse) }
 
         val expect = actualImageSearchResponse.size + actualVideoSearchResponse.size
         val actual = repository.fetchQueryData(query, page).firstOrNull()
