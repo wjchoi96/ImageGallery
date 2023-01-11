@@ -1,6 +1,7 @@
 package com.gallery.kakaogallery.presentation.viewmodel
 
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gallery.kakaogallery.domain.model.GalleryImageListTypeModel
 import com.gallery.kakaogallery.domain.model.ImageModel
@@ -24,7 +25,7 @@ class GalleryViewModel @Inject constructor(
     private val resourceProvider: StringResourceProvider,
     private val fetchSaveImageUseCase: FetchSaveImageUseCase,
     private val removeSaveImageUseCase: RemoveSaveImageUseCase
-) : DisposableManageViewModel(), ToolBarViewModel {
+) : ViewModel(), ToolBarViewModel {
     companion object {
         private const val KEY_SELECT_IMAGE_MAP = "key_select_image_map"
         private const val KEY_SELECT_MODE = "key_select_mode"
