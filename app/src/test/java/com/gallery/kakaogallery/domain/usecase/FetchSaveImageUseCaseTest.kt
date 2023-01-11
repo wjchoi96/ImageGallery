@@ -7,6 +7,8 @@ import com.gallery.kakaogallery.domain.repository.ImageRepository
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
@@ -19,15 +21,17 @@ internal class FetchSaveImageUseCaseTest {
     private lateinit var useCase: FetchSaveImageUseCase
     private lateinit var repository: ImageRepository
 
+    private val testDispatcher = StandardTestDispatcher(TestCoroutineScheduler())
+
     @Before
     fun setup() {
         repository = mockk(relaxed = true)
-        useCase = FetchSaveImageUseCase(repository)
+        useCase = FetchSaveImageUseCase(repository, testDispatcher)
     }
 
     //state test
     @Test
-    fun `useCase는 결과와 상관없이 skeletonData를 먼저 emit한다`() = runTest {
+    fun `useCase는 결과와 상관없이 skeletonData를 먼저 emit한다`() = runTest(testDispatcher) {
         every { repository.fetchSaveImages() } returns flow { emit(emptyList()) }
 
         val skeletonSize = 1
@@ -46,7 +50,7 @@ internal class FetchSaveImageUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 정상 응답시 skeletonData를 먼저 emit하고 saveImageData를 emit한다`() = runTest {
+    fun `useCase는 정상 응답시 skeletonData를 먼저 emit하고 saveImageData를 emit한다`() = runTest(testDispatcher) {
         every { repository.fetchSaveImages() } returns flow { emit(emptyList()) }
 
         val skeletonSize = 1
@@ -64,7 +68,7 @@ internal class FetchSaveImageUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 repository의 fetchSaveImage의 결과를 GalleryImageListTypeModel로 변환한다`() = runTest {
+    fun `useCase는 repository의 fetchSaveImage의 결과를 GalleryImageListTypeModel로 변환한다`() = runTest(testDispatcher) {
         every { repository.fetchSaveImages() } returns flow { emit(listOf(GalleryImageModel.Empty)) }
         val actual = useCase().lastOrNull()?.getOrNull()?.first()
 
@@ -76,7 +80,7 @@ internal class FetchSaveImageUseCaseTest {
 
     // state test
     @Test
-    fun `useCase는 reposiory가 에러 전달시 결과를 Result로 래핑한다`() = runTest {
+    fun `useCase는 reposiory가 에러 전달시 결과를 Result로 래핑한다`() = runTest(testDispatcher) {
         val unitTestException = Exception("unit test exception")
         every { repository.fetchSaveImages() } returns flow { throw unitTestException }
 
@@ -90,7 +94,7 @@ internal class FetchSaveImageUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 repository가 에러 전달 시 skeletonData, skeletonData를 제거할 List, 에러 순서대로 emit한다`() = runTest {
+    fun `useCase는 repository가 에러 전달 시 skeletonData, skeletonData를 제거할 List, 에러 순서대로 emit한다`() = runTest(testDispatcher) {
         val unitTestException = Exception("unit test exception")
         val skeletonSize = 1
         every { repository.fetchSaveImages() } returns flow { throw unitTestException }
@@ -112,7 +116,7 @@ internal class FetchSaveImageUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 repository가 정상 응답시 결과를 Result로 래핑한다`() = runTest {
+    fun `useCase는 repository가 정상 응답시 결과를 Result로 래핑한다`() = runTest(testDispatcher) {
         val images = listOf(
             GalleryImageModel.Empty,
             GalleryImageModel.Empty.copy(imageUrl = "test123")
@@ -130,7 +134,7 @@ internal class FetchSaveImageUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 Flow타입을 리턴한다`() = runTest {
+    fun `useCase는 Flow타입을 리턴한다`() = runTest(testDispatcher) {
         every { repository.fetchSaveImages() } returns flow { emit(emptyList()) }
         val actual = useCase()
 
@@ -140,7 +144,7 @@ internal class FetchSaveImageUseCaseTest {
 
     //behavior test
     @Test
-    fun `useCase는 repository의 fetchSaveImages를 호출한다`() = runTest {
+    fun `useCase는 repository의 fetchSaveImages를 호출한다`() = runTest(testDispatcher) {
         useCase()
         verify { repository.fetchSaveImages() }
     }
