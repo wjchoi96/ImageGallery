@@ -13,6 +13,8 @@ import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
@@ -36,6 +38,8 @@ internal class ImageSearchDataSourceImplTest {
     private lateinit var mockWebServer: MockWebServer
 
     private lateinit var networkConnectionInterceptor: FakeNetworkConnectionInterceptor
+
+    private val testDispatcher = StandardTestDispatcher(TestCoroutineScheduler())
 
     @Before
     fun setup() {
@@ -63,7 +67,8 @@ internal class ImageSearchDataSourceImplTest {
     fun `fetchImageQueryRes는 Network상태로 인한 오류발생을 처리할 수 있다`() {
         networkConnectionInterceptor.setNetworkState(false)
         imageSearchDataSource = ImageSearchDataSourceImpl(
-            mockRetrofit.create(ImageSearchService::class.java)
+            mockRetrofit.create(ImageSearchService::class.java),
+            testDispatcher
         )
         val (query, page) = "test" to 1
         val actualResponseJson = UnitTestUtil.readResource("image_search_success.json")
@@ -73,7 +78,7 @@ internal class ImageSearchDataSourceImplTest {
         }
         mockWebServer.enqueue(actualResponse)
         val actual = catchThrowable {
-            runTest {
+            runTest(testDispatcher) {
                 imageSearchDataSource.fetchImageQueryRes(query, page).first()
             }
         }
@@ -86,9 +91,10 @@ internal class ImageSearchDataSourceImplTest {
 
     //state test
     @Test
-    fun `fetchImageQueryRes는 1번 페이지를 검색한다면 페이징 여부를 초기화한다`() = runTest {
+    fun `fetchImageQueryRes는 1번 페이지를 검색한다면 페이징 여부를 초기화한다`() = runTest(testDispatcher) {
         imageSearchDataSource = ImageSearchDataSourceImpl(
-            mockRetrofit.create(ImageSearchService::class.java)
+            mockRetrofit.create(ImageSearchService::class.java),
+            testDispatcher
         )
         val (query, page) = "test" to 1
         val actualResponseJson = UnitTestUtil.readResource("image_search_success_is_end.json")
@@ -111,7 +117,8 @@ internal class ImageSearchDataSourceImplTest {
     @Test
     fun `fetchImageQueryRes는 다음 페이지가 없다면 MaxPageException을 발생시킨다`() {
         imageSearchDataSource = ImageSearchDataSourceImpl(
-            mockRetrofit.create(ImageSearchService::class.java)
+            mockRetrofit.create(ImageSearchService::class.java),
+            testDispatcher
         )
         val (query, page) = "test" to 1
         val actualResponseJson = UnitTestUtil.readResource("image_search_success_is_end.json")
@@ -121,9 +128,9 @@ internal class ImageSearchDataSourceImplTest {
         }
         mockWebServer.enqueue(actualResponse)
 
-        runTest { imageSearchDataSource.fetchImageQueryRes(query, page).firstOrNull() }
+        runTest(testDispatcher) { imageSearchDataSource.fetchImageQueryRes(query, page).firstOrNull() }
         val actual = catchThrowable {
-            runTest {
+            runTest(testDispatcher) {
                 imageSearchDataSource.fetchImageQueryRes(query, page + 1).firstOrNull()
             }
         }
@@ -138,7 +145,8 @@ internal class ImageSearchDataSourceImplTest {
     @Test
     fun `fetchImageQueryRes는 잘못된 HTTP응답 CODE를 처리할 수 있다`() {
         imageSearchDataSource = ImageSearchDataSourceImpl(
-            mockRetrofit.create(ImageSearchService::class.java)
+            mockRetrofit.create(ImageSearchService::class.java),
+            testDispatcher
         )
         val (query, page) = "test" to 1
         val actualResponseJson = UnitTestUtil.readResource("image_search_success.json")
@@ -149,7 +157,7 @@ internal class ImageSearchDataSourceImplTest {
         mockWebServer.enqueue(actualResponse)
 
         val actual = catchThrowable {
-            runTest {
+            runTest(testDispatcher) {
                 imageSearchDataSource.fetchImageQueryRes(query, page).firstOrNull()
             }
         }
@@ -163,7 +171,8 @@ internal class ImageSearchDataSourceImplTest {
     @Test
     fun `fetchImageQueryRes는 잘못된 서버 응답을 처리할 수 있다`() {
         imageSearchDataSource = ImageSearchDataSourceImpl(
-            mockRetrofit.create(ImageSearchService::class.java)
+            mockRetrofit.create(ImageSearchService::class.java),
+            testDispatcher
         )
         val (query, page) = "test" to 1
         val actualResponseJson = UnitTestUtil.readResource("image_search_fail.json")
@@ -174,7 +183,7 @@ internal class ImageSearchDataSourceImplTest {
         mockWebServer.enqueue(actualResponse)
 
         val actual = catchThrowable {
-            runTest {
+            runTest(testDispatcher) {
                 imageSearchDataSource.fetchImageQueryRes(query, page).firstOrNull()
             }
         }
@@ -186,9 +195,10 @@ internal class ImageSearchDataSourceImplTest {
 
     //state test
     @Test
-    fun `fetchImageQueryRes는 올바른 서버 응답을 처리할 수 있다`() = runTest {
+    fun `fetchImageQueryRes는 올바른 서버 응답을 처리할 수 있다`() = runTest(testDispatcher) {
         imageSearchDataSource = ImageSearchDataSourceImpl(
-            mockRetrofit.create(ImageSearchService::class.java)
+            mockRetrofit.create(ImageSearchService::class.java),
+            testDispatcher
         )
         val (query, page) = "test" to 1
         val actualResponseJson = UnitTestUtil.readResource("image_search_success.json")
@@ -211,14 +221,14 @@ internal class ImageSearchDataSourceImplTest {
     fun `fetchImageQueryRes는 ImageSearchService의 fetch메소드를 호출한다`() {
         val (query, page) = "test" to 1
         val mockService: ImageSearchService = mockk(relaxed = true)
-        imageSearchDataSource = ImageSearchDataSourceImpl(mockService)
+        imageSearchDataSource = ImageSearchDataSourceImpl(mockService, testDispatcher)
 
-        runTest {
+        runTest(testDispatcher) {
             imageSearchDataSource.fetchImageQueryRes(query, page).firstOrNull()
         }
 
         coVerify(exactly = 1) {
-            runTest {
+            runTest(testDispatcher) {
                 mockService.requestSearchImage(
                     query,
                     ImageSearchRequest.SortType.Recency.key,
