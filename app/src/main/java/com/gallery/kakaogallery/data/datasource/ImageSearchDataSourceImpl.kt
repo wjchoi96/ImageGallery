@@ -5,13 +5,15 @@ import com.gallery.kakaogallery.data.entity.remote.request.ImageSearchRequest
 import com.gallery.kakaogallery.data.entity.remote.response.ImageSearchResponse
 import com.gallery.kakaogallery.data.service.ImageSearchService
 import com.gallery.kakaogallery.domain.model.MaxPageException
-import kotlinx.coroutines.Dispatchers
+import com.gallery.kakaogallery.presentation.di.IODispatcher
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.*
 import timber.log.Timber
 import javax.inject.Inject
 
 class ImageSearchDataSourceImpl @Inject constructor(
-    private val searchImageApi: ImageSearchService
+    private val searchImageApi: ImageSearchService,
+    @IODispatcher private val dispatcher: CoroutineDispatcher
 ) : ImageSearchDataSource {
 
     private var imagePageable = true
@@ -54,7 +56,7 @@ class ImageSearchDataSourceImpl @Inject constructor(
                 it.printStackTrace()
                 Timber.d("error debug => after api response => $it")
                 throw it
-            }.flowOn(Dispatchers.IO)
+            }.flowOn(dispatcher)
         }
     }
 }

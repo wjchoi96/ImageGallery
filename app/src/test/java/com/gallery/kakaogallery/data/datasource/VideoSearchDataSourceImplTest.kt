@@ -12,6 +12,8 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
@@ -36,6 +38,7 @@ internal class VideoSearchDataSourceImplTest {
     private lateinit var mockWebServer: MockWebServer
 
     private lateinit var networkConnectionInterceptor: FakeNetworkConnectionInterceptor
+    private val testDispatcher = StandardTestDispatcher(TestCoroutineScheduler())
 
     @Before
     fun setup() {
@@ -63,7 +66,8 @@ internal class VideoSearchDataSourceImplTest {
     fun `fetchVideoQueryRes는 Network상태로 인한 오류발생을 처리할 수 있다`() {
         networkConnectionInterceptor.setNetworkState(false)
         videoSearchDataSource = VideoSearchDataSourceImpl(
-            mockRetrofit.create(VideoSearchService::class.java)
+            mockRetrofit.create(VideoSearchService::class.java),
+            testDispatcher
         )
         val (query, page) = "test" to 1
         val actualResponseJson = UnitTestUtil.readResource("video_search_success.json")
@@ -73,7 +77,7 @@ internal class VideoSearchDataSourceImplTest {
         }
         mockWebServer.enqueue(actualResponse)
         val actual = catchThrowable {
-            runTest {
+            runTest(testDispatcher) {
                 videoSearchDataSource.fetchVideoQueryRes(query, page).firstOrNull()
             }
         }
@@ -87,9 +91,10 @@ internal class VideoSearchDataSourceImplTest {
 
     //state test
     @Test
-    fun `fetchVideoQueryRes는 1번 페이지를 검색한다면 페이징 여부를 초기화한다`() = runTest {
+    fun `fetchVideoQueryRes는 1번 페이지를 검색한다면 페이징 여부를 초기화한다`() = runTest(testDispatcher) {
         videoSearchDataSource = VideoSearchDataSourceImpl(
-            mockRetrofit.create(VideoSearchService::class.java)
+            mockRetrofit.create(VideoSearchService::class.java),
+            testDispatcher
         )
         val (query, page) = "test" to 1
         val actualResponseJson = UnitTestUtil.readResource("video_search_success_is_end.json")
@@ -112,7 +117,8 @@ internal class VideoSearchDataSourceImplTest {
     @Test
     fun `fetchVideoQueryRes는 다음 페이지가 없다면 MaxPageException을 발생시킨다`() {
         videoSearchDataSource = VideoSearchDataSourceImpl(
-            mockRetrofit.create(VideoSearchService::class.java)
+            mockRetrofit.create(VideoSearchService::class.java),
+            testDispatcher
         )
         val (query, page) = "test" to 1
         val actualResponseJson = UnitTestUtil.readResource("video_search_success_is_end.json")
@@ -122,9 +128,9 @@ internal class VideoSearchDataSourceImplTest {
         }
         mockWebServer.enqueue(actualResponse)
 
-        runTest { videoSearchDataSource.fetchVideoQueryRes(query, page).firstOrNull() }
+        runTest(testDispatcher) { videoSearchDataSource.fetchVideoQueryRes(query, page).firstOrNull() }
         val actual = catchThrowable {
-            runTest {
+            runTest(testDispatcher) {
                 videoSearchDataSource.fetchVideoQueryRes(query, page + 1).firstOrNull()
             }
         }
@@ -139,7 +145,8 @@ internal class VideoSearchDataSourceImplTest {
     @Test
     fun `fetchVideoQueryRes는 잘못된 HTTP응답 CODE를 처리할 수 있다`() {
         videoSearchDataSource = VideoSearchDataSourceImpl(
-            mockRetrofit.create(VideoSearchService::class.java)
+            mockRetrofit.create(VideoSearchService::class.java),
+            testDispatcher
         )
         val (query, page) = "test" to 1
         val actualResponseJson = UnitTestUtil.readResource("video_search_success.json")
@@ -150,7 +157,7 @@ internal class VideoSearchDataSourceImplTest {
         mockWebServer.enqueue(actualResponse)
 
         val actual = catchThrowable {
-            runTest {
+            runTest(testDispatcher) {
                 videoSearchDataSource.fetchVideoQueryRes(query, page).firstOrNull()
             }
         }
@@ -163,7 +170,8 @@ internal class VideoSearchDataSourceImplTest {
     @Test
     fun `fetchVideoQueryRes는 잘못된 서버 응답을 처리할 수 있다`() {
         videoSearchDataSource = VideoSearchDataSourceImpl(
-            mockRetrofit.create(VideoSearchService::class.java)
+            mockRetrofit.create(VideoSearchService::class.java),
+            testDispatcher
         )
         val (query, page) = "test" to 1
         val actualResponseJson = UnitTestUtil.readResource("video_search_fail.json")
@@ -174,7 +182,7 @@ internal class VideoSearchDataSourceImplTest {
         mockWebServer.enqueue(actualResponse)
 
         val actual = catchThrowable {
-            runTest {
+            runTest(testDispatcher) {
                 videoSearchDataSource.fetchVideoQueryRes(query, page).firstOrNull()
             }
         }
@@ -186,9 +194,10 @@ internal class VideoSearchDataSourceImplTest {
 
     //state test
     @Test
-    fun `fetchVideoQueryRes는 올바른 서버 응답을 처리할 수 있다`() = runTest {
+    fun `fetchVideoQueryRes는 올바른 서버 응답을 처리할 수 있다`() = runTest(testDispatcher) {
         videoSearchDataSource = VideoSearchDataSourceImpl(
-            mockRetrofit.create(VideoSearchService::class.java)
+            mockRetrofit.create(VideoSearchService::class.java),
+            testDispatcher
         )
         val (query, page) = "test" to 1
         val actualResponseJson = UnitTestUtil.readResource("video_search_success.json")
@@ -212,9 +221,9 @@ internal class VideoSearchDataSourceImplTest {
     fun `fetchVideoQueryRes는 VideoSearchService의 fetch메소드를 호출한다`() {
         val (query, page) = "test" to 1
         val mockService: VideoSearchService = mockk(relaxed = true)
-        videoSearchDataSource = VideoSearchDataSourceImpl(mockService)
+        videoSearchDataSource = VideoSearchDataSourceImpl(mockService, testDispatcher)
 
-        runTest {
+        runTest(testDispatcher) {
             videoSearchDataSource.fetchVideoQueryRes(query, page).firstOrNull()
         }
 

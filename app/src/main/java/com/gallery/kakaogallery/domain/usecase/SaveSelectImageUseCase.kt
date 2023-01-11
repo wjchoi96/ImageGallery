@@ -4,14 +4,16 @@ import com.gallery.kakaogallery.domain.model.SearchImageListTypeModel
 import com.gallery.kakaogallery.domain.model.SearchImageModel
 import com.gallery.kakaogallery.domain.model.UnKnownException
 import com.gallery.kakaogallery.domain.repository.ImageRepository
-import kotlinx.coroutines.Dispatchers
+import com.gallery.kakaogallery.presentation.di.IODispatcher
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import java.util.*
 
 @FlowPreview
 class SaveSelectImageUseCase(
-    private val imageRepository: ImageRepository
+    private val imageRepository: ImageRepository,
+    @IODispatcher private val dispatcher: CoroutineDispatcher
 ) {
     operator fun invoke(selectImageUrlMap: MutableMap<String, Int>, images: List<SearchImageListTypeModel>): Flow<Result<Boolean>>{
         return flow<Result<List<SearchImageModel>>> {
@@ -39,6 +41,6 @@ class SaveSelectImageUseCase(
         }.catch {
             it.printStackTrace()
             emit(Result.failure(it))
-        }.flowOn(Dispatchers.Default)
+        }.flowOn(dispatcher)
     }
 }

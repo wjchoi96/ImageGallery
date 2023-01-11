@@ -5,13 +5,15 @@ import com.gallery.kakaogallery.data.entity.remote.request.VideoSearchRequest
 import com.gallery.kakaogallery.data.entity.remote.response.VideoSearchResponse
 import com.gallery.kakaogallery.data.service.VideoSearchService
 import com.gallery.kakaogallery.domain.model.MaxPageException
-import kotlinx.coroutines.Dispatchers
+import com.gallery.kakaogallery.presentation.di.IODispatcher
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.*
 import timber.log.Timber
 import javax.inject.Inject
 
 class VideoSearchDataSourceImpl @Inject constructor(
-    private val searchVideoApi: VideoSearchService
+    private val searchVideoApi: VideoSearchService,
+    @IODispatcher private val dispatcher: CoroutineDispatcher
 ) : VideoSearchDataSource {
 
     private var videoPageable = true
@@ -46,7 +48,7 @@ class VideoSearchDataSourceImpl @Inject constructor(
                 it.printStackTrace()
                 Timber.d("error debug => after api response => $it")
                 throw it
-            }.flowOn(Dispatchers.IO)
+            }.flowOn(dispatcher)
         }
     }
 }

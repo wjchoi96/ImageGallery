@@ -9,6 +9,8 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
@@ -26,10 +28,13 @@ internal class SaveSelectImageUseCaseTest {
     private lateinit var useCase: SaveSelectImageUseCase
     private lateinit var repository: ImageRepository
 
+    private val testDispatcher = StandardTestDispatcher(TestCoroutineScheduler())
+
     @Before
     fun setup(){
         repository = mockk(relaxed = true)
-        useCase = SaveSelectImageUseCase(repository)
+        useCase = SaveSelectImageUseCase(repository, testDispatcher)
+
     }
 
     //state test
@@ -45,7 +50,7 @@ internal class SaveSelectImageUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 결과를 Result로 래핑하여 리턴한다`() = runTest {
+    fun `useCase는 결과를 Result로 래핑하여 리턴한다`() = runTest(testDispatcher) {
         every { repository.saveImages(any(), any()) } returns flow { emit(true) }
         val actual = useCase(mutableMapOf(), emptyList()).firstOrNull()
 
@@ -56,7 +61,7 @@ internal class SaveSelectImageUseCaseTest {
 
     @Test
     //state test
-    fun `useCase는 repository가 정상 응답시 Result로 래핑된 true를 리턴한다`() = runTest {
+    fun `useCase는 repository가 정상 응답시 Result로 래핑된 true를 리턴한다`() = runTest(testDispatcher) {
         every { repository.saveImages(any(), any()) } returns flow { emit(true) }
         val actual = useCase(mutableMapOf(), emptyList()).firstOrNull()?.getOrNull()
         assertThat(actual)
@@ -66,7 +71,7 @@ internal class SaveSelectImageUseCaseTest {
 
     @Test
     //state test
-    fun `useCase는 repository가 에러를 전달하면 Result로 래핑하여 전달한다`() = runTest {
+    fun `useCase는 repository가 에러를 전달하면 Result로 래핑하여 전달한다`() = runTest(testDispatcher) {
         val unitTestException = Exception("unit test exception")
         every { repository.saveImages(any(), any()) } returns flow { throw unitTestException }
         val actual = useCase(mutableMapOf(), emptyList()).firstOrNull()?.exceptionOrNull()
@@ -78,7 +83,7 @@ internal class SaveSelectImageUseCaseTest {
 
     @Test
     //state test
-    fun `useCase는 잘못된 selectMap과 imageList의 상태가 일치하지 않는다면 에러를 발생시켜 전달한다`() = runTest {
+    fun `useCase는 잘못된 selectMap과 imageList의 상태가 일치하지 않는다면 에러를 발생시켜 전달한다`() = runTest(testDispatcher) {
         val map = mutableMapOf(
             "test" to 3
         )
@@ -91,7 +96,7 @@ internal class SaveSelectImageUseCaseTest {
 
     //behavior test
     @Test
-    fun `useCase는 repository의 saveImages를 호출한다`() = runTest {
+    fun `useCase는 repository의 saveImages를 호출한다`() = runTest(testDispatcher) {
         every { repository.saveImages(any(), any()) } returns flow { emit(true) }
         useCase(mutableMapOf(), emptyList()).firstOrNull()
         verify { repository.saveImages(any(), any()) }

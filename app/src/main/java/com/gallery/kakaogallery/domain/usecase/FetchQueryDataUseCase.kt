@@ -2,12 +2,14 @@ package com.gallery.kakaogallery.domain.usecase
 
 import com.gallery.kakaogallery.domain.model.SearchImageListTypeModel
 import com.gallery.kakaogallery.domain.repository.ImageRepository
-import kotlinx.coroutines.Dispatchers
+import com.gallery.kakaogallery.presentation.di.IODispatcher
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 
 class FetchQueryDataUseCase(
-    private val imageRepository: ImageRepository
+    private val imageRepository: ImageRepository,
+    @IODispatcher private val dispatcher: CoroutineDispatcher
 ) {
     operator fun invoke(
         query: String,
@@ -29,7 +31,7 @@ class FetchQueryDataUseCase(
                             else -> it.map { image -> SearchImageListTypeModel.Image(image) }
                         }
                     )
-                }.flowOn(Dispatchers.Default)
+                }.flowOn(dispatcher)
 
             return when (page) {
                 1 -> fetchQueryFlow

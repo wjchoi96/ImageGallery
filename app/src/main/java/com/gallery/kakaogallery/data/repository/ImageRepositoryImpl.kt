@@ -9,7 +9,8 @@ import com.gallery.kakaogallery.domain.model.SearchImageModel
 import com.gallery.kakaogallery.domain.model.UnKnownException
 import com.gallery.kakaogallery.domain.repository.ImageRepository
 import com.gallery.kakaogallery.domain.util.GalleryDateConvertUtil
-import kotlinx.coroutines.Dispatchers
+import com.gallery.kakaogallery.presentation.di.DefaultDispatcher
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.*
 import timber.log.Timber
 import javax.inject.Inject
@@ -21,7 +22,8 @@ import javax.inject.Inject
 class ImageRepositoryImpl @Inject constructor(
     private val imageSearchDataSource: ImageSearchDataSource,
     private val videoSearchDataSource: VideoSearchDataSource,
-    private val saveImageDataSource: SaveImageDataSource
+    private val saveImageDataSource: SaveImageDataSource,
+    @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) : ImageRepository {
 
     private fun fetchImageQuery(query: String, page: Int): Flow<List<SearchImageModel>> {
@@ -34,7 +36,7 @@ class ImageRepositoryImpl @Inject constructor(
                     )
                 }
             }
-            .flowOn(Dispatchers.Default)
+            .flowOn(dispatcher)
     }
 
     private fun fetchVideoQuery(query: String, page: Int): Flow<List<SearchImageModel>> {
@@ -47,7 +49,7 @@ class ImageRepositoryImpl @Inject constructor(
                     )
                 }
             }
-            .flowOn(Dispatchers.Default)
+            .flowOn(dispatcher)
     }
 
     // zip 은 가장 최근에 zip 되지 않은 데이터들끼리 zip 을 한다
@@ -73,7 +75,7 @@ class ImageRepositoryImpl @Inject constructor(
                         }
                     }
                 }
-            }.flowOn(Dispatchers.Default)
+            }.flowOn(dispatcher)
             .catch {
                 Timber.d("error debug => after zip => $it")
                 throw it
@@ -95,7 +97,7 @@ class ImageRepositoryImpl @Inject constructor(
                         dateTimeToShow = GalleryDateConvertUtil.convertToPrint(data.saveDateTimeMill),
                     )
                 }
-            }.flowOn(Dispatchers.Default)
+            }.flowOn(dispatcher)
     }
 
     override fun removeImages(idxList: List<Int>): Flow<Boolean> {

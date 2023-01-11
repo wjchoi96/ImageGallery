@@ -8,6 +8,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
@@ -19,10 +21,12 @@ internal class RemoveSaveImageUseCaseTest {
     private lateinit var useCase: RemoveSaveImageUseCase
     private lateinit var repository: ImageRepository
 
+    private val testDispatcher = StandardTestDispatcher(TestCoroutineScheduler())
+
     @Before
     fun setup(){
         repository = mockk(relaxed = true)
-        useCase = RemoveSaveImageUseCase(repository)
+        useCase = RemoveSaveImageUseCase(repository, testDispatcher)
     }
 
     //state test
@@ -40,7 +44,7 @@ internal class RemoveSaveImageUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 결과를 Result로 래핑하여 리턴한다`() = runTest {
+    fun `useCase는 결과를 Result로 래핑하여 리턴한다`() = runTest(testDispatcher) {
         val map = mutableMapOf(
             "test1" to 1,
             "test2" to 2
@@ -54,7 +58,7 @@ internal class RemoveSaveImageUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 repoistory가 에러를 전달하면 Result로 래핑하여 전달한다`() = runTest {
+    fun `useCase는 repoistory가 에러를 전달하면 Result로 래핑하여 전달한다`() = runTest(testDispatcher) {
         val map = mutableMapOf(
             "test1" to 1,
             "test2" to 2
@@ -70,7 +74,7 @@ internal class RemoveSaveImageUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 repository가 정상 응답시 Result로 래핑된 true를 전달한다`() = runTest {
+    fun `useCase는 repository가 정상 응답시 Result로 래핑된 true를 전달한다`() = runTest(testDispatcher) {
         val map = mutableMapOf(
             "test1" to 1,
             "test2" to 2

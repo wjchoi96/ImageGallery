@@ -16,6 +16,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.*
 import org.junit.Before
@@ -31,6 +33,8 @@ internal class ImageRepositoryImplTest {
     private lateinit var videoSearchDataSource: VideoSearchDataSource
     private lateinit var saveImageDataSource: SaveImageDataSource
 
+    private val testDispatcher = StandardTestDispatcher(TestCoroutineScheduler())
+
     @Before
     fun setUp() {
         imageSearchDataSource = mockk<ImageSearchDataSourceImpl>(relaxed = true)
@@ -39,7 +43,8 @@ internal class ImageRepositoryImplTest {
         repository = ImageRepositoryImpl(
             imageSearchDataSource,
             videoSearchDataSource,
-            saveImageDataSource
+            saveImageDataSource,
+            testDispatcher
         )
     }
 
@@ -47,14 +52,14 @@ internal class ImageRepositoryImplTest {
     @Test
     fun `fetchQueryData는 ImageDataSource와 VideoDataSource의 fetchQuery메소드를 호출한다`() {
         val (query, page) = "test" to 1
-        runTest { repository.fetchQueryData(query, page) }
+        runTest(testDispatcher) { repository.fetchQueryData(query, page) }
         verify { imageSearchDataSource.fetchImageQueryRes(query, page) }
         verify { videoSearchDataSource.fetchVideoQueryRes(query, page) }
     }
 
     //state test
     @Test
-    fun `fetchQueryData는 DataSource하나만 Exception을 발생시키면 정상 동작한다`() = runTest {
+    fun `fetchQueryData는 DataSource하나만 Exception을 발생시키면 정상 동작한다`() = runTest(testDispatcher) {
         val (query, page) = "test" to 0
         val actualImageSearchResponse = Gson().fromJson(UnitTestUtil.readResource("image_search_success.json"), ImageSearchResponse::class.java).documents
         val actualVideoSearchResponse = Gson().fromJson(UnitTestUtil.readResource("video_search_success.json"), VideoSearchResponse::class.java).documents
@@ -83,7 +88,7 @@ internal class ImageRepositoryImplTest {
         every { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { throw unitTestException }
 
         val actualException1 = catchThrowable {
-            runTest {
+            runTest(testDispatcher) {
                 repository.fetchQueryData(query, page).firstOrNull()
             }
         }
@@ -97,7 +102,7 @@ internal class ImageRepositoryImplTest {
         every { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { throw MaxPageException() }
 
         val actualException2 = catchThrowable {
-            runTest {
+            runTest(testDispatcher) {
                 repository.fetchQueryData(query, page).firstOrNull()
             }
         }
@@ -118,7 +123,7 @@ internal class ImageRepositoryImplTest {
         every { videoSearchDataSource.fetchVideoQueryRes(query, page) } returns flow { throw unitTestException2 }
 
         val actualException = catchThrowable {
-            runTest {
+            runTest(testDispatcher) {
                 repository.fetchQueryData(query, page).firstOrNull()
             }
         }
@@ -138,7 +143,7 @@ internal class ImageRepositoryImplTest {
 
         val except = MaxPageException().message
         val actualException = catchThrowable {
-            runTest {
+            runTest(testDispatcher) {
                 repository.fetchQueryData(query, page).firstOrNull()
             }
         }
@@ -150,7 +155,7 @@ internal class ImageRepositoryImplTest {
 
     //state test
     @Test
-    fun `fetchQueryData는 결과를 최신순으로 sort하여 리턴한다`() = runTest {
+    fun `fetchQueryData는 결과를 최신순으로 sort하여 리턴한다`() = runTest(testDispatcher) {
         val (query, page) = "test" to 0
         val actualImageSearchResponse = Gson().fromJson(UnitTestUtil.readResource("image_search_success.json"), ImageSearchResponse::class.java).documents
         val actualVideoSearchResponse = Gson().fromJson(UnitTestUtil.readResource("video_search_success.json"), VideoSearchResponse::class.java).documents
@@ -167,7 +172,7 @@ internal class ImageRepositoryImplTest {
 
     //state test
     @Test
-    fun `fetchQueryData는 Response객체를 ImageModel로 가공하여 리턴한다`() = runTest {
+    fun `fetchQueryData는 Response객체를 ImageModel로 가공하여 리턴한다`() = runTest(testDispatcher) {
         val (query, page) = "test" to 0
         val actualImageSearchResponse = Gson().fromJson(UnitTestUtil.readResource("image_search_success.json"), ImageSearchResponse::class.java).documents
         val actualVideoSearchResponse = Gson().fromJson(UnitTestUtil.readResource("video_search_success.json"), VideoSearchResponse::class.java).documents
@@ -182,7 +187,7 @@ internal class ImageRepositoryImplTest {
 
     //state test
     @Test
-    fun `fetchQueryData는 올바른 Item개수를 리턴한다`() = runTest {
+    fun `fetchQueryData는 올바른 Item개수를 리턴한다`() = runTest(testDispatcher) {
         val (query, page) = "test" to 0
         val actualImageSearchResponse = Gson().fromJson(UnitTestUtil.readResource("image_search_success.json"), ImageSearchResponse::class.java).documents
         val actualVideoSearchResponse = Gson().fromJson(UnitTestUtil.readResource("video_search_success.json"), VideoSearchResponse::class.java).documents
@@ -198,7 +203,7 @@ internal class ImageRepositoryImplTest {
 
     //state test
     @Test
-    fun `fetchSaveImages는 ImageEntity를 GalleryImageModel로 가공한다`() = runTest {
+    fun `fetchSaveImages는 ImageEntity를 GalleryImageModel로 가공한다`() = runTest(testDispatcher) {
         val saveImages = listOf(
             ImageEntity.Empty.copy(imageUrl = "1"),
             ImageEntity.Empty.copy(imageUrl = "2")
@@ -212,7 +217,7 @@ internal class ImageRepositoryImplTest {
 
     //behavior test
     @Test
-    fun `fetchSaveImages는 SaveImageDataSource의 fetch메소드를 호출한다`() = runTest {
+    fun `fetchSaveImages는 SaveImageDataSource의 fetch메소드를 호출한다`() = runTest(testDispatcher) {
         repository.fetchSaveImages()
         coVerify { saveImageDataSource.fetchSaveImages() }
     }
