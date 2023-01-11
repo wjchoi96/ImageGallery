@@ -1,6 +1,7 @@
 package com.gallery.kakaogallery.presentation.viewmodel
 
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.model.MaxPageException
@@ -25,7 +26,7 @@ class SearchImageViewModel @Inject constructor(
     private val resourceProvider: StringResourceProvider,
     private val fetchSearchDataQueryDataUseCase: FetchQueryDataUseCase,
     private val saveSelectImageUseCase: SaveSelectImageUseCase
-) : DisposableManageViewModel(), ToolBarViewModel {
+) : ViewModel(), ToolBarViewModel {
     companion object {
         private const val KEY_SEARCH_QUERY_INFO = "key_search_query_info"
         private const val KEY_SELECT_IMAGE_MAP = "key_select_image_map"

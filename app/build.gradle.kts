@@ -63,8 +63,6 @@ dependencies {
 
     implementation(Dependencies.Libraries.Ktx)
 
-    implementation(Dependencies.Libraries.Rx)
-
     implementation(Dependencies.Libraries.Retrofit)
 
     implementation(Dependencies.Libraries.Okhttp)

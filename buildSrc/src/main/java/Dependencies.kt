@@ -44,10 +44,6 @@ object Dependencies {
         const val activityKtx = "1.7.0-alpha02"
         const val fragmentKtx = "1.6.0-alpha03"
 
-        //Rx
-        const val rxKotlin = "3.0.0"
-        const val rxAndroid = "3.0.0"
-
         //Retrofit
         const val retrofit = "2.9.0"
 
@@ -120,17 +116,6 @@ object Dependencies {
 
             override val implementations = listOf(
                 ktxCore, activityKtx, fragmentKtx
-            )
-        }
-
-        //https://github.com/ReactiveX/RxKotlin
-        //https://github.com/Reactivex/Rxandroid/wiki
-        object Rx : ImplementationItem {
-            private const val rxKotlin = "io.reactivex.rxjava3:rxkotlin:${Dependencies.Version.rxKotlin}"
-            private const val rxAndroid = "io.reactivex.rxjava3:rxandroid:${Dependencies.Version.rxAndroid}"
-
-            override val implementations = listOf(
-                rxKotlin, rxAndroid
             )
         }
 
