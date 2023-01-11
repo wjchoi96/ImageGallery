@@ -2,7 +2,7 @@ package com.gallery.kakaogallery.presentation.di
 
 import android.app.Application
 import android.content.Context
-import com.gallery.kakaogallery.KakaoGallerySharedPreferences
+import com.gallery.kakaogallery.data.local.KakaoGallerySharedPreferences
 import com.gallery.kakaogallery.presentation.application.StringResourceProvider
 import com.gallery.kakaogallery.presentation.application.StringResourceProviderImpl
 import dagger.Module

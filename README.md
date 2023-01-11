@@ -32,6 +32,8 @@
  ┣ 📂data
  ┃ ┣ 📂datasource
  ┃ ┣ 📂entity
+ ┃ ┣ 📂local
+ ┃ ┣ 📂network
  ┃ ┣ 📂repository
  ┃ ┣ 📂service 
  ┃ ┗ 📂util
@@ -42,7 +44,6 @@
  ┗ 📂presentaion
    ┣ 📂application
    ┣ 📂di
-   ┣ 📂network
    ┣ 📂ui
    ┣ 📂util
    ┗ 📂viewmodel
