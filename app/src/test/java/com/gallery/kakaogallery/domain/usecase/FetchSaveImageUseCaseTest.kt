@@ -28,7 +28,7 @@ internal class FetchSaveImageUseCaseTest {
     //state test
     @Test
     fun `useCase는 결과와 상관없이 skeletonData를 먼저 emit한다`() = runTest {
-        coEvery { repository.fetchSaveImages() } returns flow { emit(emptyList()) }
+        every { repository.fetchSaveImages() } returns flow { emit(emptyList()) }
 
         val skeletonSize = 1
         val expectSkeletonData = Result.success(MutableList(skeletonSize) { GalleryImageListTypeModel.Skeleton })
@@ -37,7 +37,7 @@ internal class FetchSaveImageUseCaseTest {
             .isNotNull
             .isEqualTo(expectSkeletonData)
 
-        coEvery { repository.fetchSaveImages() } returns flow { throw Throwable("test") }
+        every { repository.fetchSaveImages() } returns flow { throw Throwable("test") }
 
         assertThat(useCase(skeletonSize).firstOrNull())
             .isNotNull
@@ -47,7 +47,7 @@ internal class FetchSaveImageUseCaseTest {
     //state test
     @Test
     fun `useCase는 정상 응답시 skeletonData를 먼저 emit하고 saveImageData를 emit한다`() = runTest {
-        coEvery { repository.fetchSaveImages() } returns flow { emit(emptyList()) }
+        every { repository.fetchSaveImages() } returns flow { emit(emptyList()) }
 
         val skeletonSize = 1
         val actualObservable = useCase(skeletonSize)
@@ -65,7 +65,7 @@ internal class FetchSaveImageUseCaseTest {
     //state test
     @Test
     fun `useCase는 repository의 fetchSaveImage의 결과를 GalleryImageListTypeModel로 변환한다`() = runTest {
-        coEvery { repository.fetchSaveImages() } returns flow { emit(listOf(GalleryImageModel.Empty)) }
+        every { repository.fetchSaveImages() } returns flow { emit(listOf(GalleryImageModel.Empty)) }
         val actual = useCase().lastOrNull()?.getOrNull()?.first()
 
         assertThat(actual)
@@ -78,7 +78,7 @@ internal class FetchSaveImageUseCaseTest {
     @Test
     fun `useCase는 reposiory가 에러 전달시 결과를 Result로 래핑한다`() = runTest {
         val unitTestException = Exception("unit test exception")
-        coEvery { repository.fetchSaveImages() } returns flow { throw unitTestException }
+        every { repository.fetchSaveImages() } returns flow { throw unitTestException }
 
         val actual = useCase().lastOrNull()
         val expect = Result.failure<List<ImageModel>>(unitTestException)
@@ -93,7 +93,7 @@ internal class FetchSaveImageUseCaseTest {
     fun `useCase는 repository가 에러 전달 시 skeletonData, skeletonData를 제거할 List, 에러 순서대로 emit한다`() = runTest {
         val unitTestException = Exception("unit test exception")
         val skeletonSize = 1
-        coEvery { repository.fetchSaveImages() } returns flow { throw unitTestException }
+        every { repository.fetchSaveImages() } returns flow { throw unitTestException }
 
         val actualIterator = useCase(skeletonSize).toList().iterator()
         val expectIterator = listOf<Result<List<GalleryImageListTypeModel>>>(
@@ -117,7 +117,7 @@ internal class FetchSaveImageUseCaseTest {
             GalleryImageModel.Empty,
             GalleryImageModel.Empty.copy(imageUrl = "test123")
         )
-        coEvery { repository.fetchSaveImages() } returns flow { emit(images) }
+        every { repository.fetchSaveImages() } returns flow { emit(images) }
 
         val actual = useCase().lastOrNull()
         val expect = Result.success(images.map { GalleryImageListTypeModel.Image(it) })
@@ -131,7 +131,7 @@ internal class FetchSaveImageUseCaseTest {
     //state test
     @Test
     fun `useCase는 Flow타입을 리턴한다`() = runTest {
-        coEvery { repository.fetchSaveImages() } returns flow { emit(emptyList()) }
+        every { repository.fetchSaveImages() } returns flow { emit(emptyList()) }
         val actual = useCase()
 
         assertThat(actual)
@@ -142,6 +142,6 @@ internal class FetchSaveImageUseCaseTest {
     @Test
     fun `useCase는 repository의 fetchSaveImages를 호출한다`() = runTest {
         useCase()
-        coVerify { repository.fetchSaveImages() }
+        verify { repository.fetchSaveImages() }
     }
 }

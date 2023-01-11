@@ -27,7 +27,6 @@ class GalleryViewModel @Inject constructor(
 ) : DisposableManageViewModel(), ToolBarViewModel {
     companion object {
         private const val KEY_SELECT_IMAGE_MAP = "key_select_image_map"
-        private const val KEY_SAVE_IMAGE_LIST = "key_save_image_list"
         private const val KEY_SELECT_MODE = "key_select_mode"
         private const val KEY_HEADER_TITLE = "key_header_title"
         private const val KEY_NOTIFY_GROUP_VISIBLE = "key_notify_text_visible"
@@ -44,7 +43,8 @@ class GalleryViewModel @Inject constructor(
         mutableMapOf<String, Int>().also { handle[KEY_SELECT_IMAGE_MAP] = it }
     }
 
-    val saveImages: StateFlow<List<GalleryImageListTypeModel>> = handle.getStateFlow(KEY_SAVE_IMAGE_LIST, emptyList())
+    private val _saveImages: MutableStateFlow<List<GalleryImageListTypeModel>> = MutableStateFlow(emptyList())
+    val saveImages = _saveImages.asStateFlow()
 
     override val headerTitle: StateFlow<String> = handle.getStateFlow(KEY_HEADER_TITLE, resourceProvider.getString(StringResourceProvider.StringResourceId.MenuGallery))
 
@@ -66,72 +66,51 @@ class GalleryViewModel @Inject constructor(
     val uiEvent = _uiEvent.asSharedFlow()
 
     private val uiActionFlow = MutableSharedFlow<UiAction>()
+        .also { flow ->
+            flow.filterIsInstance<UiAction.ClickImageNoneSelectModeEvent>()
+                .throttleFirst(500)
+                .onEach {
+                    _uiEvent.emit(UiEvent.NavigateImageDetail(it.imageUrl, it.position))
+                }.launchIn(viewModelScope)
+
+            flow.filterIsInstance<UiAction.Refresh>()
+                .onEach {
+                    Timber.d("refresh debug => Refresh on")
+                    _refreshLoading.value = true
+                    saveImageStreamJob?.cancel()
+                    fetchSaveImagesStream()
+                }.launchIn(viewModelScope)
+
+            flow.filterIsInstance<UiAction.RemoveSelectImage>()
+                .flatMapConcat {
+                    _dataLoading.value = true
+                    removeSaveImageUseCase(it.selectImageMap)
+                }.onEach { res ->
+                    res.onSuccess {
+                        processRemoveSelectImage(it)
+                    }.onFailure {
+                        processRemoveSelectImageException(it)
+                    }
+                }.launchIn(viewModelScope)
+        }
+
     private var saveImageStreamJob: Job? = null
 
     init {
-        bindAction()
         fetchSaveImagesStream()
     }
 
-    private fun bindAction() {
-        viewModelScope.launch {
-            launch {
-                uiActionFlow
-                    .collect {
-                        Timber.d("refresh debug => uiActionFlow collect $it")
-                    }
-            }
-
-            launch {
-                uiActionFlow
-                    .filterIsInstance<UiAction.ClickImageNoneSelectModeEvent>()
-                    .throttleFirst(500)
-                    .collect {
-                        _uiEvent.emit(UiEvent.NavigateImageDetail(it.imageUrl, it.position))
-                    }
-            }
-
-            launch {
-                uiActionFlow
-                    .filterIsInstance<UiAction.Refresh>()
-                    .collect {
-                        Timber.d("refresh debug => Refresh on")
-                        _refreshLoading.value = true
-                        saveImageStreamJob?.cancel()
-                        fetchSaveImagesStream()
-                    }
-            }
-
-            launch {
-                uiActionFlow
-                    .filterIsInstance<UiAction.RemoveSelectImage>()
-                    .flatMapConcat {
-                        _dataLoading.value = true
-                        removeSaveImageUseCase(it.selectImageMap)
-                    }.collect { res ->
-                        res.onSuccess {
-                            processRemoveSelectImage(it)
-                        }.onFailure {
-                            processRemoveSelectImageException(it)
-                        }
-                    }
-            }
-        }
-    }
-
     private fun fetchSaveImagesStream() {
-        viewModelScope.launch {
-            saveImageStreamJob = launch {
-                fetchSaveImageUseCase()
-                    .flowOn(Dispatchers.Default)
-                    .collect {
-                        processFetchSaveImages(it)
-                    }
-            }
+        saveImageStreamJob = viewModelScope.launch {
+            fetchSaveImageUseCase()
+                .flowOn(Dispatchers.Default)
+                .collect {
+                    processFetchSaveImages(it)
+                }
         }
     }
 
-    private suspend fun processFetchSaveImages(res: Result<List<GalleryImageListTypeModel>>){
+    private fun processFetchSaveImages(res: Result<List<GalleryImageListTypeModel>>){
         _dataLoading.value = false
         _refreshLoading.value = false
         Timber.d("refresh debug => processFetchSaveImages [${_refreshLoading.value}]")
@@ -141,7 +120,7 @@ class GalleryViewModel @Inject constructor(
                 resourceProvider.getString(StringResourceProvider.StringResourceId.EmptySaveImage),
                 emptyNotifyBtn
             )
-            handle[KEY_SAVE_IMAGE_LIST] = it
+            _saveImages.value = it
         }.onFailure {
             "$fetchImageFailMessage\n${it.message}".let { msg ->
                 showSnackBar(
@@ -161,23 +140,17 @@ class GalleryViewModel @Inject constructor(
         _dataLoading.value = false
         when (res) {
             true -> {
-                viewModelScope.launch {
-                    showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveSuccess))
-                }
+                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveSuccess))
                 clickSelectModeEvent() // 삭제라면 선택모드 였을테니, toggle 해주면 선택모드가 해제됨
             }
-            else -> viewModelScope.launch {
-                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail))
-            }
+            else -> showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail))
         }
     }
 
     private fun processRemoveSelectImageException(throwable: Throwable){
         _dataLoading.value = false
         throwable.printStackTrace()
-        viewModelScope.launch {
-            showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail) + " $throwable")
-        }
+        showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.RemoveFail) + " $throwable")
     }
 
     fun clickNotifyEvent() {
@@ -254,7 +227,7 @@ class GalleryViewModel @Inject constructor(
             e.printStackTrace()
         }
         selectImageHashMap.clear()
-        handle[KEY_SAVE_IMAGE_LIST] = images
+        _saveImages.value = images
     }
 
     private fun setSelectImage(image: ImageModel, idx: Int, select: Boolean) {
@@ -267,25 +240,27 @@ class GalleryViewModel @Inject constructor(
                 true -> selectImageHashMap[image.hash] = idx
                 else -> selectImageHashMap.remove(image.hash)
             }
-            handle[KEY_SAVE_IMAGE_LIST] = images
+            _saveImages.value = images
             handle[KEY_HEADER_TITLE] = resourceProvider.getString(
                 StringResourceProvider.StringResourceId.SelectState,
                 selectImageHashMap.size
             )
         } catch (e: Exception) {
             e.printStackTrace()
-            viewModelScope.launch {
-                showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SelectFail))
-            }
+            showToast(resourceProvider.getString(StringResourceProvider.StringResourceId.SelectFail))
         }
     }
 
-    private suspend fun showToast(message: String) {
-        _uiEvent.emit(UiEvent.ShowToast(message))
+    private fun showToast(message: String) {
+        viewModelScope.launch {
+            _uiEvent.emit(UiEvent.ShowToast(message))
+        }
     }
 
-    private suspend fun showSnackBar(message: String, action: Pair<String, () -> Unit>?) {
-        _uiEvent.emit(UiEvent.ShowSnackBar(message, action))
+    private fun showSnackBar(message: String, action: Pair<String, () -> Unit>?) {
+        viewModelScope.launch {
+            _uiEvent.emit(UiEvent.ShowSnackBar(message, action))
+        }
     }
 
     private fun setNotifyGroup(visible: Boolean, message: String, btn: String) {

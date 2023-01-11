@@ -24,7 +24,7 @@ class ImageSearchDataSourceImpl @Inject constructor(
      *
      * 참고: https://stackoverflow.com/questions/28462839/using-subscribeon-with-retrofit
      */
-    override suspend fun fetchImageQueryRes(
+    override fun fetchImageQueryRes(
         query: String,
         page: Int
     ): Flow<List<ImageSearchResponse.Document>> {

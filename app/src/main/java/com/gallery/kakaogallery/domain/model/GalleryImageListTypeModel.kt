@@ -1,8 +1,6 @@
 package com.gallery.kakaogallery.domain.model
 
-import java.io.Serializable
-
-sealed class GalleryImageListTypeModel : Serializable {
+sealed class GalleryImageListTypeModel {
     data class Image(val image: GalleryImageModel): GalleryImageListTypeModel()
     object Skeleton : GalleryImageListTypeModel()
 

@@ -1,7 +1,5 @@
 package com.gallery.kakaogallery.domain.model
 
-import java.io.Serializable
-
 data class SearchImageModel(
     override val dateTimeToShow: String,
     val dateTimeMill: Long,
@@ -9,7 +7,7 @@ data class SearchImageModel(
     override val thumbnailUrl: String?,
     override val imageType: ImageType,
     override val isSelect: Boolean = false
-) : ImageModel(), Serializable {
+) : ImageModel() {
     companion object {
         val Empty: SearchImageModel
             get() = SearchImageModel("", 0L, "", null, ImageType.Image)

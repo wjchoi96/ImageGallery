@@ -16,7 +16,7 @@ class VideoSearchDataSourceImpl @Inject constructor(
 
     private var videoPageable = true
 
-    override suspend fun fetchVideoQueryRes(
+    override fun fetchVideoQueryRes(
         query: String,
         page: Int
     ): Flow<List<VideoSearchResponse.Document>> {

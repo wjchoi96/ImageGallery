@@ -27,7 +27,7 @@ internal class FetchQueryDataUseCaseTest {
     //state test
     @Test
     fun `useCase는 Flow타입을 리턴한다`() = runTest {
-        coEvery { repository.fetchQueryData(any(), any()) } returns flow { emit(emptyList()) }
+        every { repository.fetchQueryData(any(), any()) } returns flow { emit(emptyList()) }
 
         val actual = useCase("query", 1)
         assertThat(actual)
@@ -40,7 +40,7 @@ internal class FetchQueryDataUseCaseTest {
         val (query, page) = "query" to 1
         val unitTestException = Exception("unit test exception")
 
-        coEvery { repository.fetchQueryData(query, page) } returns flow { throw unitTestException }
+        every { repository.fetchQueryData(query, page) } returns flow { throw unitTestException }
         val actual = catchThrowable {
             runTest {
                 useCase(query, page).lastOrNull()?.getOrThrow()
@@ -57,7 +57,7 @@ internal class FetchQueryDataUseCaseTest {
     @Test
     fun `useCase는 page가 1이면 결과와 상관없이 skeletonData를 먼저 emit한다`() = runTest {
         val (query, page) = "query" to 1
-        coEvery { repository.fetchQueryData(query, page) } returns flow { emit(emptyList()) }
+        every { repository.fetchQueryData(query, page) } returns flow { emit(emptyList()) }
 
         val skeletonSize = 1
         val expectSkeletonData = Result.success(
@@ -69,7 +69,7 @@ internal class FetchQueryDataUseCaseTest {
             .isNotNull
             .isEqualTo(expectSkeletonData)
 
-        coEvery { repository.fetchQueryData(query, page) } returns flow { throw Throwable("test") }
+        every { repository.fetchQueryData(query, page) } returns flow { throw Throwable("test") }
 
         assertThat(useCase(query, page, skeletonSize).firstOrNull())
             .isNotNull
@@ -80,7 +80,7 @@ internal class FetchQueryDataUseCaseTest {
     @Test
     fun `useCase는 page가 1이 아니면 결과와 상관없이 skeletonData를 emit하지 않는다`() = runTest {
         val (query, page) = "query" to 2
-        coEvery { repository.fetchQueryData(query, page) } returns flow { emit(emptyList()) }
+        every { repository.fetchQueryData(query, page) } returns flow { emit(emptyList()) }
 
         val skeletonSize = 1
         val expectSkeletonData = Result.success(
@@ -94,7 +94,7 @@ internal class FetchQueryDataUseCaseTest {
             .isNotEqualTo(expectSkeletonData)
             .isEqualTo(Result.success(emptyList<SearchImageListTypeModel>()))
 
-        coEvery { repository.fetchQueryData(query, page) } returns flow { throw expectException }
+        every { repository.fetchQueryData(query, page) } returns flow { throw expectException }
 
         assertThat(useCase(query, page, skeletonSize).firstOrNull()?.exceptionOrNull()?.cause)
             .isNotNull
@@ -109,7 +109,7 @@ internal class FetchQueryDataUseCaseTest {
         val skeletonSize = 1
         val unitTestException = Exception("unit test exception")
 
-        coEvery { repository.fetchQueryData(any(), any()) } returns flow { throw unitTestException }
+        every { repository.fetchQueryData(any(), any()) } returns flow { throw unitTestException }
 
         val actual = useCase(query, page, skeletonSize).toList()
         val expect = listOf(
@@ -138,7 +138,7 @@ internal class FetchQueryDataUseCaseTest {
     @Test
     fun `useCase는 page가 1이 아닐때 repository가 에러를 전달하면 Result로 래핑된 에러만을 전달한다`() = runTest {
         val unitTestException = Exception("unit test exception")
-        coEvery { repository.fetchQueryData(any(), any()) } returns flow { throw unitTestException }
+        every { repository.fetchQueryData(any(), any()) } returns flow { throw unitTestException }
 
         val actual = useCase("query", 2).firstOrNull()
 
@@ -151,7 +151,7 @@ internal class FetchQueryDataUseCaseTest {
     //state test
     @Test
     fun `useCase는 repository의 fetchQueryData 결과를 SearchImageListTypeModel로 변환한다`() = runTest {
-        coEvery { repository.fetchQueryData(any(), any()) } returns flow { emit(listOf(SearchImageModel.Empty)) }
+        every { repository.fetchQueryData(any(), any()) } returns flow { emit(listOf(SearchImageModel.Empty)) }
         val actual = useCase("query", 1).lastOrNull()?.getOrNull()
 
         assertThat(actual?.first())
@@ -168,7 +168,7 @@ internal class FetchQueryDataUseCaseTest {
     //state test
     @Test
     fun `useCase는 repository가 정상 응답시 결과를 Result로 래핑한다`() = runTest {
-        coEvery { repository.fetchQueryData(any(), any()) } returns flow { emit(emptyList()) }
+        every { repository.fetchQueryData(any(), any()) } returns flow { emit(emptyList()) }
 
         val actual = useCase("query", 1).lastOrNull()
 
@@ -181,7 +181,7 @@ internal class FetchQueryDataUseCaseTest {
     @Test
     fun `useCase는 reposiory가 에러 전달시 Result로 래핑한다`() = runTest {
         val unitTestException = Exception("unit test exception")
-        coEvery { repository.fetchQueryData(any(), any()) } returns flow { throw unitTestException }
+        every { repository.fetchQueryData(any(), any()) } returns flow { throw unitTestException }
 
         val actual = useCase("query", 1).lastOrNull()
         val expect = Result.failure<List<ImageModel>>(unitTestException)
@@ -198,7 +198,7 @@ internal class FetchQueryDataUseCaseTest {
     @Test
     fun `useCase는 page가 1일때 skeletonData를 먼저 emit하고 결과를 emit한다`() = runTest {
         val (query, page) = "query" to 1
-        coEvery { repository.fetchQueryData(query, page) } returns flow { emit(emptyList()) }
+        every { repository.fetchQueryData(query, page) } returns flow { emit(emptyList()) }
 
         val skeletonSize = 1
         val actualObservable = useCase(query, page, skeletonSize)
@@ -239,7 +239,7 @@ internal class FetchQueryDataUseCaseTest {
             SearchImageModel.Empty.copy(imageUrl = "123")
         )
 
-        coEvery { repository.fetchQueryData(query, page) } returns flow { emit(images) }
+        every { repository.fetchQueryData(query, page) } returns flow { emit(images) }
         val actual = useCase(query, page).lastOrNull()?.getOrNull()
         val except = listOf(
             SearchImageListTypeModel.Query(query),
@@ -264,7 +264,7 @@ internal class FetchQueryDataUseCaseTest {
             SearchImageModel.Empty.copy(imageUrl = "123")
         )
 
-        coEvery { repository.fetchQueryData(query, page) } returns flow { emit(images) }
+        every { repository.fetchQueryData(query, page) } returns flow { emit(images) }
         val actual = useCase(query, page).firstOrNull()
         val except = images.map { SearchImageListTypeModel.Image(it) }
 
@@ -278,6 +278,6 @@ internal class FetchQueryDataUseCaseTest {
     fun `useCase는 repository의 fetch메소드를 호출한다`() = runTest {
         val (query, page) = "query" to 1
         useCase(query, page)
-        coVerify { repository.fetchQueryData(query, page) }
+        verify { repository.fetchQueryData(query, page) }
     }
 }

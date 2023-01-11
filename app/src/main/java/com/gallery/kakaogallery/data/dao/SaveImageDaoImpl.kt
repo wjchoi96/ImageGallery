@@ -32,7 +32,7 @@ class SaveImageDaoImpl @Inject constructor(
         saveImagesFlow = MutableStateFlow(list)
     }
 
-    override suspend fun fetchSaveImages(): Flow<List<ImageEntity>> {
+    override fun fetchSaveImages(): Flow<List<ImageEntity>> {
         Timber.d("fetchSaveImages at Dao run in ${Thread.currentThread().name}")
         return saveImagesFlow // 공유된 하나의 hot stream 에서 데이터를 전달받게끔 설정
     }
