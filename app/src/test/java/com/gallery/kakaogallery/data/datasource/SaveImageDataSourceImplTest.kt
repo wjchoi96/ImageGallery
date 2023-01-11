@@ -24,7 +24,7 @@ internal class SaveImageDataSourceImplTest {
         saveImageDataSource = SaveImageDataSourceImpl(saveImageDao)
         saveImageDataSource.fetchSaveImages()
 
-        coVerify { saveImageDao.fetchSaveImages() }
+        verify { saveImageDao.fetchSaveImages() }
     }
 
     //behavior test
