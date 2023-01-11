@@ -9,6 +9,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -16,22 +17,26 @@ object UseCaseModule {
 
     @Provides
     fun provideFetchQueryDataUseCase(
-        imageRepository: ImageRepository
-    ) = FetchQueryDataUseCase(imageRepository)
+        imageRepository: ImageRepository,
+        @DefaultDispatcher dispatcher: CoroutineDispatcher
+    ) = FetchQueryDataUseCase(imageRepository, dispatcher)
 
     @Provides
     fun provideFetchSaveImageUseCase(
-        imageRepository: ImageRepository
-    ) = FetchSaveImageUseCase(imageRepository)
+        imageRepository: ImageRepository,
+        @DefaultDispatcher dispatcher: CoroutineDispatcher
+    ) = FetchSaveImageUseCase(imageRepository, dispatcher)
 
     @Provides
     fun provideSaveSelectImageUseCase(
-        imageRepository: ImageRepository
-    ) = SaveSelectImageUseCase(imageRepository)
+        imageRepository: ImageRepository,
+        @DefaultDispatcher dispatcher: CoroutineDispatcher
+    ) = SaveSelectImageUseCase(imageRepository, dispatcher)
 
     @Provides
     fun provideRemoveSaveImageUseCase(
-        imageRepository: ImageRepository
-    ) = RemoveSaveImageUseCase(imageRepository)
+        imageRepository: ImageRepository,
+        @DefaultDispatcher dispatcher: CoroutineDispatcher
+    ) = RemoveSaveImageUseCase(imageRepository, dispatcher)
     
 }
