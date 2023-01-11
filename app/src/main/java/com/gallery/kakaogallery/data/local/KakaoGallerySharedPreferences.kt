@@ -1,8 +1,7 @@
-package com.gallery.kakaogallery
+package com.gallery.kakaogallery.data.local
 
 import android.content.Context
 import androidx.core.content.edit
-import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
