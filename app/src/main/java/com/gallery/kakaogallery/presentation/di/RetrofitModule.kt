@@ -5,8 +5,8 @@ import com.gallery.kakaogallery.BuildConfig
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.data.constant.ApiAddressConstant
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
-import com.gallery.kakaogallery.presentation.network.NetworkCacheInterceptor
-import com.gallery.kakaogallery.presentation.network.NetworkConnectionInterceptor
+import com.gallery.kakaogallery.data.network.NetworkCacheInterceptor
+import com.gallery.kakaogallery.data.network.NetworkConnectionInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

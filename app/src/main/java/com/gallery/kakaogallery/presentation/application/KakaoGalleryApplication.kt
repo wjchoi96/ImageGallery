@@ -2,7 +2,7 @@ package com.gallery.kakaogallery.presentation.application
 
 import android.app.Application
 import com.gallery.kakaogallery.BuildConfig
-import com.gallery.kakaogallery.presentation.network.NetworkUtil
+import com.gallery.kakaogallery.data.network.NetworkUtil
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 

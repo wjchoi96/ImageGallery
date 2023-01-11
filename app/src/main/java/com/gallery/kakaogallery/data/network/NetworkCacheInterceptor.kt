@@ -1,4 +1,4 @@
-package com.gallery.kakaogallery.presentation.network
+package com.gallery.kakaogallery.data.network
 
 import okhttp3.CacheControl
 import okhttp3.Interceptor
