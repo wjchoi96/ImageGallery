@@ -9,14 +9,12 @@ import android.util.DisplayMetrics
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.FragmentGalleryBinding
-import com.gallery.kakaogallery.presentation.extension.safeScrollToTop
-import com.gallery.kakaogallery.presentation.extension.setSoftKeyboardVisible
-import com.gallery.kakaogallery.presentation.extension.showSnackBar
-import com.gallery.kakaogallery.presentation.extension.showToast
+import com.gallery.kakaogallery.presentation.extension.*
 import com.gallery.kakaogallery.presentation.ui.base.BindingFragment
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetDialog
 import com.gallery.kakaogallery.presentation.ui.dialog.ImageManageBottomSheetEventReceiver
@@ -24,8 +22,12 @@ import com.gallery.kakaogallery.presentation.ui.imagedetail.ImageDetailActivity
 import com.gallery.kakaogallery.presentation.ui.root.BottomMenuRoot
 import com.gallery.kakaogallery.presentation.viewmodel.GalleryViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
+@FlowPreview
 @AndroidEntryPoint
 class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBottomSheetEventReceiver {
     override val layoutResId: Int
@@ -121,51 +123,59 @@ class GalleryFragment : BindingFragment<FragmentGalleryBinding>(), ImageManageBo
     }
 
     private fun observeData() {
-        viewModel.uiEvent.observe(viewLifecycleOwner) { event ->
-            event.getContentIfNotHandled()?.let {
-                when (it) {
-                    is GalleryViewModel.UiEvent.ShowToast ->
-                        context?.showToast(it.message)
+        repeatOnStarted {
+            launch {
+                viewModel.uiEvent.collect {
+                    when (it) {
+                        is GalleryViewModel.UiEvent.ShowToast ->
+                            context?.showToast(it.message)
 
-                    is GalleryViewModel.UiEvent.ShowSnackBar -> {
-                        when (it.action) {
-                            null -> binding.background.showSnackBar(it.message)
-                            else -> binding.background.showSnackBar(
-                                it.message,
-                                it.action.first to View.OnClickListener { _ ->
-                                    it.action.second.invoke()
-                                }
-                            )
+                        is GalleryViewModel.UiEvent.ShowSnackBar -> {
+                            when (it.action) {
+                                null -> binding.background.showSnackBar(it.message)
+                                else -> binding.background.showSnackBar(
+                                    it.message,
+                                    it.action.first to View.OnClickListener { _ ->
+                                        it.action.second.invoke()
+                                    }
+                                )
+                            }
                         }
-                    }
-                    is GalleryViewModel.UiEvent.KeyboardVisibleEvent ->
-                        context?.setSoftKeyboardVisible(binding.background, it.visible)
+                        is GalleryViewModel.UiEvent.KeyboardVisibleEvent ->
+                            context?.setSoftKeyboardVisible(binding.background, it.visible)
 
-                    is GalleryViewModel.UiEvent.PresentRemoveDialog ->
-                        showRemoveDialog(it.selectCount)
+                        is GalleryViewModel.UiEvent.PresentRemoveDialog ->
+                            showRemoveDialog(it.selectCount)
 
-                    is GalleryViewModel.UiEvent.NavigateSearchView ->
-                        (requireActivity() as? BottomMenuRoot)?.navigateSearchTab()
+                        is GalleryViewModel.UiEvent.NavigateSearchView ->
+                            (requireActivity() as? BottomMenuRoot)?.navigateSearchTab()
 
-                    is GalleryViewModel.UiEvent.ScrollToTop ->
-                        binding.rvGallery.safeScrollToTop(it.smoothScroll)
+                        is GalleryViewModel.UiEvent.ScrollToTop ->
+                            binding.rvGallery.safeScrollToTop(it.smoothScroll)
 
-                    is GalleryViewModel.UiEvent.NavigateImageDetail -> {
-                        showImageDetailActivity(it.imageUrl, it.position)
+                        is GalleryViewModel.UiEvent.NavigateImageDetail -> {
+                            showImageDetailActivity(it.imageUrl, it.position)
+                        }
                     }
                 }
             }
-        }
 
-        viewModel.saveImages.observe(viewLifecycleOwner) {
-            galleryAdapter.updateList(it)
-        }
+            launch {
+                viewModel.selectMode.collect {
+                    Timber.d("select mode debug at observe -> $it")
+                    when (it){
+                        true -> startSelectMode()
+                        else -> finishSelectMode()
+                    }
+                }
+            }
 
-        viewModel.selectMode.observe(viewLifecycleOwner) {
-            Timber.d("select mode debug at observe -> $it")
-            when (it){
-                true -> startSelectMode()
-                else -> finishSelectMode()
+            launch {
+                viewModel.saveImages.collectLatest {
+                    lifecycleScope.launch {
+                        galleryAdapter.updateList(it)
+                    }
+                }
             }
         }
     }

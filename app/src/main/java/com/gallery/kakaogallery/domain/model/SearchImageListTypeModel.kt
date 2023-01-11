@@ -1,8 +1,6 @@
 package com.gallery.kakaogallery.domain.model
 
-import java.io.Serializable
-
-sealed class SearchImageListTypeModel : Serializable {
+sealed class SearchImageListTypeModel {
     data class Query(val query: String?) : SearchImageListTypeModel()
     data class Image(val image: SearchImageModel) : SearchImageListTypeModel()
     object Skeleton : SearchImageListTypeModel()
