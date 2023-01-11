@@ -5,6 +5,8 @@ import com.gallery.kakaogallery.domain.repository.ImageRepository
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.catchThrowable
@@ -18,15 +20,17 @@ internal class FetchQueryDataUseCaseTest {
     private lateinit var useCase: FetchQueryDataUseCase
     private lateinit var repository: ImageRepository
 
+    private val testDispatcher = StandardTestDispatcher(TestCoroutineScheduler())
+
     @Before
     fun setup(){
         repository = mockk(relaxed = true)
-        useCase = FetchQueryDataUseCase(repository)
+        useCase = FetchQueryDataUseCase(repository, testDispatcher)
     }
 
     //state test
     @Test
-    fun `useCase는 Flow타입을 리턴한다`() = runTest {
+    fun `useCase는 Flow타입을 리턴한다`() = runTest(testDispatcher) {
         every { repository.fetchQueryData(any(), any()) } returns flow { emit(emptyList()) }
 
         val actual = useCase("query", 1)
@@ -42,12 +46,12 @@ internal class FetchQueryDataUseCaseTest {
 
         every { repository.fetchQueryData(query, page) } returns flow { throw unitTestException }
         val actual = catchThrowable {
-            runTest {
+            runTest(testDispatcher) {
                 useCase(query, page).lastOrNull()?.getOrThrow()
             }
         }
 
-        assertThat(actual.cause)
+        assertThat(actual)
             .isNotNull
             .isInstanceOf(Exception::class.java)
             .isEqualTo(unitTestException)
@@ -55,7 +59,7 @@ internal class FetchQueryDataUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 page가 1이면 결과와 상관없이 skeletonData를 먼저 emit한다`() = runTest {
+    fun `useCase는 page가 1이면 결과와 상관없이 skeletonData를 먼저 emit한다`() = runTest(testDispatcher) {
         val (query, page) = "query" to 1
         every { repository.fetchQueryData(query, page) } returns flow { emit(emptyList()) }
 
@@ -78,7 +82,7 @@ internal class FetchQueryDataUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 page가 1이 아니면 결과와 상관없이 skeletonData를 emit하지 않는다`() = runTest {
+    fun `useCase는 page가 1이 아니면 결과와 상관없이 skeletonData를 emit하지 않는다`() = runTest(testDispatcher) {
         val (query, page) = "query" to 2
         every { repository.fetchQueryData(query, page) } returns flow { emit(emptyList()) }
 
@@ -96,7 +100,7 @@ internal class FetchQueryDataUseCaseTest {
 
         every { repository.fetchQueryData(query, page) } returns flow { throw expectException }
 
-        assertThat(useCase(query, page, skeletonSize).firstOrNull()?.exceptionOrNull()?.cause)
+        assertThat(useCase(query, page, skeletonSize).firstOrNull()?.exceptionOrNull())
             .isNotNull
             .isNotEqualTo(expectSkeletonData)
             .isEqualTo(expectException)
@@ -104,7 +108,7 @@ internal class FetchQueryDataUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 page가 1일때 repository가 에러 전달 시 skeletonData, skeletonData를 제거할 List, 에러 순서대로 emit한다`() = runTest {
+    fun `useCase는 page가 1일때 repository가 에러 전달 시 skeletonData, skeletonData를 제거할 List, 에러 순서대로 emit한다`() = runTest(testDispatcher) {
         val (query, page) = "query" to 1
         val skeletonSize = 1
         val unitTestException = Exception("unit test exception")
@@ -128,7 +132,7 @@ internal class FetchQueryDataUseCaseTest {
             .isNotNull
             .isEqualTo(expect.getOrNull(1))
 
-        assertThat(actual.lastOrNull()?.exceptionOrNull()?.cause)
+        assertThat(actual.lastOrNull()?.exceptionOrNull())
             .isNotNull
             .isEqualTo(expect.lastOrNull()?.exceptionOrNull())
             .isInstanceOf(Exception::class.java)
@@ -136,7 +140,7 @@ internal class FetchQueryDataUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 page가 1이 아닐때 repository가 에러를 전달하면 Result로 래핑된 에러만을 전달한다`() = runTest {
+    fun `useCase는 page가 1이 아닐때 repository가 에러를 전달하면 Result로 래핑된 에러만을 전달한다`() = runTest(testDispatcher) {
         val unitTestException = Exception("unit test exception")
         every { repository.fetchQueryData(any(), any()) } returns flow { throw unitTestException }
 
@@ -150,7 +154,7 @@ internal class FetchQueryDataUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 repository의 fetchQueryData 결과를 SearchImageListTypeModel로 변환한다`() = runTest {
+    fun `useCase는 repository의 fetchQueryData 결과를 SearchImageListTypeModel로 변환한다`() = runTest(testDispatcher) {
         every { repository.fetchQueryData(any(), any()) } returns flow { emit(listOf(SearchImageModel.Empty)) }
         val actual = useCase("query", 1).lastOrNull()?.getOrNull()
 
@@ -167,7 +171,7 @@ internal class FetchQueryDataUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 repository가 정상 응답시 결과를 Result로 래핑한다`() = runTest {
+    fun `useCase는 repository가 정상 응답시 결과를 Result로 래핑한다`() = runTest(testDispatcher) {
         every { repository.fetchQueryData(any(), any()) } returns flow { emit(emptyList()) }
 
         val actual = useCase("query", 1).lastOrNull()
@@ -179,7 +183,7 @@ internal class FetchQueryDataUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 reposiory가 에러 전달시 Result로 래핑한다`() = runTest {
+    fun `useCase는 reposiory가 에러 전달시 Result로 래핑한다`() = runTest(testDispatcher) {
         val unitTestException = Exception("unit test exception")
         every { repository.fetchQueryData(any(), any()) } returns flow { throw unitTestException }
 
@@ -189,14 +193,14 @@ internal class FetchQueryDataUseCaseTest {
             .isNotNull
             .isInstanceOf(Result::class.java)
 
-        assertThat(actual?.exceptionOrNull()?.cause)
+        assertThat(actual?.exceptionOrNull())
             .isNotNull
             .isEqualTo(expect.exceptionOrNull())
     }
 
     //state test
     @Test
-    fun `useCase는 page가 1일때 skeletonData를 먼저 emit하고 결과를 emit한다`() = runTest {
+    fun `useCase는 page가 1일때 skeletonData를 먼저 emit하고 결과를 emit한다`() = runTest(testDispatcher) {
         val (query, page) = "query" to 1
         every { repository.fetchQueryData(query, page) } returns flow { emit(emptyList()) }
 
@@ -220,7 +224,7 @@ internal class FetchQueryDataUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 query가 비어있다면 Query만를 포함한 리스트를 리턴한다`() = runTest {
+    fun `useCase는 query가 비어있다면 Query만를 포함한 리스트를 리턴한다`() = runTest(testDispatcher) {
         val (query, page) = "" to 1
 
         val actual = useCase(query, page).lastOrNull()
@@ -232,7 +236,7 @@ internal class FetchQueryDataUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 page가 1이면 Query를 첫번째 아이템으로 가지는 SearchImageListType리스트를 리턴한다`() = runTest {
+    fun `useCase는 page가 1이면 Query를 첫번째 아이템으로 가지는 SearchImageListType리스트를 리턴한다`() = runTest(testDispatcher) {
         val (query, page) = "query" to 1
         val images = listOf(
             SearchImageModel.Empty,
@@ -257,7 +261,7 @@ internal class FetchQueryDataUseCaseTest {
 
     //state test
     @Test
-    fun `useCase는 page가 1이 아니라면 Image만을 포함하는 리스트를 리턴한다`() = runTest {
+    fun `useCase는 page가 1이 아니라면 Image만을 포함하는 리스트를 리턴한다`() = runTest(testDispatcher) {
         val (query, page) = "query" to 2
         val images = listOf(
             SearchImageModel.Empty,
@@ -275,7 +279,7 @@ internal class FetchQueryDataUseCaseTest {
 
     //behavior test
     @Test
-    fun `useCase는 repository의 fetch메소드를 호출한다`() = runTest {
+    fun `useCase는 repository의 fetch메소드를 호출한다`() = runTest(testDispatcher) {
         val (query, page) = "query" to 1
         useCase(query, page)
         verify { repository.fetchQueryData(query, page) }
