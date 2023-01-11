@@ -10,14 +10,17 @@ import javax.inject.Qualifier
 import javax.inject.Singleton
 
 @Qualifier
+@Retention(AnnotationRetention.BINARY)
 @Singleton
 annotation class DefaultDispatcher
 
 @Qualifier
+@Retention(AnnotationRetention.BINARY)
 @Singleton
 annotation class IODispatcher
 
 @Qualifier
+@Retention(AnnotationRetention.BINARY)
 @Singleton
 annotation class MainDispatcher
 
