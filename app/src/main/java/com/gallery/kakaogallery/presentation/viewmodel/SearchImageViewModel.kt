@@ -317,6 +317,8 @@ class SearchImageViewModel @Inject constructor(
         }
     }
 
+    fun queryChangedEvent(query: String) {
+    }
     fun fetchNextPage() {
         viewModelScope.launch {
             searchInfo.value.let {

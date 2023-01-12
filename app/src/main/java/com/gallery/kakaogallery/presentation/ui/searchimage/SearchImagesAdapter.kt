@@ -13,6 +13,7 @@ import timber.log.Timber
 
 class SearchImagesAdapter(
     private val searchQueryListener: (String) -> Unit,
+    private val queryChangedListener: (String) -> Unit,
     private val queryEditorActionListener: TextView.OnEditorActionListener,
     private val imageItemSelectListener: (ImageModel, Int) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -53,7 +54,12 @@ class SearchImagesAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
-            SearchImageListTypeModel.ViewType.Query.id -> SearchQueryViewHolder.from(parent, searchQueryListener, queryEditorActionListener)
+            SearchImageListTypeModel.ViewType.Query.id -> SearchQueryViewHolder.from(
+                parent,
+                searchQueryListener,
+                queryChangedListener,
+                queryEditorActionListener
+            )
             SearchImageListTypeModel.ViewType.Skeleton.id -> GallerySkeletonViewHolder.from(parent)
             else -> GalleryImageItemViewHolder.from(parent, imageItemSelectListener)
         }
