@@ -45,6 +45,7 @@ class SearchImageFragment : BindingFragment<FragmentSearchImageBinding>(),
     private val imageSearchAdapter: SearchImagesAdapter by lazy {
         SearchImagesAdapter(
             viewModel::searchQueryEvent,
+            viewModel::queryChangedEvent,
             searchEditorActionListener,
             viewModel::touchImageEvent
         )
