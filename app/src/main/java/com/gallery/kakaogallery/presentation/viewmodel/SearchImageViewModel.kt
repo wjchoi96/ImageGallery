@@ -133,6 +133,13 @@ class SearchImageViewModel @Inject constructor(
             }.launchIn(viewModelScope)
         }
 
+    private val queryChangedValue = MutableSharedFlow<String>().also { flow ->
+        flow.debounce(500)
+            .filter { it != searchInfo.value.query && it.isNotBlank() }
+            .onEach { searchQueryEvent(it) }
+            .launchIn(viewModelScope)
+    }
+
     private fun processSearchResult(res: Result<List<SearchImageListTypeModel>>){
         _dataLoading.value = false
         res.onSuccess {
@@ -318,7 +325,11 @@ class SearchImageViewModel @Inject constructor(
     }
 
     fun queryChangedEvent(query: String) {
+        viewModelScope.launch {
+            queryChangedValue.emit(query)
+        }
     }
+
     fun fetchNextPage() {
         viewModelScope.launch {
             searchInfo.value.let {
