@@ -9,7 +9,7 @@
 ## Branch
 |     Sample     | Description |
 | ------------- | ------------- |
-| [main](https://github.com/wjchoi96/KakaoGallery/tree/main) | 배포용 |
+| [main](https://github.com/wjchoi96/KakaoGallery/tree/main) | 배포용 Coroutine Flow |
 | [rx](https://github.com/wjchoi96/KakaoGallery/tree/rx) | ver1.0.2 RxJava + LiveData |
 | [dev](https://github.com/wjchoi96/KakaoGallery/tree/dev) | 개발용 |
 
