@@ -1,6 +1,5 @@
 package com.gallery.kakaogallery.presentation.ui.searchimage
 
-import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -40,11 +39,11 @@ class GalleryImageItemViewHolder private constructor(
     }
 
     init {
-        binding.cvImage.setOnTouchListener { view, motionEvent ->
+        binding.background.setOnTouchListener { _, motionEvent ->
             when (motionEvent.action) {
                 MotionEvent.ACTION_DOWN -> {
                     Timber.d("animation debug => ACTION_DOWN")
-                    scaleAnimate(view, 0.93f)
+                    scaleAnimate(binding.cvImage, 0.93f)
                 }
             }
             false
