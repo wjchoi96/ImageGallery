@@ -2,25 +2,27 @@ package com.gallery.kakaogallery.domain.usecase
 
 import com.gallery.kakaogallery.domain.model.SearchImageListTypeModel
 import com.gallery.kakaogallery.domain.repository.ImageRepository
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.schedulers.Schedulers
-import java.util.concurrent.TimeUnit
+import com.gallery.kakaogallery.presentation.di.IODispatcher
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
 
 class FetchQueryDataUseCase(
-    private val imageRepository: ImageRepository
+    private val imageRepository: ImageRepository,
+    @IODispatcher private val dispatcher: CoroutineDispatcher
 ) {
     operator fun invoke(
         query: String,
         page: Int,
         skeletonSize: Int = 15
-    ): Observable<Result<List<SearchImageListTypeModel>>> {
+    ): Flow<Result<List<SearchImageListTypeModel>>> {
         return if(query.isBlank()){
-            Observable.just(Result.success(listOf(SearchImageListTypeModel.Query(query))))
+            flow {
+                emit(Result.success(listOf(SearchImageListTypeModel.Query(query))))
+            }
         } else {
-            val fetchQueryStream = imageRepository
+            val fetchQueryFlow = imageRepository
                 .fetchQueryData(query, page)
-                .observeOn(Schedulers.computation())
-                .toObservable()
                 .map {
                     Result.success(
                         when(page){
@@ -29,35 +31,35 @@ class FetchQueryDataUseCase(
                             else -> it.map { image -> SearchImageListTypeModel.Image(image) }
                         }
                     )
-                }
+                }.flowOn(dispatcher)
 
             return when (page) {
-                1 -> fetchQueryStream
-                    .delay(500L, TimeUnit.MILLISECONDS) // skeleton ui 를 잘 보여주기 위한 delay
-                    .startWithItem (
-                        Result.success(
-                            MutableList(skeletonSize + 1) { i ->
-                                when (i) {
-                                    0 -> SearchImageListTypeModel.Query(query)
-                                    else -> SearchImageListTypeModel.Skeleton
+                1 -> fetchQueryFlow
+                    .onStart {
+                        emit(
+                            Result.success(
+                                MutableList(skeletonSize + 1) { i ->
+                                    when (i) {
+                                        0 -> SearchImageListTypeModel.Query(query)
+                                        else -> SearchImageListTypeModel.Skeleton
+                                    }
                                 }
-                            }
+                            )
                         )
-                    )
-                    .onErrorResumeNext {
-                        it.printStackTrace()
-                        println("error debug at useCase => $it")
-                        Observable.create { emitter ->
-                            emitter.onNext(Result.success(listOf(SearchImageListTypeModel.Query(query))))
-                            emitter.onNext(Result.failure(it))
-                            emitter.onComplete()
-                        }
+                        delay(500) // skeleton ui 를 잘 보여주기 위한 delay
                     }
-                else -> fetchQueryStream
-                    .onErrorReturn {
+                    .catch {
                         it.printStackTrace()
                         println("error debug at useCase => $it")
-                        Result.failure(it)
+                        emit(Result.success(listOf(SearchImageListTypeModel.Query(query))))
+                        emit(Result.failure(it))
+                    }
+
+                else -> fetchQueryFlow
+                    .catch {
+                        it.printStackTrace()
+                        println("error debug at useCase => $it")
+                        emit(Result.failure(it))
                     }
             }
         }

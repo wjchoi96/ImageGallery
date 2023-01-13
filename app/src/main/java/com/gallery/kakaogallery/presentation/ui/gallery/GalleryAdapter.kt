@@ -6,10 +6,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.gallery.kakaogallery.domain.model.GalleryImageListTypeModel
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.presentation.ui.searchimage.GalleryImageItemViewHolder
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 class GalleryAdapter(
@@ -36,22 +34,17 @@ class GalleryAdapter(
         return DiffUtil.calculateDiff(diffCallback)
     }
 
-    private var adapterDisposable: Disposable? = null
-    fun updateList(list: List<GalleryImageListTypeModel>) {
-        adapterDisposable?.dispose()
-        adapterDisposable = null
-
+    suspend fun updateList(list: List<GalleryImageListTypeModel>) {
         val newList = list.toList()
         Timber.d("diff debug updateList called oldList[${imageList.size}], newList[${newList.size}]")
-        adapterDisposable = Observable.fromCallable{
-            getDiffRes(newList)
-        }.subscribeOn(Schedulers.computation())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
+        withContext(Dispatchers.Default) {
+            val diffRes = getDiffRes(newList)
+            withContext(Dispatchers.Main) {
                 Timber.d("getDiffRes subscribe run at ${Thread.currentThread().name}")
-                this.setList(newList) // must call main thread
-                it.dispatchUpdatesTo(this)
+                setList(newList) // must call main thread
+                diffRes.dispatchUpdatesTo(this@GalleryAdapter)
             }
+        }
     }
 
     override fun getItemViewType(position: Int): Int {

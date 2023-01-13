@@ -12,17 +12,19 @@ import timber.log.Timber
 class SearchQueryViewHolder private constructor(
     private val binding: ItemSearchQueryBinding,
     val searchQueryListener: (String) -> Unit,
+    val queryChangedListener: (String) -> Unit,
     val queryEditorActionListener: TextView.OnEditorActionListener
 ) : RecyclerView.ViewHolder(binding.root) {
     companion object {
         fun from(
             parent: ViewGroup,
             searchQueryListener: (String) -> Unit,
+            queryChangedListener: (String) -> Unit,
             queryEditorActionListener: TextView.OnEditorActionListener
         ): SearchQueryViewHolder {
             val layoutInflater = LayoutInflater.from(parent.context)
             val binding = ItemSearchQueryBinding.inflate(layoutInflater, parent, false)
-            return SearchQueryViewHolder(binding, searchQueryListener, queryEditorActionListener)
+            return SearchQueryViewHolder(binding, searchQueryListener, queryChangedListener, queryEditorActionListener)
         }
     }
 

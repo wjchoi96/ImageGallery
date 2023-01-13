@@ -1,8 +1,8 @@
 package com.gallery.kakaogallery.data.datasource
 
 import com.gallery.kakaogallery.data.entity.remote.response.ImageSearchResponse
-import io.reactivex.rxjava3.core.Single
+import kotlinx.coroutines.flow.Flow
 
 interface ImageSearchDataSource {
-    fun fetchImageQueryRes(query: String, page: Int): Single<List<ImageSearchResponse.Document>>
+    fun fetchImageQueryRes(query: String, page: Int): Flow<List<ImageSearchResponse.Document>>
 }

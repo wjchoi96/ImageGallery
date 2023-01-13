@@ -2,7 +2,7 @@ package com.gallery.kakaogallery.data.dao
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.gallery.kakaogallery.KakaoGallerySharedPreferences
+import com.gallery.kakaogallery.data.local.KakaoGallerySharedPreferences
 import com.gallery.kakaogallery.data.entity.local.ImageEntity
 import com.gallery.kakaogallery.domain.model.SearchImageModel
 import com.google.gson.Gson

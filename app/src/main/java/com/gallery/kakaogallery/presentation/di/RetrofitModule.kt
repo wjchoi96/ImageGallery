@@ -5,8 +5,8 @@ import com.gallery.kakaogallery.BuildConfig
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.data.constant.ApiAddressConstant
 import com.gallery.kakaogallery.presentation.application.KakaoGalleryApplication
-import com.gallery.kakaogallery.presentation.network.NetworkCacheInterceptor
-import com.gallery.kakaogallery.presentation.network.NetworkConnectionInterceptor
+import com.gallery.kakaogallery.data.network.NetworkCacheInterceptor
+import com.gallery.kakaogallery.data.network.NetworkConnectionInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,7 +17,6 @@ import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Qualifier
 import javax.inject.Singleton
@@ -88,7 +87,6 @@ object RetrofitModule {
     ): Retrofit = Retrofit.Builder()
         .baseUrl(ApiAddressConstant.kakaoBaseUrl)
         .client(okHttpClient)
-        .addCallAdapterFactory(RxJava3CallAdapterFactory.create()) // for rx
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 

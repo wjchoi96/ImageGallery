@@ -10,8 +10,11 @@ import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.gallery.kakaogallery.R
 import com.gallery.kakaogallery.databinding.ActivityRootBinding
+import com.gallery.kakaogallery.presentation.extension.repeatOnStarted
 import com.gallery.kakaogallery.presentation.ui.base.BindingActivity
 import com.gallery.kakaogallery.presentation.ui.gallery.GalleryFragment
 import com.gallery.kakaogallery.presentation.ui.searchimage.SearchImageFragment
@@ -19,8 +22,12 @@ import com.gallery.kakaogallery.presentation.viewmodel.RootViewModel
 import com.gallery.kakaogallery.presentation.viewmodel.SplashViewModel
 import com.google.android.material.navigation.NavigationBarView
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 
+@FlowPreview
 @AndroidEntryPoint
 class RootActivity : BindingActivity<ActivityRootBinding>(), BottomMenuRoot {
     companion object {
@@ -96,8 +103,12 @@ class RootActivity : BindingActivity<ActivityRootBinding>(), BottomMenuRoot {
     }
 
     private fun observeData(){
-        viewModel.currentPage.observe(this){
-            changeFragment(it)
+        repeatOnStarted {
+            launch {
+                viewModel.currentPage.collectLatest {
+                    changeFragment(it)
+                }
+            }
         }
     }
 

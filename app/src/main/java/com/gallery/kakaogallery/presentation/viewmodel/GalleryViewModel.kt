@@ -1,31 +1,33 @@
 package com.gallery.kakaogallery.presentation.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.gallery.kakaogallery.domain.model.GalleryImageListTypeModel
 import com.gallery.kakaogallery.domain.model.ImageModel
 import com.gallery.kakaogallery.domain.usecase.FetchSaveImageUseCase
 import com.gallery.kakaogallery.domain.usecase.RemoveSaveImageUseCase
 import com.gallery.kakaogallery.presentation.application.StringResourceProvider
+import com.gallery.kakaogallery.presentation.extension.throttleFirst
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.kotlin.addTo
-import io.reactivex.rxjava3.subjects.PublishSubject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
+@FlowPreview
 @HiltViewModel
 class GalleryViewModel @Inject constructor(
     private val handle: SavedStateHandle,
     private val resourceProvider: StringResourceProvider,
     private val fetchSaveImageUseCase: FetchSaveImageUseCase,
     private val removeSaveImageUseCase: RemoveSaveImageUseCase
-) : DisposableManageViewModel(), ToolBarViewModel {
+) : ViewModel(), ToolBarViewModel {
     companion object {
         private const val KEY_SELECT_IMAGE_MAP = "key_select_image_map"
-        private const val KEY_SAVE_IMAGE_LIST = "key_save_image_list"
         private const val KEY_SELECT_MODE = "key_select_mode"
         private const val KEY_HEADER_TITLE = "key_header_title"
         private const val KEY_NOTIFY_GROUP_VISIBLE = "key_notify_text_visible"
@@ -42,87 +44,77 @@ class GalleryViewModel @Inject constructor(
         mutableMapOf<String, Int>().also { handle[KEY_SELECT_IMAGE_MAP] = it }
     }
 
-    private val _saveImages: MutableLiveData<List<GalleryImageListTypeModel>> = handle.getLiveData(KEY_SAVE_IMAGE_LIST, emptyList())
-    val saveImages: LiveData<List<GalleryImageListTypeModel>> = _saveImages
+    private val _saveImages: MutableStateFlow<List<GalleryImageListTypeModel>> = MutableStateFlow(emptyList())
+    val saveImages = _saveImages.asStateFlow()
 
-    private val _headerTitle: MutableLiveData<String> =
-        handle.getLiveData(KEY_HEADER_TITLE, resourceProvider.getString(StringResourceProvider.StringResourceId.MenuGallery))
-    override val headerTitle: LiveData<String> = _headerTitle
+    override val headerTitle: StateFlow<String> = handle.getStateFlow(KEY_HEADER_TITLE, resourceProvider.getString(StringResourceProvider.StringResourceId.MenuGallery))
 
-    private val _selectMode: MutableLiveData<Boolean> = handle.getLiveData(KEY_SELECT_MODE, false)
-    val selectMode: LiveData<Boolean> = _selectMode
+    val selectMode: StateFlow<Boolean> = handle.getStateFlow(KEY_SELECT_MODE, false)
 
-    private val _dataLoading = MutableLiveData(false)
-    val dataLoading: LiveData<Boolean> = _dataLoading
+    val notifyGroupVisible: StateFlow<Boolean> = handle.getStateFlow(KEY_NOTIFY_GROUP_VISIBLE, false)
 
-    private val _refreshLoading = MutableLiveData(false)
-    val refreshLoading: LiveData<Boolean> = _refreshLoading
+    val notifyText: StateFlow<String> = handle.getStateFlow(KEY_NOTIFY_TEXT, "")
 
-    private val _notifyGroupVisible: MutableLiveData<Boolean> = handle.getLiveData(KEY_NOTIFY_GROUP_VISIBLE, false)
-    val notifyGroupVisible: LiveData<Boolean> = _notifyGroupVisible
+    val notifyBtn: StateFlow<String> = handle.getStateFlow(KEY_NOTIFY_BTN, "")
 
-    private val _notifyText: MutableLiveData<String> = handle.getLiveData(KEY_NOTIFY_TEXT, "")
-    val notifyText: LiveData<String> = _notifyText
+    private val _dataLoading = MutableStateFlow(false)
+    val dataLoading: StateFlow<Boolean> = _dataLoading.asStateFlow()
 
-    private val _notifyBtn: MutableLiveData<String> = handle.getLiveData(KEY_NOTIFY_BTN, "")
-    val notifyBtn: LiveData<String> = _notifyBtn
+    private val _refreshLoading = MutableStateFlow(false)
+    val refreshLoading: StateFlow<Boolean> = _refreshLoading.asStateFlow()
 
-    private val _uiEvent = MutableLiveData<SingleEvent<UiEvent>>()
-    val uiEvent: LiveData<SingleEvent<UiEvent>> = _uiEvent
+    private val _uiEvent = MutableSharedFlow<UiEvent>()
+    val uiEvent = _uiEvent.asSharedFlow()
 
-    private val uiAction: PublishSubject<UiAction> = PublishSubject.create()
+    private val uiActionFlow = MutableSharedFlow<UiAction>()
+        .also { flow ->
+            flow.filterIsInstance<UiAction.ClickImageNoneSelectModeEvent>()
+                .throttleFirst(500)
+                .onEach {
+                    _uiEvent.emit(UiEvent.NavigateImageDetail(it.imageUrl, it.position))
+                }.launchIn(viewModelScope)
+
+            flow.filterIsInstance<UiAction.Refresh>()
+                .onEach {
+                    Timber.d("refresh debug => Refresh on")
+                    _refreshLoading.value = true
+                    saveImageStreamJob?.cancel()
+                    fetchSaveImagesStream()
+                }.launchIn(viewModelScope)
+
+            flow.filterIsInstance<UiAction.RemoveSelectImage>()
+                .flatMapConcat {
+                    _dataLoading.value = true
+                    removeSaveImageUseCase(it.selectImageMap)
+                }.onEach { res ->
+                    res.onSuccess {
+                        processRemoveSelectImage(it)
+                    }.onFailure {
+                        processRemoveSelectImageException(it)
+                    }
+                }.launchIn(viewModelScope)
+        }
+
+    private var saveImageStreamJob: Job? = null
 
     init {
-        bindAction()
-        uiAction.onNext(UiAction.FetchSaveImages)
+        fetchSaveImagesStream()
     }
 
-    private fun bindAction() {
-        uiAction.filter { action -> action is UiAction.Refresh }
-            .subscribe {
-                _refreshLoading.value = true
-            }
-
-        uiAction
-            .filter { it is UiAction.FetchSaveImages }
-            .flatMap {
-                _dataLoading.value = true
-                fetchSaveImageUseCase()
-                    .takeUntil(uiAction.filter { action -> action is UiAction.Refresh })
-                    .doFinally { Timber.d("dispose debug => dispose fetchSaveImageUseCase Stream") }
-            }
-            .doOnNext { Timber.d("dispose debug => emit data from fetchAction") }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                processFetchSaveImages(it)
-            }.addTo(compositeDisposable)
-
-        uiAction
-            .filter { it is UiAction.RemoveSelectImage }
-            .cast(UiAction.RemoveSelectImage::class.java)
-            .flatMapSingle {
-                _dataLoading.value = true
-                removeSaveImageUseCase(it.selectImageMap)
-            }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                processRemoveSelectImage(it)
-            }) {
-                processRemoveSelectImageException(it)
-            }.addTo(compositeDisposable)
-
-        uiAction
-            .filter { it is UiAction.ClickImageNoneSelectModeEvent }
-            .cast(UiAction.ClickImageNoneSelectModeEvent::class.java)
-            .throttleFirst(500, TimeUnit.MILLISECONDS)
-            .subscribe {
-                _uiEvent.value = SingleEvent(UiEvent.NavigateImageDetail(it.imageUrl, it.position))
-            }.addTo(compositeDisposable)
+    private fun fetchSaveImagesStream() {
+        saveImageStreamJob = viewModelScope.launch {
+            fetchSaveImageUseCase()
+                .flowOn(Dispatchers.Default)
+                .collect {
+                    processFetchSaveImages(it)
+                }
+        }
     }
 
     private fun processFetchSaveImages(res: Result<List<GalleryImageListTypeModel>>){
         _dataLoading.value = false
         _refreshLoading.value = false
+        Timber.d("refresh debug => processFetchSaveImages [${_refreshLoading.value}]")
         res.onSuccess {
             setNotifyGroup(
                 it.isEmpty(),
@@ -164,60 +156,68 @@ class GalleryViewModel @Inject constructor(
 
     fun clickNotifyEvent() {
         when(notifyBtn.value) {
-            emptyNotifyBtn -> _uiEvent.value = SingleEvent(UiEvent.NavigateSearchView)
+            emptyNotifyBtn -> viewModelScope.launch { _uiEvent.emit(UiEvent.NavigateSearchView) }
             retryNotifyBtn -> refreshGalleryEvent()
         }
     }
 
     fun refreshGalleryEvent() {
-        uiAction.onNext(UiAction.Refresh)
-        uiAction.onNext(UiAction.FetchSaveImages)
+        viewModelScope.launch { uiActionFlow.emit(UiAction.Refresh) }
     }
 
     fun removeSelectImage() {
-        uiAction.onNext(UiAction.RemoveSelectImage(selectImageHashMap))
+        viewModelScope.launch {
+            uiActionFlow.emit(UiAction.RemoveSelectImage(selectImageHashMap))
+        }
     }
 
     fun clickRemoveEvent() {
         if (selectImageHashMap.isEmpty()) {
-            _uiEvent.value =
-                SingleEvent(UiEvent.ShowToast(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)))
+            viewModelScope.launch {
+                _uiEvent.emit(UiEvent.ShowToast(resourceProvider.getString(StringResourceProvider.StringResourceId.NoneSelectImage)))
+            }
             return
         }
-        _uiEvent.value = SingleEvent(UiEvent.PresentRemoveDialog(selectImageHashMap.size))
+        viewModelScope.launch {
+            _uiEvent.emit(UiEvent.PresentRemoveDialog(selectImageHashMap.size))
+        }
     }
 
     fun touchToolBarEvent() {
-        _uiEvent.value = SingleEvent(UiEvent.ScrollToTop((saveImages.value?.size ?: 0) <= 80))
+        viewModelScope.launch {
+            _uiEvent.emit(UiEvent.ScrollToTop(saveImages.value.size <= 80))
+        }
     }
 
     fun clickSelectModeEvent() {
-        when (_selectMode.value) {
+        when (selectMode.value) {
             true -> {
                 unSelectAllImage()
-                _headerTitle.value =
-                    resourceProvider.getString(StringResourceProvider.StringResourceId.MenuGallery)
+                handle[KEY_HEADER_TITLE] = resourceProvider.getString(StringResourceProvider.StringResourceId.MenuGallery)
             }
-            else -> _headerTitle.value = resourceProvider.getString(
+            else -> handle[KEY_HEADER_TITLE] = resourceProvider.getString(
                 StringResourceProvider.StringResourceId.SelectState,
                 selectImageHashMap.size
             )
         }
-        _selectMode.value = !(_selectMode.value ?: false)
+        handle[KEY_SELECT_MODE] = !selectMode.value
     }
 
     fun touchImageEvent(image: ImageModel, idx: Int) {
-        _uiEvent.value = SingleEvent(UiEvent.KeyboardVisibleEvent(false))
+        viewModelScope.launch {
+            _uiEvent.emit(UiEvent.KeyboardVisibleEvent(false))
+        }
         when (selectMode.value) {
             true ->
                 setSelectImage(image, idx, !selectImageHashMap.containsKey(image.hash))
-            else ->
-                uiAction.onNext(UiAction.ClickImageNoneSelectModeEvent(image.imageUrl, idx))
+            else -> viewModelScope.launch {
+                uiActionFlow.emit(UiAction.ClickImageNoneSelectModeEvent(image.imageUrl, idx))
+            }
         }
     }
 
     private fun unSelectAllImage() {
-        val images = saveImages.value?.toMutableList() ?: return
+        val images = saveImages.value.toMutableList()
         try {
             for (idx in selectImageHashMap.values) {
                 images[idx] = (images[idx] as GalleryImageListTypeModel.Image).let {
@@ -232,7 +232,7 @@ class GalleryViewModel @Inject constructor(
     }
 
     private fun setSelectImage(image: ImageModel, idx: Int, select: Boolean) {
-        val images = saveImages.value?.toMutableList() ?: return
+        val images = saveImages.value.toMutableList()
         try {
             images[idx] = (images[idx] as GalleryImageListTypeModel.Image).let {
                 it.copy(image = it.image.copy(isSelect = select))
@@ -242,7 +242,7 @@ class GalleryViewModel @Inject constructor(
                 else -> selectImageHashMap.remove(image.hash)
             }
             _saveImages.value = images
-            _headerTitle.value = resourceProvider.getString(
+            handle[KEY_HEADER_TITLE] = resourceProvider.getString(
                 StringResourceProvider.StringResourceId.SelectState,
                 selectImageHashMap.size
             )
@@ -253,21 +253,24 @@ class GalleryViewModel @Inject constructor(
     }
 
     private fun showToast(message: String) {
-        _uiEvent.value = SingleEvent(UiEvent.ShowToast(message))
+        viewModelScope.launch {
+            _uiEvent.emit(UiEvent.ShowToast(message))
+        }
     }
 
     private fun showSnackBar(message: String, action: Pair<String, () -> Unit>?) {
-        _uiEvent.value = SingleEvent(UiEvent.ShowSnackBar(message, action))
+        viewModelScope.launch {
+            _uiEvent.emit(UiEvent.ShowSnackBar(message, action))
+        }
     }
 
     private fun setNotifyGroup(visible: Boolean, message: String, btn: String) {
-        _notifyGroupVisible.value = visible
-        _notifyText.value = message
-        _notifyBtn.value = btn
+        handle[KEY_NOTIFY_GROUP_VISIBLE] = visible
+        handle[KEY_NOTIFY_TEXT] = message
+        handle[KEY_NOTIFY_BTN] = btn
     }
 
     sealed class UiAction {
-        object FetchSaveImages : UiAction()
         object Refresh : UiAction()
         data class RemoveSelectImage(val selectImageMap: MutableMap<String, Int>) : UiAction()
         data class ClickImageNoneSelectModeEvent(val imageUrl: String, val position: Int) : UiAction()

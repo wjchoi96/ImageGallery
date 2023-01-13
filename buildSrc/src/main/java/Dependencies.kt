@@ -44,10 +44,6 @@ object Dependencies {
         const val activityKtx = "1.7.0-alpha02"
         const val fragmentKtx = "1.6.0-alpha03"
 
-        //Rx
-        const val rxKotlin = "3.0.0"
-        const val rxAndroid = "3.0.0"
-
         //Retrofit
         const val retrofit = "2.9.0"
 
@@ -73,6 +69,9 @@ object Dependencies {
         const val firebase = "31.0.2"
         const val googleServiceClassPath = "4.3.14"
         const val crashlyticsClassPath = "2.9.2"
+
+        //Coroutine Test
+        const val coroutineTest = "1.6.4"
 
         //Test
         const val junit = "1.1.3"
@@ -120,24 +119,12 @@ object Dependencies {
             )
         }
 
-        //https://github.com/ReactiveX/RxKotlin
-        //https://github.com/Reactivex/Rxandroid/wiki
-        object Rx : ImplementationItem {
-            private const val rxKotlin = "io.reactivex.rxjava3:rxkotlin:${Dependencies.Version.rxKotlin}"
-            private const val rxAndroid = "io.reactivex.rxjava3:rxandroid:${Dependencies.Version.rxAndroid}"
-
-            override val implementations = listOf(
-                rxKotlin, rxAndroid
-            )
-        }
-
         object Retrofit : ImplementationItem {
             private const val retrofit = "com.squareup.retrofit2:retrofit:${Dependencies.Version.retrofit}"
-            private const val rxJavaAdapter = "com.squareup.retrofit2:adapter-rxjava3:${Version.retrofit}"
             private const val gsonConverter = "com.squareup.retrofit2:converter-gson:${Version.retrofit}"
 
             override val implementations = listOf(
-                retrofit, rxJavaAdapter, gsonConverter
+                retrofit, gsonConverter
             )
         }
 
@@ -201,6 +188,14 @@ object Dependencies {
 
             override val classPaths = listOf(
                 googleServiceClassPath, crashlyticsClassPath
+            )
+        }
+
+        object CoroutineTest : TestImplementationItem {
+            private const val coroutineTest = "org.jetbrains.kotlinx:kotlinx-coroutines-test:${Dependencies.Version.coroutineTest}"
+
+            override val testImplementations = listOf(
+                coroutineTest
             )
         }
 

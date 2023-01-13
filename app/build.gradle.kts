@@ -63,8 +63,6 @@ dependencies {
 
     implementation(Dependencies.Libraries.Ktx)
 
-    implementation(Dependencies.Libraries.Rx)
-
     implementation(Dependencies.Libraries.Retrofit)
 
     implementation(Dependencies.Libraries.Okhttp)
@@ -82,6 +80,8 @@ dependencies {
     implementation(Dependencies.Libraries.SkeletonUi)
 
     implementation(Dependencies.Libraries.ImagePinchZoom)
+
+    testImplementation(Dependencies.Libraries.CoroutineTest)
 
     testImplementation(Dependencies.Libraries.Test)
 
