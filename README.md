@@ -1,4 +1,4 @@
-# KakaoGallery
+# ImageGallery
 - email address : 1406073@naver.com <br />
 
 ## Introduction
